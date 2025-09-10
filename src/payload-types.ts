@@ -69,6 +69,14 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
+    blogPosts: BlogPost;
+    blogCategories: BlogCategory;
+    podcasts: Podcast;
+    staging: Staging;
+    newsletter: Newsletter;
+    newsletterCampaigns: NewsletterCampaign;
+    podcastSeries: PodcastSery;
+    'push-subscriptions': PushSubscription;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -77,6 +85,14 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    blogPosts: BlogPostsSelect<false> | BlogPostsSelect<true>;
+    blogCategories: BlogCategoriesSelect<false> | BlogCategoriesSelect<true>;
+    podcasts: PodcastsSelect<false> | PodcastsSelect<true>;
+    staging: StagingSelect<false> | StagingSelect<true>;
+    newsletter: NewsletterSelect<false> | NewsletterSelect<true>;
+    newsletterCampaigns: NewsletterCampaignsSelect<false> | NewsletterCampaignsSelect<true>;
+    podcastSeries: PodcastSeriesSelect<false> | PodcastSeriesSelect<true>;
+    'push-subscriptions': PushSubscriptionsSelect<false> | PushSubscriptionsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -114,11 +130,32 @@ export interface UserAuthOperations {
   };
 }
 /**
+ * Manage user accounts and roles for the blog platform. Assign content creator roles to enable post submission workflow.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
  */
 export interface User {
   id: string;
+  name?: string | null;
+  /**
+   * Upload a profile picture for the user.
+   */
+  profilePicture?: (string | null) | Media;
+  /**
+   * Select the roles for this user. Content creators can write posts, admins can approve them.
+   */
+  roles?: ('admin' | 'analyst' | 'columnist' | 'reporter' | 'contributor' | 'user')[] | null;
+  /**
+   * User subscription level for premium content access.
+   */
+  subscriptionTier?: ('free' | 'premium') | null;
+  /**
+   * Automatically updated when user verifies their email.
+   */
+  isEmailVerified?: boolean | null;
+  likedPosts?: (string | BlogPost)[] | null;
+  favoritedPosts?: (string | BlogPost)[] | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -126,6 +163,8 @@ export interface User {
   resetPasswordExpiration?: string | null;
   salt?: string | null;
   hash?: string | null;
+  _verified?: boolean | null;
+  _verificationToken?: string | null;
   loginAttempts?: number | null;
   lockUntil?: string | null;
   sessions?:
@@ -143,7 +182,15 @@ export interface User {
  */
 export interface Media {
   id: string;
-  alt: string;
+  /**
+   * Alternative text for images (important for accessibility)
+   */
+  alt?: string | null;
+  /**
+   * Optional caption for the media file
+   */
+  caption?: string | null;
+  _key?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -155,6 +202,387 @@ export interface Media {
   height?: number | null;
   focalX?: number | null;
   focalY?: number | null;
+  sizes?: {
+    thumbnail?: {
+      _key?: string | null;
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    card?: {
+      _key?: string | null;
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    tablet?: {
+      _key?: string | null;
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
+}
+/**
+ * Manage blog posts and content.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blogPosts".
+ */
+export interface BlogPost {
+  id: string;
+  name: string;
+  /**
+   * This is automatically generated from the title.
+   */
+  slug: string;
+  /**
+   * Current status of your post. Contact an admin to change this.
+   */
+  statusDisplay?: string | null;
+  /**
+   * Change the publication status of this post.
+   */
+  status?: ('pending' | 'published') | null;
+  layout?:
+    | (
+        | {
+            content?: {
+              root: {
+                type: string;
+                children: {
+                  type: string;
+                  version: number;
+                  [k: string]: unknown;
+                }[];
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                indent: number;
+                version: number;
+              };
+              [k: string]: unknown;
+            } | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'richtext';
+          }
+        | {
+            heading: {
+              root: {
+                type: string;
+                children: {
+                  type: string;
+                  version: number;
+                  [k: string]: unknown;
+                }[];
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                indent: number;
+                version: number;
+              };
+              [k: string]: unknown;
+            };
+            subheading: string;
+            image?: (string | null) | Media;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'cover';
+          }
+        | {
+            image?: (string | null) | Media;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'image';
+          }
+        | {
+            /**
+             * Upload a video file (MP4, WebM, etc.)
+             */
+            video: string | Media;
+            /**
+             * Whether the video should start playing automatically (note: most browsers require videos to be muted for autoplay)
+             */
+            autoplay?: boolean | null;
+            /**
+             * Whether the video should be muted by default
+             */
+            muted?: boolean | null;
+            /**
+             * Whether to show video player controls (play, pause, volume, etc.)
+             */
+            controls?: boolean | null;
+            /**
+             * Whether the video should loop continuously
+             */
+            loop?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'video';
+          }
+        | {
+            /**
+             * Upload a PDF document
+             */
+            pdf: string | Media;
+            /**
+             * Whether to display a download button for the PDF
+             */
+            showDownloadButton?: boolean | null;
+            /**
+             * Whether to show an embedded preview of the PDF (may not work on all devices)
+             */
+            showPreview?: boolean | null;
+            /**
+             * Height of the PDF preview in pixels
+             */
+            previewHeight?: number | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'pdf';
+          }
+        | {
+            /**
+             * Enter either a URL to embed OR paste the embed HTML code from platforms like Twitter, YouTube, etc.
+             */
+            content: string;
+            /**
+             * Optional title for the embedded content
+             */
+            title?: string | null;
+            /**
+             * Optional caption or description for the embedded content
+             */
+            caption?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'embed';
+          }
+      )[]
+    | null;
+  categories?: (string | BlogCategory)[] | null;
+  /**
+   * Check this to manually enter reporter details instead of selecting a user account.
+   */
+  useManualReporter?: boolean | null;
+  /**
+   * Enter the details of the external reporter for this article.
+   */
+  manualReporter?: {
+    /**
+     * Full name of the reporter
+     */
+    name: string;
+    /**
+     * Check this to enter a custom role instead of selecting from predefined options.
+     */
+    useCustomRole?: boolean | null;
+    role?:
+      | (
+          | 'reporter'
+          | 'correspondent'
+          | 'freelance'
+          | 'contributor'
+          | 'special-correspondent'
+          | 'field-reporter'
+          | 'investigative'
+          | 'analyst'
+          | 'senior-correspondent'
+          | 'bureau-chief'
+        )
+      | null;
+    /**
+     * Enter a custom role title for the reporter.
+     */
+    customRole?: string | null;
+  };
+  /**
+   * Select an author from content creators and admins. Regular users are excluded.
+   */
+  author?: (string | null) | User;
+  likes?: number | null;
+  favoritesCount?: number | null;
+  views?: number | null;
+  isEditorsPick?: boolean | null;
+  /**
+   * Check this to feature this post on the homepage.
+   */
+  featuredinhomepage?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blogCategories".
+ */
+export interface BlogCategory {
+  id: string;
+  name: string;
+  slug: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "podcasts".
+ */
+export interface Podcast {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  audioFile: string | Media;
+  series?: (string | null) | PodcastSery;
+  episodeNumber?: number | null;
+  duration?: number | null;
+  categories?: (string | BlogCategory)[] | null;
+  peopleInvolved?:
+    | {
+        name: string;
+        role: 'host' | 'co-host' | 'guest' | 'interviewer' | 'producer' | 'editor' | 'sound-engineer' | 'moderator';
+        bio?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  coverImage?: (string | null) | Media;
+  publishedAt?: string | null;
+  isPublished?: boolean | null;
+  featured?: boolean | null;
+  playCount?: number | null;
+  likes?: number | null;
+  externalLinks?:
+    | {
+        title: string;
+        url: string;
+        description?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "podcastSeries".
+ */
+export interface PodcastSery {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Review and approve blog posts submitted by content creators. Simple workflow for content approval.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "staging".
+ */
+export interface Staging {
+  id: string;
+  blogPost: string | BlogPost;
+  status: 'pending' | 'published';
+  submittedAt?: string | null;
+  submittedBy?: (string | null) | User;
+  reviewedBy?: (string | null) | User;
+  reviewedAt?: string | null;
+  workflowHistory?:
+    | {
+        action: string;
+        performedBy: string | User;
+        performedAt: string;
+        fromStatus?: string | null;
+        toStatus?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "newsletter".
+ */
+export interface Newsletter {
+  id: string;
+  email: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  source?: ('popup' | 'footer' | 'website' | 'import' | 'admin') | null;
+  subscribedAt?: string | null;
+  tags?:
+    | {
+        tag: string;
+        id?: string | null;
+      }[]
+    | null;
+  preferences?: {
+    frequency?: ('daily' | 'weekly' | 'monthly') | null;
+    categories?:
+      | {
+          category: string | BlogCategory;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "newsletterCampaigns".
+ */
+export interface NewsletterCampaign {
+  id: string;
+  subject: string;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  status?: ('draft' | 'send_now' | 'sent' | 'failed') | null;
+  sentAt?: string | null;
+  sentCount?: number | null;
+  failedCount?: number | null;
+  errorLog?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Stores user subscriptions for push notifications.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "push-subscriptions".
+ */
+export interface PushSubscription {
+  id: string;
+  endpoint: string;
+  keys: {
+    p256dh: string;
+    auth: string;
+  };
+  user?: (string | null) | User;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -170,6 +598,38 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'media';
         value: string | Media;
+      } | null)
+    | ({
+        relationTo: 'blogPosts';
+        value: string | BlogPost;
+      } | null)
+    | ({
+        relationTo: 'blogCategories';
+        value: string | BlogCategory;
+      } | null)
+    | ({
+        relationTo: 'podcasts';
+        value: string | Podcast;
+      } | null)
+    | ({
+        relationTo: 'staging';
+        value: string | Staging;
+      } | null)
+    | ({
+        relationTo: 'newsletter';
+        value: string | Newsletter;
+      } | null)
+    | ({
+        relationTo: 'newsletterCampaigns';
+        value: string | NewsletterCampaign;
+      } | null)
+    | ({
+        relationTo: 'podcastSeries';
+        value: string | PodcastSery;
+      } | null)
+    | ({
+        relationTo: 'push-subscriptions';
+        value: string | PushSubscription;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -218,6 +678,13 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  name?: T;
+  profilePicture?: T;
+  roles?: T;
+  subscriptionTier?: T;
+  isEmailVerified?: T;
+  likedPosts?: T;
+  favoritedPosts?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -225,6 +692,8 @@ export interface UsersSelect<T extends boolean = true> {
   resetPasswordExpiration?: T;
   salt?: T;
   hash?: T;
+  _verified?: T;
+  _verificationToken?: T;
   loginAttempts?: T;
   lockUntil?: T;
   sessions?:
@@ -241,6 +710,8 @@ export interface UsersSelect<T extends boolean = true> {
  */
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
+  caption?: T;
+  _key?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -252,6 +723,272 @@ export interface MediaSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+  sizes?:
+    | T
+    | {
+        thumbnail?:
+          | T
+          | {
+              _key?: T;
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        card?:
+          | T
+          | {
+              _key?: T;
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        tablet?:
+          | T
+          | {
+              _key?: T;
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blogPosts_select".
+ */
+export interface BlogPostsSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  statusDisplay?: T;
+  status?: T;
+  layout?:
+    | T
+    | {
+        richtext?:
+          | T
+          | {
+              content?: T;
+              id?: T;
+              blockName?: T;
+            };
+        cover?:
+          | T
+          | {
+              heading?: T;
+              subheading?: T;
+              image?: T;
+              id?: T;
+              blockName?: T;
+            };
+        image?:
+          | T
+          | {
+              image?: T;
+              id?: T;
+              blockName?: T;
+            };
+        video?:
+          | T
+          | {
+              video?: T;
+              autoplay?: T;
+              muted?: T;
+              controls?: T;
+              loop?: T;
+              id?: T;
+              blockName?: T;
+            };
+        pdf?:
+          | T
+          | {
+              pdf?: T;
+              showDownloadButton?: T;
+              showPreview?: T;
+              previewHeight?: T;
+              id?: T;
+              blockName?: T;
+            };
+        embed?:
+          | T
+          | {
+              content?: T;
+              title?: T;
+              caption?: T;
+              id?: T;
+              blockName?: T;
+            };
+      };
+  categories?: T;
+  useManualReporter?: T;
+  manualReporter?:
+    | T
+    | {
+        name?: T;
+        useCustomRole?: T;
+        role?: T;
+        customRole?: T;
+      };
+  author?: T;
+  likes?: T;
+  favoritesCount?: T;
+  views?: T;
+  isEditorsPick?: T;
+  featuredinhomepage?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blogCategories_select".
+ */
+export interface BlogCategoriesSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "podcasts_select".
+ */
+export interface PodcastsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  description?: T;
+  audioFile?: T;
+  series?: T;
+  episodeNumber?: T;
+  duration?: T;
+  categories?: T;
+  peopleInvolved?:
+    | T
+    | {
+        name?: T;
+        role?: T;
+        bio?: T;
+        id?: T;
+      };
+  coverImage?: T;
+  publishedAt?: T;
+  isPublished?: T;
+  featured?: T;
+  playCount?: T;
+  likes?: T;
+  externalLinks?:
+    | T
+    | {
+        title?: T;
+        url?: T;
+        description?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "staging_select".
+ */
+export interface StagingSelect<T extends boolean = true> {
+  blogPost?: T;
+  status?: T;
+  submittedAt?: T;
+  submittedBy?: T;
+  reviewedBy?: T;
+  reviewedAt?: T;
+  workflowHistory?:
+    | T
+    | {
+        action?: T;
+        performedBy?: T;
+        performedAt?: T;
+        fromStatus?: T;
+        toStatus?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "newsletter_select".
+ */
+export interface NewsletterSelect<T extends boolean = true> {
+  email?: T;
+  firstName?: T;
+  lastName?: T;
+  source?: T;
+  subscribedAt?: T;
+  tags?:
+    | T
+    | {
+        tag?: T;
+        id?: T;
+      };
+  preferences?:
+    | T
+    | {
+        frequency?: T;
+        categories?:
+          | T
+          | {
+              category?: T;
+              id?: T;
+            };
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "newsletterCampaigns_select".
+ */
+export interface NewsletterCampaignsSelect<T extends boolean = true> {
+  subject?: T;
+  content?: T;
+  status?: T;
+  sentAt?: T;
+  sentCount?: T;
+  failedCount?: T;
+  errorLog?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "podcastSeries_select".
+ */
+export interface PodcastSeriesSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  description?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "push-subscriptions_select".
+ */
+export interface PushSubscriptionsSelect<T extends boolean = true> {
+  endpoint?: T;
+  keys?:
+    | T
+    | {
+        p256dh?: T;
+        auth?: T;
+      };
+  user?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

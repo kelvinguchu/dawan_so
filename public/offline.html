@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dawan TV - You're Offline</title>
+    <link rel="icon" href="/favicon.png" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#2EC6FE" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family:
+          'Source Sans 3',
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          Roboto,
+          Helvetica,
+          Arial,
+          sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #374151;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* Animated background elements */
+      body::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background:
+          linear-gradient(
+            45deg,
+            rgba(255, 255, 255, 0.1) 25%,
+            transparent 25%,
+            transparent 75%,
+            rgba(255, 255, 255, 0.1) 75%
+          ),
+          linear-gradient(
+            45deg,
+            rgba(255, 255, 255, 0.1) 25%,
+            transparent 25%,
+            transparent 75%,
+            rgba(255, 255, 255, 0.1) 75%
+          );
+        background-size: 60px 60px;
+        background-position:
+          0 0,
+          30px 30px;
+        animation: float 20s linear infinite;
+        opacity: 0.3;
+      }
+
+      @keyframes float {
+        0% {
+          transform: translateX(-100px) translateY(-100px) rotate(0deg);
+        }
+        100% {
+          transform: translateX(-100px) translateY(-100px) rotate(360deg);
+        }
+      }
+
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+      }
+
+      .container {
+        max-width: 500px;
+        width: 100%;
+        padding: 3rem 2.5rem;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 24px;
+        box-shadow:
+          0 20px 25px -5px rgba(0, 0, 0, 0.1),
+          0 10px 10px -5px rgba(0, 0, 0, 0.04),
+          0 0 0 1px rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        position: relative;
+        z-index: 1;
+        animation: fadeInUp 0.8s ease-out;
+      }
+
+      .logo {
+        width: 140px;
+        height: auto;
+        margin-bottom: 2rem;
+        filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+        animation: fadeInUp 0.8s ease-out 0.2s both;
+      }
+
+      .offline-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 2rem;
+        background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 10px 25px rgba(238, 90, 36, 0.3);
+        animation:
+          fadeInUp 0.8s ease-out 0.4s both,
+          pulse 2s ease-in-out infinite;
+      }
+
+      .offline-icon svg {
+        width: 40px;
+        height: 40px;
+        color: white;
+        stroke-width: 2.5;
+      }
+
+      h1 {
+        color: #1f2937;
+        margin-bottom: 1rem;
+        font-weight: 700;
+        font-size: 2.25rem;
+        line-height: 1.2;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: fadeInUp 0.8s ease-out 0.6s both;
+      }
+
+      p {
+        margin-bottom: 2.5rem;
+        line-height: 1.7;
+        font-weight: 400;
+        color: #6b7280;
+        font-size: 1.1rem;
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+        animation: fadeInUp 0.8s ease-out 0.8s both;
+      }
+
+      .button {
+        background: linear-gradient(135deg, #b01c14, #1e90a6);
+        color: white;
+        border: none;
+        padding: 1rem 2.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-family: 'Source Sans 3', sans-serif;
+        font-size: 1rem;
+        box-shadow: 0 4px 14px 0 rgba(42, 170, 198, 0.39);
+        position: relative;
+        overflow: hidden;
+        animation: fadeInUp 0.8s ease-out 1s both;
+      }
+
+      .button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+      }
+
+      .button:hover::before {
+        left: 100%;
+      }
+
+      .button:hover {
+        background: linear-gradient(135deg, #239db5, #1a7a8a);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(42, 170, 198, 0.5);
+      }
+
+      .button:active {
+        transform: translateY(0);
+      }
+
+      .status-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 2rem;
+        padding: 0.75rem 1.5rem;
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        border-radius: 50px;
+        color: #dc2626;
+        font-size: 0.9rem;
+        font-weight: 500;
+        animation: fadeInUp 0.8s ease-out 1.2s both;
+      }
+
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        background: #dc2626;
+        border-radius: 50%;
+        animation: pulse 1.5s ease-in-out infinite;
+      }
+
+      /* Responsive design */
+      @media (max-width: 640px) {
+        .container {
+          padding: 2rem 1.5rem;
+          margin: 1rem;
+        }
+
+        h1 {
+          font-size: 1.875rem;
+        }
+
+        p {
+          font-size: 1rem;
+        }
+
+        .logo {
+          width: 120px;
+        }
+
+        .offline-icon {
+          width: 70px;
+          height: 70px;
+        }
+
+        .offline-icon svg {
+          width: 35px;
+          height: 35px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <img src="/logo.png" alt="Dawan TV Logo" class="logo" />
+
+      <div class="offline-icon">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M8.288 15.038a5.25 5.25 0 017.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 011.06 0z"
+          />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </div>
+
+      <h1>You're Offline</h1>
+      <p>
+        It looks like you've lost your internet connection. Please check your connection and try
+        again to continue exploring African stories and insights.
+      </p>
+
+      <button class="button" id="retryButton">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+          />
+        </svg>
+        Try Again
+      </button>
+
+      <div class="status-indicator">
+        <div class="status-dot"></div>
+        Connection lost
+      </div>
+    </div>
+
+    <script>
+      // Check if online and redirect to homepage
+      window.addEventListener('online', () => {
+        const statusIndicator = document.querySelector('.status-indicator')
+        const statusDot = document.querySelector('.status-dot')
+        const button = document.getElementById('retryButton')
+
+        statusIndicator.style.background = 'rgba(34, 197, 94, 0.1)'
+        statusIndicator.style.borderColor = 'rgba(34, 197, 94, 0.2)'
+        statusIndicator.style.color = '#16a34a'
+        statusIndicator.innerHTML =
+          '<div class="status-dot" style="background: #16a34a;"></div>Connected! Redirecting...'
+
+        setTimeout(() => {
+          window.location.href = '/'
+        }, 1000)
+      })
+
+      // Add retry functionality
+      document.addEventListener('DOMContentLoaded', () => {
+        const button = document.getElementById('retryButton')
+        button.addEventListener('click', () => {
+          button.innerHTML = `
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="animation: spin 1s linear infinite;">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+            Checking...
+          `
+
+          // Add spin animation
+          const style = document.createElement('style')
+          style.textContent = `
+            @keyframes spin {
+              from { transform: rotate(0deg); }
+              to { transform: rotate(360deg); }
+            }
+          `
+          document.head.appendChild(style)
+
+          setTimeout(() => {
+            if (navigator.onLine) {
+              window.location.href = '/'
+            } else {
+              button.innerHTML = `
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                Try Again
+              `
+            }
+          }, 1000)
+        })
+      })
+    </script>
+  </body>
+</html>
