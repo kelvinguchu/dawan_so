@@ -93,7 +93,7 @@ export function AdUnit({
       <ins
         className="adsbygoogle"
         style={{ display: 'block', width: '100%', textAlign: inArticle ? 'center' : 'inherit' }}
-        data-ad-client="ca-pub-5247780644977108"
+        data-ad-client="ca-pub-7193603701130750"
         data-ad-slot={slotId}
         data-ad-format={adFormat}
         data-full-width-responsive={isResponsive.toString()}

@@ -4,7 +4,7 @@ import HeaderServer from '@/components/layout/HeaderServer'
 import Footer from '@/components/layout/Footer'
 
 import NewsletterPopup from '@/components/NewsletterPopup'
-import { Source_Sans_3, Roboto } from 'next/font/google'
+import { Roboto } from 'next/font/google'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { QueryProvider } from '@/components/providers/QueryProvider'
 import { NavigationProvider } from '@/providers/NavigationProvider'
@@ -20,12 +20,6 @@ import { RSSDiscovery } from '@/components/rss'
 import Script from 'next/script'
 import { PageViewTracker } from '@/components/analytics/GoogleAnalyticsEvents'
 
-const sourceSans3 = Source_Sans_3({
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700'],
-  variable: '--font-source-sans-3',
-  display: 'swap',
-})
 
 const roboto = Roboto({
   subsets: ['latin'],

@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     ...sharedMetadata.openGraph,
     title: 'Dawan TV - Warar iyo falanqayn qoto dheer oo ku saabsan Soomaaliya iyo Geeska Afrika',
     description:
-      'Discover the latest news, stories, and insights from across Africa. Your trusted source for African perspectives on politics, culture, business, and more.',
+      'Discover the latest news, stories, and insights from across Somalia. Your trusted source for African perspectives on politics, culture, business, and more.',
     type: 'website',
     url: siteConfig.url,
     siteName: 'Dawan TV',
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     ...sharedMetadata.twitter,
     title: 'Dawan TV - Warar iyo falanqayn qoto dheer oo ku saabsan Soomaaliya iyo Geeska Afrika',
     description:
-      'Discover the latest news, stories, and insights from across Africa. Your trusted source for African perspectives on politics, culture, business, and more.',
+      'Discover the latest news, stories, and insights from across Somalia. Your trusted source for African perspectives on politics, culture, business, and more.',
     site: '@dawanafrica',
   },
   alternates: {
@@ -35,12 +35,12 @@ export const metadata: Metadata = {
 export const revalidate = 30
 
 export default async function HomePage() {
-  const { latestPost, heroPosts, trendingPosts, editorsPicks, recentNews, categoriesWithPosts } =
+  const { latestPost, heroPosts, trendingPosts, editorsPicks, recentNews, categoriesWithPosts, flashNews } =
     await getHomePageData()
 
   return (
     <div className="min-h-screen">
-      <HeroSection latestPost={latestPost} recentPosts={heroPosts} />
+      <HeroSection latestPost={latestPost} recentPosts={heroPosts} flashNews={flashNews} />
 
       <FeaturedPosts
         trendingPosts={trendingPosts}

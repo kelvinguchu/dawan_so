@@ -17,10 +17,23 @@ export const FlashTicker: React.FC<FlashTickerProps> = ({ posts, intervalMs = 50
   const [index, setIndex] = useState(0)
 
   useEffect(() => {
-    if (!posts || posts.length <= 1) return
+    if (!posts || posts.length === 0) return
+
+    if (posts.length === 1) {
+      setIndex(0)
+      return
+    }
+
     const t = setInterval(() => {
-      setIndex((prev) => (prev === posts.length - 1 ? 0 : prev + 1))
+      setIndex(prevIndex => {
+        let newIndex = prevIndex
+        while (newIndex === prevIndex) {
+          newIndex = Math.floor(Math.random() * posts.length)
+        }
+        return newIndex
+      })
     }, intervalMs)
+
     return () => clearInterval(t)
   }, [posts, intervalMs])
 

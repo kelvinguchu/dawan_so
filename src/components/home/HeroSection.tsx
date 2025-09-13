@@ -10,9 +10,10 @@ import { FlashTicker } from './FlashTicker'
 interface HeroSectionProps {
   latestPost: BlogPost | null
   recentPosts: BlogPost[]
+  flashNews: BlogPost[]
 }
 
-export const HeroSection: React.FC<HeroSectionProps> = ({ latestPost, recentPosts }) => {
+export const HeroSection: React.FC<HeroSectionProps> = ({ latestPost, recentPosts, flashNews }) => {
   if (!latestPost && recentPosts.length === 0) {
     return (
       <section className="py-4">
@@ -53,9 +54,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ latestPost, recentPost
         <div className="grid grid-cols-1 gap-4 md:gap-6 md:grid-cols-3">
           <div className="md:col-span-2">
             <Card className="group h-full overflow-hidden border-0 p-0 py-0 gap-0 shadow-md sm:shadow-xl transition-all hover:shadow-2xl">
-              {recentPosts.length > 0 && (
+              {flashNews.length > 0 && (
                 <div className="hidden md:block">
-                  <FlashTicker posts={recentPosts} />
+                  <FlashTicker posts={flashNews} />
                 </div>
               )}
               <HeroFeatured post={latestPost} />

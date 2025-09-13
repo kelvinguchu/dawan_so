@@ -51,7 +51,7 @@ export const ArticleClientView: React.FC<ArticleClientViewProps> = ({ post, rela
         {/* Left Ad Rail */}
         <div className="col-span-2 hidden xl:block">
           <div className="sticky top-40 w-full">
-            <AdUnit slotId="3513267734" className="min-h-[600px] w-full" />
+            <AdUnit slotId="1626998043" className="min-h-[600px] w-full" />
           </div>
         </div>
 
@@ -63,12 +63,11 @@ export const ArticleClientView: React.FC<ArticleClientViewProps> = ({ post, rela
         {/* Right Ad Rail */}
         <div className="col-span-2 hidden xl:block">
           <div className="sticky top-40 w-full">
-            <AdUnit slotId="3513267734" className="min-h-[600px] w-full" />
+            <AdUnit slotId="1626998043" className="min-h-[600px] w-full" />
           </div>
         </div>
       </div>
     </div>
   )
 }
-
 

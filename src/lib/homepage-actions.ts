@@ -3,7 +3,7 @@
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { BlogPost, BlogCategory } from '@/payload-types'
-import { subDays } from 'date-fns'
+import { subDays, subHours } from 'date-fns'
 
 export interface HomePageData {
   latestPost: BlogPost | null
@@ -12,6 +12,7 @@ export interface HomePageData {
   editorsPicks: BlogPost[]
   recentNews: BlogPost[]
   categoriesWithPosts: Array<BlogCategory & { latestPost: BlogPost }>
+  flashNews: BlogPost[]
 }
 
 export async function getHomePageData(): Promise<HomePageData> {
@@ -113,6 +114,26 @@ export async function getHomePageData(): Promise<HomePageData> {
 
     const categoriesWithPosts = await getCategoriesWithLatestPosts()
 
+    const twentyFourHoursAgo = subHours(new Date(), 24).toISOString()
+    const flashNewsResponse = await payload.find({
+      collection: 'blogPosts',
+      limit: 10,
+      sort: '-createdAt',
+      depth: 1,
+      where: {
+        and: [
+          {
+            status: { equals: 'published' },
+          },
+          {
+            createdAt: {
+              greater_than: twentyFourHoursAgo,
+            },
+          },
+        ],
+      },
+    })
+
     return {
       latestPost,
       heroPosts,
@@ -120,6 +141,7 @@ export async function getHomePageData(): Promise<HomePageData> {
       editorsPicks: editorsPicksResponse.docs,
       recentNews: recentNewsResponse.docs,
       categoriesWithPosts,
+      flashNews: flashNewsResponse.docs,
     }
   } catch (error) {
     console.error('Error fetching homepage data:', error)

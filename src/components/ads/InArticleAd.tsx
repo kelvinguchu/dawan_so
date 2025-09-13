@@ -7,7 +7,7 @@ export function InArticleAd() {
   return (
     <div className="my-8 w-full">
       <AdUnit
-        slotId="4128963956"
+        slotId="4145404072"
         adFormat="fluid"
         isResponsive={true}
         inArticle={true}
