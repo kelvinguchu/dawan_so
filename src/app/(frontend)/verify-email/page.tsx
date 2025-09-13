@@ -64,7 +64,7 @@ export default async function VerifyEmailPage({ searchParams }: VerifyEmailPageP
 
             <div className="space-y-3">
               <Link href="/" className="block">
-                <Button className="w-full bg-[#b01c14] hover:bg-[#238da1] text-white">
+                <Button className="w-full bg-[#b01c14] hover:bg-[#b01c14]/80 text-white">
                   Tag Bogga Hore
                 </Button>
               </Link>

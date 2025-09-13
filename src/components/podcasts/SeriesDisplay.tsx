@@ -4,15 +4,7 @@ import React, { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Podcast, PodcastSery } from '@/payload-types'
-import {
-  ChevronDown,
-  ChevronRight,
-  Clock,
-  Calendar,
-  Headphones,
-  Users,
-  Music,
-} from 'lucide-react'
+import { ChevronDown, ChevronRight, Clock, Calendar, Headphones, Users, Music } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -100,7 +92,7 @@ export const SeriesDisplay: React.FC<SeriesDisplayProps> = ({
                     sizes="96px"
                   />
                 ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-[#b01c14]/20 via-[#b01c14]/10 to-[#b01c14]/5 flex items-center justify-center">
+                  <div className="w-full h-full bg-gradient-to-br from-[#b01c14]/80 via-[#b01c14]/80 to-[#b01c14]/5 flex items-center justify-center">
                     <Music className="w-10 h-10 text-[#b01c14]" />
                   </div>
                 )}
@@ -112,7 +104,7 @@ export const SeriesDisplay: React.FC<SeriesDisplayProps> = ({
               <div className="flex items-start justify-between mb-4">
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
-                    <Badge className="bg-[#b01c14]/10 text-[#b01c14] border-[#b01c14]/20 font-medium">
+                    <Badge className="bg-[#b01c14]/80 text-[#b01c14] border-[#b01c14]/80 font-medium">
                       Silsilad Podkaas
                     </Badge>
                   </div>
@@ -138,7 +130,7 @@ export const SeriesDisplay: React.FC<SeriesDisplayProps> = ({
                   variant="ghost"
                   size="sm"
                   onClick={() => setIsExpanded(!isExpanded)}
-                  className="flex items-center gap-2 h-10 px-4 rounded-full bg-slate-100/80 backdrop-blur-sm text-slate-600 hover:bg-[#b01c14]/10 hover:text-[#b01c14] transition-all duration-300"
+                  className="flex items-center gap-2 h-10 px-4 rounded-full bg-slate-100/80 backdrop-blur-sm text-slate-600 hover:bg-[#b01c14]/80 hover:text-[#b01c14] transition-all duration-300"
                 >
                   {isExpanded ? (
                     <>
@@ -163,7 +155,8 @@ export const SeriesDisplay: React.FC<SeriesDisplayProps> = ({
                   <div className="flex items-center gap-2 text-slate-600">
                     <Clock className="w-4 h-4 text-[#b01c14]" />
                     <span>
-                      {Math.round(totalDuration / 3600)} saac {Math.round((totalDuration % 3600) / 60)} daqiiqo guud ahaan
+                      {Math.round(totalDuration / 3600)} saac{' '}
+                      {Math.round((totalDuration % 3600) / 60)} daqiiqo guud ahaan
                     </span>
                   </div>
                 )}
@@ -172,7 +165,8 @@ export const SeriesDisplay: React.FC<SeriesDisplayProps> = ({
                   <div className="flex items-center gap-2 text-slate-600">
                     <Calendar className="w-4 h-4 text-[#b01c14]" />
                     <span>
-                      Ugu dambeeyay: {formatTimeAgo(latestEpisode.publishedAt || latestEpisode.createdAt)}
+                      Ugu dambeeyay:{' '}
+                      {formatTimeAgo(latestEpisode.publishedAt || latestEpisode.createdAt)}
                     </span>
                   </div>
                 )}
@@ -197,12 +191,12 @@ export const SeriesDisplay: React.FC<SeriesDisplayProps> = ({
               return (
                 <div
                   key={podcast.id}
-                  className="group mx-6 rounded-2xl border border-slate-200/60 hover:border-[#b01c14]/30 hover:shadow-lg hover:shadow-[#b01c14]/10 bg-white/60 backdrop-blur-sm transition-all duration-300"
+                  className="group mx-6 rounded-2xl border border-slate-200/60 hover:border-[#b01c14]/30 hover:shadow-lg hover:shadow-[#b01c14]/80 bg-white/60 backdrop-blur-sm transition-all duration-300"
                 >
                   <div className="p-5">
                     <div className="flex items-center gap-4">
                       {/* Episode Number */}
-                      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#b01c14]/10 flex items-center justify-center">
+                      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#b01c14]/80 flex items-center justify-center">
                         <span className="text-sm font-bold text-[#b01c14]">
                           {podcast.episodeNumber || seriesEpisodes.length - index}
                         </span>
@@ -220,11 +214,10 @@ export const SeriesDisplay: React.FC<SeriesDisplayProps> = ({
                               sizes="64px"
                             />
                           ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-[#b01c14]/20 via-[#b01c14]/10 to-[#b01c14]/5 flex items-center justify-center">
+                            <div className="w-full h-full bg-gradient-to-br from-[#b01c14]/80 via-[#b01c14]/80 to-[#b01c14]/5 flex items-center justify-center">
                               <Headphones className="w-6 h-6 text-[#b01c14]" />
                             </div>
                           )}
-
                         </div>
                       </div>
 
@@ -281,7 +274,6 @@ export const SeriesDisplay: React.FC<SeriesDisplayProps> = ({
                           </p>
                         )}
                       </div>
-
                     </div>
                   </div>
                 </div>
@@ -306,7 +298,7 @@ export const SeriesDisplay: React.FC<SeriesDisplayProps> = ({
                   <Button
                     variant="ghost"
                     onClick={() => setShowAll(false)}
-                    className="text-slate-600 hover:text-[#b01c14] h-11 px-8 rounded-full hover:bg-[#b01c14]/10 transition-all duration-300"
+                    className="text-slate-600 hover:text-[#b01c14] h-11 px-8 rounded-full hover:bg-[#b01c14]/80 transition-all duration-300"
                   >
                     Muuji wax yar
                   </Button>

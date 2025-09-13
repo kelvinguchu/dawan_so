@@ -104,7 +104,7 @@ export const UserBio: React.FC<UserBioProps> = ({ user, onUpdate }) => {
 
   return (
     <div className="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
-      <div className="bg-gradient-to-r from-[#b01c14]/10 to-slate-100 h-24 sm:h-32"></div>
+      <div className="bg-gradient-to-r from-[#b01c14]/80 to-slate-100 h-24 sm:h-32"></div>
       <div className="px-4 sm:px-6 pb-5 sm:pb-6 relative">
         <div className="flex flex-col sm:flex-row gap-4 sm:items-end">
           <div className="-mt-10 sm:-mt-12 mb-2 sm:mb-3 relative">
@@ -161,7 +161,7 @@ export const UserBio: React.FC<UserBioProps> = ({ user, onUpdate }) => {
                 size="sm"
                 onClick={handlePictureUpload}
                 disabled={isUploadingPicture || !previewUrl}
-                className="bg-[#b01c14] hover:bg-[#238da1] text-xs sm:text-sm shadow-sm w-full sm:w-auto"
+                className="bg-[#b01c14] hover:bg-[#b01c14]/80 text-xs sm:text-sm shadow-sm w-full sm:w-auto"
               >
                 {isUploadingPicture ? 'Soo gelinaya...' : 'Soo geli'}
               </Button>

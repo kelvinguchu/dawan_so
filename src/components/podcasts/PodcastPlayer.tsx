@@ -43,7 +43,6 @@ export const PodcastPlayer: React.FC<PodcastPlayerProps> = ({
   variant = 'full',
   className = '',
 }) => {
-
   const [isExpanded, setIsExpanded] = useState(false)
   const [liked, setLiked] = useState(false)
 
@@ -53,8 +52,6 @@ export const PodcastPlayer: React.FC<PodcastPlayerProps> = ({
   const excerpt = getPodcastExcerpt(podcast, 200)
   const peopleInvolved = formatPeopleInvolved(podcast.peopleInvolved)
   const categories = podcast.categories
-
-
 
   if (variant === 'compact') {
     return (
@@ -76,7 +73,7 @@ export const PodcastPlayer: React.FC<PodcastPlayerProps> = ({
                   sizes="64px"
                 />
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-[#b01c14]/20 via-[#b01c14]/10 to-[#b01c14]/5 flex items-center justify-center">
+                <div className="w-full h-full bg-gradient-to-br from-[#b01c14]/80 via-[#b01c14]/80 to-[#b01c14]/5 flex items-center justify-center">
                   <Headphones className="w-6 h-6 text-[#b01c14]" />
                 </div>
               )}
@@ -110,13 +107,12 @@ export const PodcastPlayer: React.FC<PodcastPlayerProps> = ({
                 variant="ghost"
                 size="sm"
                 disabled={!audioUrl}
-                className="w-10 h-10 p-0 rounded-full bg-[#b01c14]/10 hover:bg-[#b01c14]/20 text-[#b01c14] transition-all duration-300"
+                className="w-10 h-10 p-0 rounded-full bg-[#b01c14]/80 hover:bg-[#b01c14]/80 text-[#b01c14] transition-all duration-300"
               >
                 <Play className="w-4 h-4 ml-0.5" />
               </Button>
             </div>
           </div>
-
         </div>
       </div>
     )
@@ -148,7 +144,7 @@ export const PodcastPlayer: React.FC<PodcastPlayerProps> = ({
           <div className="flex items-start justify-between mb-6">
             <div className="flex-grow space-y-2">
               <div className="flex items-center gap-3">
-                <Badge className="bg-[#b01c14]/10 text-[#b01c14] border-[#b01c14]/20 font-medium">
+                <Badge className="bg-[#b01c14]/80 text-[#b01c14] border-[#b01c14]/80 font-medium">
                   Podcast Episode
                 </Badge>
                 {podcast.featured && (
@@ -223,7 +219,7 @@ export const PodcastPlayer: React.FC<PodcastPlayerProps> = ({
                   <Badge
                     key={category.id}
                     variant="outline"
-                    className="border-[#b01c14]/20 text-[#b01c14] bg-white/80 backdrop-blur-sm"
+                    className="border-[#b01c14]/80 text-[#b01c14] bg-white/80 backdrop-blur-sm"
                   >
                     <Tag className="w-3 h-3 mr-1" />
                     {category.name}
@@ -249,18 +245,19 @@ export const PodcastPlayer: React.FC<PodcastPlayerProps> = ({
                 sizes="256px"
               />
             ) : (
-              <div className="w-full h-full bg-gradient-to-br from-[#b01c14]/20 via-[#b01c14]/10 to-[#b01c14]/5 flex items-center justify-center">
+              <div className="w-full h-full bg-gradient-to-br from-[#b01c14]/80 via-[#b01c14]/80 to-[#b01c14]/5 flex items-center justify-center">
                 <Headphones className="w-20 h-20 text-[#b01c14]" />
               </div>
             )}
-
           </div>
 
           {/* Controls & Info */}
           <div className="flex-grow space-y-8">
             {/* Audio player controls removed */}
             <div className="flex items-center justify-center">
-              <p className="text-slate-500 text-sm">Shaqada ciyaar-maal ah ee maqal waa la naafo yeelay</p>
+              <p className="text-slate-500 text-sm">
+                Shaqada ciyaar-maal ah ee maqal waa la naafo yeelay
+              </p>
             </div>
 
             <div className="flex items-center gap-2">
@@ -314,7 +311,7 @@ export const PodcastPlayer: React.FC<PodcastPlayerProps> = ({
                   rel="noopener noreferrer"
                   className="flex items-center gap-3 p-4 rounded-xl border border-slate-200 hover:border-[#b01c14]/30 hover:bg-[#b01c14]/5 transition-all duration-300 group"
                 >
-                  <div className="w-10 h-10 rounded-full bg-[#b01c14]/10 flex items-center justify-center group-hover:bg-[#b01c14]/20 transition-colors">
+                  <div className="w-10 h-10 rounded-full bg-[#b01c14]/80 flex items-center justify-center group-hover:bg-[#b01c14]/80 transition-colors">
                     <ExternalLink className="w-5 h-5 text-[#b01c14]" />
                   </div>
                   <div>

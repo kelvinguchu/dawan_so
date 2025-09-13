@@ -4,7 +4,7 @@ import HeaderServer from '@/components/layout/HeaderServer'
 import Footer from '@/components/layout/Footer'
 
 import NewsletterPopup from '@/components/NewsletterPopup'
-import { Source_Sans_3 } from 'next/font/google'
+import { Source_Sans_3, Roboto } from 'next/font/google'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { QueryProvider } from '@/components/providers/QueryProvider'
 import { NavigationProvider } from '@/providers/NavigationProvider'
@@ -24,6 +24,13 @@ const sourceSans3 = Source_Sans_3({
   subsets: ['latin'],
   weight: ['300', '400', '500', '600', '700'],
   variable: '--font-source-sans-3',
+  display: 'swap',
+})
+
+const roboto = Roboto({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-roboto',
   display: 'swap',
 })
 
@@ -205,7 +212,7 @@ export default function RootLayout({ children }: { readonly children: React.Reac
   }
 
   return (
-    <html lang="en" suppressHydrationWarning className={`scroll-smooth ${sourceSans3.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`scroll-smooth ${roboto.className}`}>
       <head>
         <link rel="manifest" href="/manifest.json" />
         <meta name="apple-mobile-web-app-capable" content="yes" />

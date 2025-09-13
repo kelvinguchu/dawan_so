@@ -6,14 +6,13 @@ export const OurPlatforms: React.FC = () => {
   const platforms = [
     {
       name: 'Dawan TV',
-      description:
-        'Waxaannu ku baahinno Af‑Soomaali, diiradda saaraya Soomaaliya.',
+      description: 'Waxaannu ku baahinno Af‑Soomaali, diiradda saaraya Soomaaliya.',
       url: 'https://dawan.so',
       displayUrl: 'Dawan.so',
       icon: <BiTv className="h-8 w-8 sm:h-12 sm:w-12" />,
       language: 'Af‑Soomaali',
       bgColor: 'bg-[#b01c14]',
-      hoverColor: 'hover:bg-[#1e88a8]',
+      hoverColor: 'hover:bg-[#b01c14]/80',
     },
     {
       name: 'Dawan TV',
@@ -24,18 +23,17 @@ export const OurPlatforms: React.FC = () => {
       icon: <BiGlobe className="h-8 w-8 sm:h-12 sm:w-12" />,
       language: 'Ingiriisi',
       bgColor: 'bg-[#b01c14]',
-      hoverColor: 'hover:bg-[#1e88a8]',
+      hoverColor: 'hover:bg-[#b01c14]/80',
     },
     {
       name: 'بوابة الصومال (Somalia Gateway)',
-      description:
-        'Madal Af‑Carabi ah oo isku xirta Soomaaliya iyo dunida Carabta.',
+      description: 'Madal Af‑Carabi ah oo isku xirta Soomaaliya iyo dunida Carabta.',
       url: 'https://bawabah.africa',
       displayUrl: 'Bawabah.africa',
       icon: <BiBookOpen className="h-8 w-8 sm:h-12 sm:w-12" />,
       language: 'Carabi',
       bgColor: 'bg-[#b01c14]',
-      hoverColor: 'hover:bg-[#1e88a8]',
+      hoverColor: 'hover:bg-[#b01c14]/80',
     },
   ]
 
@@ -48,7 +46,8 @@ export const OurPlatforms: React.FC = () => {
               Madalladayada
             </h2>
             <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Saddex madal oo u adeegta dhagaystayaal kala duwan oo ku kala hadla Af‑Soomaali, Ingiriisi iyo Carabi, iyadoo diiradda la saarayo Soomaaliya.
+              Saddex madal oo u adeegta dhagaystayaal kala duwan oo ku kala hadla Af‑Soomaali,
+              Ingiriisi iyo Carabi, iyadoo diiradda la saarayo Soomaaliya.
             </p>
           </div>
 

@@ -80,7 +80,7 @@ export const LoginForm: React.FC = () => {
                   type="email"
                   autoComplete="email"
                   required
-                  className="pl-10 bg-white border-slate-200 focus:border-[#b01c14] focus:ring-[#b01c14]/10 text-sm"
+                  className="pl-10 bg-white border-slate-200 focus:border-[#b01c14] focus:ring-[#b01c14]/80 text-sm"
                   placeholder="magac@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -95,7 +95,7 @@ export const LoginForm: React.FC = () => {
                 </Label>
                 <Link
                   href="/forgot-password"
-                  className="text-xs font-medium text-[#b01c14] hover:text-[#238da1]"
+                  className="text-xs font-medium text-[#b01c14] hover:text-[#b01c14]/80"
                 >
                   Ma illowday erayga sirta?
                 </Link>
@@ -110,7 +110,7 @@ export const LoginForm: React.FC = () => {
                   type="password"
                   autoComplete="current-password"
                   required
-                  className="pl-10 bg-white border-slate-200 focus:border-[#b01c14] focus:ring-[#b01c14]/10 text-sm"
+                  className="pl-10 bg-white border-slate-200 focus:border-[#b01c14] focus:ring-[#b01c14]/80 text-sm"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -145,7 +145,7 @@ export const LoginForm: React.FC = () => {
             <div className="pt-2">
               <Button
                 type="submit"
-                className="w-full bg-[#b01c14] hover:bg-[#238da1] shadow-sm transition-colors text-sm"
+                className="w-full bg-[#b01c14] hover:bg-[#b01c14]/80 shadow-sm transition-colors text-sm"
                 disabled={isLoading}
               >
                 {isLoading ? 'Galaya...' : 'Soo gal'}
@@ -156,7 +156,7 @@ export const LoginForm: React.FC = () => {
           <div className="mt-6 text-center">
             <p className="text-sm text-slate-500">
               Ma lihid akoon?{' '}
-              <Link href="/register" className="font-medium text-[#b01c14] hover:text-[#238da1]">
+              <Link href="/register" className="font-medium text-[#b01c14] hover:text-[#b01c14]/80">
                 Abuuri akoon
               </Link>
             </p>
@@ -166,4 +166,3 @@ export const LoginForm: React.FC = () => {
     </div>
   )
 }
-

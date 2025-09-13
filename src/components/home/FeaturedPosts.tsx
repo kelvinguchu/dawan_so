@@ -38,6 +38,16 @@ export const FeaturedPosts: React.FC<FeaturedPostsProps> = ({
     )
   }
 
+  const tabbedPosts = activeTab === 'trending' ? trendingPosts : editorsPicks
+  const topPostsData = tabbedPosts.slice(0, 3)
+  const mainFeaturedPostData = tabbedPosts.length > 3 ? tabbedPosts[3] : null
+  const gridPostsData = tabbedPosts.slice(4, 6)
+
+  const heroPostIds = heroPosts.slice(0, 6).map((post) => post.id)
+  const filteredRecentNews = recentNewsItems.filter(
+    (post) => !heroPostIds.includes(post.id),
+  )
+
   return (
     <section className="pt-0 pb-8 sm:pb-12 bg-gradient-to-b from-white to-gray-50">
       <div className="container mx-auto px-4">
@@ -50,12 +60,11 @@ export const FeaturedPosts: React.FC<FeaturedPostsProps> = ({
               </h2>
             </div>
             <Tabs
-              defaultValue="trending"
               value={activeTab}
               onValueChange={setActiveTab}
               className="w-full sm:w-auto"
             >
-              <TabsList className="bg-gray-100/80 w-full rounded-full h-9">
+              <TabsList className="bg-gray-100/80 w-full rounded-full h-9 relative z-10">
                 <TabsTrigger
                   value="trending"
                   className="flex-1 sm:flex-none text-xs sm:text-sm data-[state=active]:bg-white data-[state=active]:text-[#b01c14] rounded-full h-7"
@@ -73,32 +82,18 @@ export const FeaturedPosts: React.FC<FeaturedPostsProps> = ({
           </div>
         </div>
 
-        {(() => {
-          const tabbedPosts = activeTab === 'trending' ? trendingPosts : editorsPicks
-          const topPostsData = tabbedPosts.slice(0, 3)
-          const mainFeaturedPostData = tabbedPosts.length > 3 ? tabbedPosts[3] : null
-          const gridPostsData = tabbedPosts.slice(4, 6)
+        <>
+          <TopPosts posts={topPostsData} />
 
-          const heroPostIds = heroPosts.slice(0, 6).map((post) => post.id)
-          const filteredRecentNews = recentNewsItems.filter(
-            (post) => !heroPostIds.includes(post.id),
-          )
+          <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-12 mb-8 sm:mb-12 max-w-full">
+            <div className="lg:col-span-5">
+              {mainFeaturedPostData && <HeroFeatured post={mainFeaturedPostData} />}
+            </div>
+            <GridPosts posts={gridPostsData} />
+          </div>
 
-          return (
-            <>
-              <TopPosts posts={topPostsData} />
-
-              <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-12 mb-8 sm:mb-12 max-w-full">
-                <div className="lg:col-span-5">
-                  {mainFeaturedPostData && <HeroFeatured post={mainFeaturedPostData} />}
-                </div>
-                <GridPosts posts={gridPostsData} />
-              </div>
-
-              <ArticleList posts={filteredRecentNews} />
-            </>
-          )
-        })()}
+          <ArticleList posts={filteredRecentNews} />
+        </>
       </div>
     </section>
   )

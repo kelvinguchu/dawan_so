@@ -42,7 +42,8 @@ export default function ForgotPasswordPage() {
         setMessage({
           type: 'error',
           text:
-            result.error || 'Dirista iimaylka dib‑u‑dejinta waa ku guuldareysatay. Fadlan isku day mar kale.',
+            result.error ||
+            'Dirista iimaylka dib‑u‑dejinta waa ku guuldareysatay. Fadlan isku day mar kale.',
         })
       }
     } catch (error: unknown) {
@@ -94,7 +95,7 @@ export default function ForgotPasswordPage() {
                     type="email"
                     autoComplete="email"
                     required
-                    className="pl-10 bg-white border-slate-200 focus:border-[#b01c14] focus:ring-[#b01c14]/10 text-sm"
+                    className="pl-10 bg-white border-slate-200 focus:border-[#b01c14] focus:ring-[#b01c14]/80 text-sm"
                     placeholder="magac@tusaale.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -127,7 +128,7 @@ export default function ForgotPasswordPage() {
               <div className="pt-2">
                 <Button
                   type="submit"
-                  className="w-full bg-[#b01c14] hover:bg-[#238da1] shadow-sm transition-colors text-sm"
+                  className="w-full bg-[#b01c14] hover:bg-[#b01c14]/80 shadow-sm transition-colors text-sm"
                   disabled={isLoading || !email.trim()}
                 >
                   {isLoading ? (
@@ -145,7 +146,7 @@ export default function ForgotPasswordPage() {
             <div className="mt-6 text-center space-y-4">
               <p className="text-sm text-slate-500">
                 Ma xasuusataa erayga sirta?{' '}
-                <Link href="/login" className="font-medium text-[#b01c14] hover:text-[#238da1]">
+                <Link href="/login" className="font-medium text-[#b01c14] hover:text-[#b01c14]/80">
                   Soo gal halkan
                 </Link>
               </p>
@@ -163,7 +164,8 @@ export default function ForgotPasswordPage() {
 
         <div className="mt-6 text-center">
           <p className="text-xs text-slate-500 leading-relaxed">
-            Sababo amni awgood, xiriiriyeyaasha dib‑u‑dejintu waxay dhacaan 1 saac kadib. Haddii aadan helin iimayl, fadlan hubi spam‑ka.
+            Sababo amni awgood, xiriiriyeyaasha dib‑u‑dejintu waxay dhacaan 1 saac kadib. Haddii
+            aadan helin iimayl, fadlan hubi spam‑ka.
           </p>
         </div>
       </div>

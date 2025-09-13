@@ -106,7 +106,9 @@ export default function ResetPasswordPage() {
       } else {
         setMessage({
           type: 'error',
-          text: result.error || 'Dib‑u‑dejinta erayga sirta waa ku guuldareysatay. Fadlan isku day mar kale.',
+          text:
+            result.error ||
+            'Dib‑u‑dejinta erayga sirta waa ku guuldareysatay. Fadlan isku day mar kale.',
         })
       }
     } catch (error: unknown) {
@@ -158,7 +160,7 @@ export default function ResetPasswordPage() {
                     type={showPassword ? 'text' : 'password'}
                     autoComplete="new-password"
                     required
-                    className="pl-10 pr-10 bg-white border-slate-200 focus:border-[#b01c14] focus:ring-[#b01c14]/10 text-sm"
+                    className="pl-10 pr-10 bg-white border-slate-200 focus:border-[#b01c14] focus:ring-[#b01c14]/80 text-sm"
                     placeholder="Geli eray sir cusub"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -188,7 +190,7 @@ export default function ResetPasswordPage() {
                     type={showConfirmPassword ? 'text' : 'password'}
                     autoComplete="new-password"
                     required
-                    className="pl-10 pr-10 bg-white border-slate-200 focus:border-[#b01c14] focus:ring-[#b01c14]/10 text-sm"
+                    className="pl-10 pr-10 bg-white border-slate-200 focus:border-[#b01c14] focus:ring-[#b01c14]/80 text-sm"
                     placeholder="Xaqiiji eray sir cusub"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
@@ -262,7 +264,7 @@ export default function ResetPasswordPage() {
               <div className="pt-2">
                 <Button
                   type="submit"
-                  className="w-full bg-[#b01c14] hover:bg-[#238da1] shadow-sm transition-colors text-sm"
+                  className="w-full bg-[#b01c14] hover:bg-[#b01c14]/80 shadow-sm transition-colors text-sm"
                   disabled={isLoading || !token || !password || !confirmPassword}
                 >
                   {isLoading ? (
@@ -280,7 +282,7 @@ export default function ResetPasswordPage() {
             <div className="mt-6 text-center space-y-4">
               <p className="text-sm text-slate-500">
                 Ma xasuusataa erayga sirta?{' '}
-                <Link href="/login" className="font-medium text-[#b01c14] hover:text-[#238da1]">
+                <Link href="/login" className="font-medium text-[#b01c14] hover:text-[#b01c14]/80">
                   Soo gal halkan
                 </Link>
               </p>
@@ -298,7 +300,8 @@ export default function ResetPasswordPage() {
 
         <div className="mt-6 text-center">
           <p className="text-xs text-slate-500 leading-relaxed">
-            Marka si guul leh loo dib‑u‑dejiyo erayga sirta, waxaa lagu leexin doonaa bogga gelitaanka.
+            Marka si guul leh loo dib‑u‑dejiyo erayga sirta, waxaa lagu leexin doonaa bogga
+            gelitaanka.
           </p>
         </div>
       </div>

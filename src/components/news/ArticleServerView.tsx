@@ -78,7 +78,7 @@ export const ArticleServerView: React.FC<ArticleServerViewProps> = ({
                       Waxaa qoray{' '}
                       <Link
                         href={getReporterUrl(post)}
-                        className="text-[#b01c14] hover:text-[#238ca3] transition-colors underline decoration-1 underline-offset-2"
+                        className="text-[#b01c14] hover:text-[#b01c14]/80 transition-colors underline decoration-1 underline-offset-2"
                       >
                         {getPostAuthorName(post)}
                       </Link>{' '}
@@ -137,7 +137,7 @@ export const ArticleServerView: React.FC<ArticleServerViewProps> = ({
               <div className="flex flex-col sm:flex-row sm:justify-between gap-3 mb-8">
                 <Link
                   href="/news"
-                  className="px-6 py-3 bg-[#b01c14] hover:bg-[#238ca3] transition-colors text-white font-medium rounded-lg text-center sm:text-left"
+                  className="px-6 py-3 bg-[#b01c14] hover:bg-[#b01c14]/80 transition-colors text-white font-medium rounded-lg text-center sm:text-left"
                 >
                   Maqaallo Dheeraad ah
                 </Link>

@@ -87,9 +87,12 @@ const Football: React.FC<FootballProps> = ({ selectedCompetition, onSelectCompet
           <div className="absolute inset-0 flex items-center justify-center bg-gray-50 z-10">
             <div className="flex flex-col items-center max-w-md mx-auto text-center p-6">
               <AlertCircle className="h-8 w-8 text-red-500 mb-2" />
-              <h3 className="text-lg font-medium text-gray-900 mb-1">Ku guuldarraystay soo raridda kala sarreynta</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-1">
+                Ku guuldarraystay soo raridda kala sarreynta
+              </h3>
               <p className="text-gray-600 mb-4">
-                Lama soo rari karin kala sarreynta ee {selectedComp.name}. Fadlan hubi isku xirka internet-kaaga oo mar kale isku day.
+                Lama soo rari karin kala sarreynta ee {selectedComp.name}. Fadlan hubi isku xirka
+                internet-kaaga oo mar kale isku day.
               </p>
               <button
                 onClick={() => {
@@ -107,7 +110,7 @@ const Football: React.FC<FootballProps> = ({ selectedCompetition, onSelectCompet
                     }, 100)
                   }
                 }}
-                className="px-4 py-2 bg-[#b01c14] text-white rounded-md hover:bg-[#239ab4] transition-colors"
+                className="px-4 py-2 bg-[#b01c14] text-white rounded-md hover:bg-[#b01c14]/80 transition-colors"
               >
                 Mar kale isku day
               </button>

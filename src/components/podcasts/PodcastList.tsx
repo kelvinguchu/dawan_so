@@ -156,7 +156,7 @@ export const PodcastList: React.FC<PodcastListProps> = ({
                     placeholder="Search podcasts..."
                     value={searchInput}
                     onChange={(e) => setSearchInput(e.target.value)}
-                    className="pl-10 pr-10 h-10 border-slate-200 focus:border-[#b01c14] focus:ring-[#b01c14]/20 rounded-lg"
+                    className="pl-10 pr-10 h-10 border-slate-200 focus:border-[#b01c14] focus:ring-[#b01c14]/80 rounded-lg"
                   />
                   {searchInput && (
                     <button
@@ -193,7 +193,7 @@ export const PodcastList: React.FC<PodcastListProps> = ({
                       placeholder="Raadi podkaasyo..."
                       value={searchInput}
                       onChange={(e) => setSearchInput(e.target.value)}
-                      className="pl-10 pr-10 h-10 w-64 border-slate-200 focus:border-[#b01c14] focus:ring-[#b01c14]/20 rounded-lg"
+                      className="pl-10 pr-10 h-10 w-64 border-slate-200 focus:border-[#b01c14] focus:ring-[#b01c14]/80 rounded-lg"
                     />
                     {searchInput && (
                       <button

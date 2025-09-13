@@ -71,12 +71,10 @@ export const PodcastDetailsSheet: React.FC<PodcastDetailsSheetProps> = ({
   open,
   onOpenChange,
 }) => {
-
   const coverImageUrl = getPodcastCoverImage(podcast)
   const displayTitle = getPodcastDisplayTitle(podcast)
   const peopleInvolved = formatPeopleInvolved(podcast.peopleInvolved)
   const categories = podcast.categories
-
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -145,8 +143,8 @@ export const PodcastDetailsSheet: React.FC<PodcastDetailsSheetProps> = ({
               <div className="px-6 space-y-8">
                 <div className="grid grid-cols-2 gap-4">
                   {podcast.duration && podcast.duration > 0 && (
-                    <div className="group relative overflow-hidden bg-gradient-to-br from-[#b01c14]/10 via-[#b01c14]/5 to-transparent p-6 rounded-3xl border border-[#b01c14]/20 hover:border-[#b01c14]/40 transition-all duration-500">
-                      <div className="absolute top-0 right-0 w-20 h-20 bg-[#b01c14]/10 rounded-full -translate-y-10 translate-x-10 group-hover:scale-150 transition-transform duration-700"></div>
+                    <div className="group relative overflow-hidden bg-gradient-to-br from-[#b01c14]/80 via-[#b01c14]/5 to-transparent p-6 rounded-3xl border border-[#b01c14]/80 hover:border-[#b01c14]/40 transition-all duration-500">
+                      <div className="absolute top-0 right-0 w-20 h-20 bg-[#b01c14]/80 rounded-full -translate-y-10 translate-x-10 group-hover:scale-150 transition-transform duration-700"></div>
                       <Clock className="w-8 h-8 text-[#b01c14] mb-3 relative z-10" />
                       <div className="text-sm text-slate-500 mb-1 relative z-10">Duration</div>
                       <div className="text-2xl font-black text-slate-900 relative z-10">
@@ -180,7 +178,7 @@ export const PodcastDetailsSheet: React.FC<PodcastDetailsSheetProps> = ({
                   <Button
                     variant="outline"
                     size="icon"
-                    className="h-14 w-14 border-2 border-[#b01c14]/30 text-[#b01c14] hover:bg-[#b01c14]/10 hover:border-[#b01c14]/50 rounded-2xl transition-all duration-300"
+                    className="h-14 w-14 border-2 border-[#b01c14]/30 text-[#b01c14] hover:bg-[#b01c14]/80 hover:border-[#b01c14]/50 rounded-2xl transition-all duration-300"
                   >
                     <Share2 className="w-6 h-6" />
                   </Button>
@@ -210,7 +208,7 @@ export const PodcastDetailsSheet: React.FC<PodcastDetailsSheetProps> = ({
                       {categories.map((category, index) => (
                         <Badge
                           key={index}
-                          className="bg-gradient-to-r from-[#b01c14]/15 via-[#b01c14]/10 to-[#b01c14]/5 text-[#b01c14] border-[#b01c14]/30 hover:from-[#b01c14]/25 hover:via-[#b01c14]/20 hover:to-[#b01c14]/10 hover:border-[#b01c14]/50 transition-all duration-300 px-4 py-2 text-sm font-semibold rounded-xl"
+                          className="bg-gradient-to-r from-[#b01c14]/15 via-[#b01c14]/80 to-[#b01c14]/5 text-[#b01c14] border-[#b01c14]/30 hover:from-[#b01c14]/25 hover:via-[#b01c14]/80 hover:to-[#b01c14]/80 hover:border-[#b01c14]/50 transition-all duration-300 px-4 py-2 text-sm font-semibold rounded-xl"
                         >
                           {typeof category === 'object' && category !== null
                             ? (category as BlogCategory).name || 'Category'
@@ -237,7 +235,7 @@ export const PodcastDetailsSheet: React.FC<PodcastDetailsSheetProps> = ({
                   typeof podcast.series === 'object' &&
                   podcast.series !== null && (
                     <div className="relative overflow-hidden bg-gradient-to-br from-[#b01c14]/8 via-[#b01c14]/4 to-transparent p-6 rounded-3xl border border-[#b01c14]/25">
-                      <div className="absolute top-0 left-0 w-40 h-40 bg-[#b01c14]/10 rounded-full -translate-y-20 -translate-x-20"></div>
+                      <div className="absolute top-0 left-0 w-40 h-40 bg-[#b01c14]/80 rounded-full -translate-y-20 -translate-x-20"></div>
                       <div className="relative z-10">
                         <h3 className="font-bold text-xl text-slate-900 mb-3">Silsilad</h3>
                         <div className="bg-white/60 backdrop-blur-sm p-4 rounded-2xl border border-white/40">

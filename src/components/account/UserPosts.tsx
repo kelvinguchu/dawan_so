@@ -77,7 +77,9 @@ interface PostCardProps {
 }
 
 const PostCard: React.FC<PostCardProps> = ({ post, type }) => {
-  const formattedDate = post.createdAt ? new Date(post.createdAt).toLocaleDateString() : 'Taariikh la\'aan'
+  const formattedDate = post.createdAt
+    ? new Date(post.createdAt).toLocaleDateString()
+    : "Taariikh la'aan"
 
   return (
     <Card className="border-slate-200 shadow-sm hover:shadow transition-shadow">
@@ -117,7 +119,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({ type, message }) => {
       )}
       <p className="text-sm text-slate-500">{message}</p>
       <div className="mt-3 sm:mt-4">
-        <Link href="/news" className="text-xs font-medium text-[#b01c14] hover:text-[#238da1]">
+        <Link href="/news" className="text-xs font-medium text-[#b01c14] hover:text-[#b01c14]/80">
           Ka daalaco maqaallada si aad u {type === 'favorites' ? 'jecleysato' : 'jeclaato'}
         </Link>
       </div>

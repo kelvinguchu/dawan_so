@@ -26,7 +26,7 @@ export const CategorySection: React.FC<CategorySectionProps> = ({ categoriesWith
     },
     {
       icon: <CircleDollarSign className="h-8 w-8" />,
-      gradient: 'from-[#b01c14] to-[#218ba0]',
+      gradient: 'from-[#b01c14] to-[#b01c14]/80',
     },
     {
       icon: <Smartphone className="h-8 w-8" />,
@@ -42,7 +42,7 @@ export const CategorySection: React.FC<CategorySectionProps> = ({ categoriesWith
     },
     {
       icon: <Sparkles className="h-8 w-8" />,
-      gradient: 'from-[#b01c14] to-[#218ba0]',
+      gradient: 'from-[#b01c14] to-[#b01c14]/80',
     },
   ]
 
@@ -116,7 +116,9 @@ export const CategorySection: React.FC<CategorySectionProps> = ({ categoriesWith
                     {/* Category browse link */}
                     <Link href={`/categories/${category.slug}`} className="block">
                       <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center hover:text-[#b01c14]/80 transition-colors">
-                        <span className="text-sm font-medium text-[#b01c14]">Ka daalaco maqaallada</span>
+                        <span className="text-sm font-medium text-[#b01c14]">
+                          Ka daalaco maqaallada
+                        </span>
                         <div className="h-8 w-8 rounded-full flex items-center justify-center">
                           <ArrowRight className="h-4 w-4 text-[#b01c14]" />
                         </div>
@@ -129,7 +131,9 @@ export const CategorySection: React.FC<CategorySectionProps> = ({ categoriesWith
                       Ka baadh maqaalladii ugu dambeeyay ee {category.name.toLowerCase()}
                     </p>
                     <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center hover:text-[#b01c14]/80 transition-colors">
-                      <span className="text-sm font-medium text-[#b01c14]">Ka daalaco maqaallada</span>
+                      <span className="text-sm font-medium text-[#b01c14]">
+                        Ka daalaco maqaallada
+                      </span>
                       <div className="h-8 w-8 rounded-full flex items-center justify-center">
                         <ArrowRight className="h-4 w-4 text-[#b01c14]" />
                       </div>

@@ -63,7 +63,7 @@ export const NewsListClient: React.FC<NewsListClientProps> = ({ initialSortBy, r
         <div className="mb-4">
           <Link
             href="/news"
-            className="inline-flex items-center text-[#b01c14] hover:text-[#238ca3] transition-colors text-sm font-medium"
+            className="inline-flex items-center text-[#b01c14] hover:text-[#b01c14]/80 transition-colors text-sm font-medium"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Ku noqo Dhammaan Wararka
@@ -182,7 +182,7 @@ export const PaginationClient: React.FC<PaginationClientProps> = ({ currentPage,
             className={
               currentPage === 1
                 ? 'pointer-events-none opacity-50'
-                : 'hover:bg-[#b01c14]/10 hover:text-[#b01c14]'
+                : 'hover:bg-[#b01c14]/80 hover:text-[#b01c14]'
             }
           />
         </PaginationItem>
@@ -202,7 +202,7 @@ export const PaginationClient: React.FC<PaginationClientProps> = ({ currentPage,
                 className={
                   currentPage === page
                     ? 'bg-[#b01c14] text-white'
-                    : 'hover:bg-[#b01c14]/10 hover:text-[#b01c14]'
+                    : 'hover:bg-[#b01c14]/80 hover:text-[#b01c14]'
                 }
               >
                 {page}
@@ -221,7 +221,7 @@ export const PaginationClient: React.FC<PaginationClientProps> = ({ currentPage,
             className={
               currentPage === totalPages
                 ? 'pointer-events-none opacity-50'
-                : 'hover:bg-[#b01c14]/10 hover:text-[#b01c14]'
+                : 'hover:bg-[#b01c14]/80 hover:text-[#b01c14]'
             }
           />
         </PaginationItem>

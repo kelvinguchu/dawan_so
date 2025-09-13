@@ -135,7 +135,7 @@ export const SearchInput: React.FC<SearchInputProps> = ({
       <Button
         type="submit"
         size={isHeaderSearch ? 'sm' : 'default'}
-        className={`${buttonClassName} ${isHeaderSearch ? 'rounded-full bg-[#b01c14] hover:bg-[#238ca3]' : 'bg-[#b01c14] hover:bg-[#238ca3]'}`}
+        className={`${buttonClassName} ${isHeaderSearch ? 'rounded-full bg-[#b01c14] hover:bg-[#b01c14]/80' : 'bg-[#b01c14] hover:bg-[#238ca3]'}`}
       >
         <Search className={`${isHeaderSearch ? 'h-4 w-4' : 'h-5 w-5'}`} />
         <span className="sr-only">Raadi</span>

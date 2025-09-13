@@ -31,15 +31,16 @@ export const AboutHero: React.FC = () => {
                 </p>
                 <p className="text-xs sm:text-sm md:text-base text-gray-100 leading-relaxed max-w-2xl mx-auto drop-shadow-sm">
                   Hay’ad warbaahineed firfircoon oo la aasaasay 2023, diiradda saaraysa Soomaaliya,
-                  oo bixisa warar dhammaystiran, falanqayn qoto dheer, iyo sheekooyin dhaqameed muhiim ah.
+                  oo bixisa warar dhammaystiran, falanqayn qoto dheer, iyo sheekooyin dhaqameed
+                  muhiim ah.
                 </p>
               </div>
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-3 sm:gap-4 max-w-4xl mx-auto mb-6">
-            <div className="bg-white/15 backdrop-blur-2xl border border-white/30 rounded-xl p-3 sm:p-4 text-center group hover:bg-white/25 hover:shadow-xl hover:shadow-[#b01c14]/20 hover:border-[#b01c14]/40 transition-all duration-500 hover:scale-105">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-[#b01c14]/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-2 group-hover:bg-[#b01c14]/30 transition-all duration-300 shadow-lg shadow-[#b01c14]/20">
+            <div className="bg-white/15 backdrop-blur-2xl border border-white/30 rounded-xl p-3 sm:p-4 text-center group hover:bg-white/25 hover:shadow-xl hover:shadow-[#b01c14]/80 hover:border-[#b01c14]/40 transition-all duration-500 hover:scale-105">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-[#b01c14]/80 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-2 group-hover:bg-[#b01c14]/30 transition-all duration-300 shadow-lg shadow-[#b01c14]/80">
                 <BiGlobe className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-[#b01c14] drop-shadow-sm" />
               </div>
               <h3 className="text-xs sm:text-sm md:text-base font-bold text-white mb-1 drop-shadow-md">
@@ -50,8 +51,8 @@ export const AboutHero: React.FC = () => {
               </p>
             </div>
 
-            <div className="bg-white/15 backdrop-blur-2xl border border-white/30 rounded-xl p-3 sm:p-4 text-center group hover:bg-white/25 hover:shadow-xl hover:shadow-[#b01c14]/20 hover:border-[#b01c14]/40 transition-all duration-500 hover:scale-105">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-[#b01c14]/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-2 group-hover:bg-[#b01c14]/30 transition-all duration-300 shadow-lg shadow-[#b01c14]/20">
+            <div className="bg-white/15 backdrop-blur-2xl border border-white/30 rounded-xl p-3 sm:p-4 text-center group hover:bg-white/25 hover:shadow-xl hover:shadow-[#b01c14]/80 hover:border-[#b01c14]/40 transition-all duration-500 hover:scale-105">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-[#b01c14]/80 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-2 group-hover:bg-[#b01c14]/30 transition-all duration-300 shadow-lg shadow-[#b01c14]/80">
                 <BiTargetLock className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-[#b01c14] drop-shadow-sm" />
               </div>
               <h3 className="text-xs sm:text-sm md:text-base font-bold text-white mb-1 drop-shadow-md">
@@ -60,8 +61,8 @@ export const AboutHero: React.FC = () => {
               <p className="text-xs text-gray-200 drop-shadow-sm hidden sm:block">3 Af</p>
             </div>
 
-            <div className="bg-white/15 backdrop-blur-2xl border border-white/30 rounded-xl p-3 sm:p-4 text-center group hover:bg-white/25 hover:shadow-xl hover:shadow-[#b01c14]/20 hover:border-[#b01c14]/40 transition-all duration-500 hover:scale-105">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-[#b01c14]/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-2 group-hover:bg-[#b01c14]/30 transition-all duration-300 shadow-lg shadow-[#b01c14]/20">
+            <div className="bg-white/15 backdrop-blur-2xl border border-white/30 rounded-xl p-3 sm:p-4 text-center group hover:bg-white/25 hover:shadow-xl hover:shadow-[#b01c14]/80 hover:border-[#b01c14]/40 transition-all duration-500 hover:scale-105">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-[#b01c14]/80 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-2 group-hover:bg-[#b01c14]/30 transition-all duration-300 shadow-lg shadow-[#b01c14]/80">
                 <BiBuildings className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-[#b01c14] drop-shadow-sm" />
               </div>
               <h3 className="text-xs sm:text-sm md:text-base font-bold text-white mb-1 drop-shadow-md">
@@ -72,7 +73,7 @@ export const AboutHero: React.FC = () => {
           </div>
 
           <div className="text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#b01c14]/20 to-[#b01c14]/10 backdrop-blur-xl border border-[#b01c14]/40 rounded-full shadow-lg shadow-[#b01c14]/30 hover:shadow-xl hover:shadow-[#b01c14]/40 transition-all duration-300">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#b01c14]/80 to-[#b01c14]/80 backdrop-blur-xl border border-[#b01c14]/40 rounded-full shadow-lg shadow-[#b01c14]/30 hover:shadow-xl hover:shadow-[#b01c14]/40 transition-all duration-300">
               <div className="w-1.5 h-1.5 bg-[#b01c14] rounded-full animate-pulse shadow-sm shadow-[#b01c14]/50"></div>
               <span className="text-xs sm:text-sm text-white font-medium drop-shadow-sm">
                 La aasaasay 2023 • Soomaaliya

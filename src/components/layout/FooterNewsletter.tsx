@@ -54,7 +54,7 @@ export function FooterNewsletter() {
       if (!contentType || !contentType.includes('application/json')) {
         setSubscriptionMessage({
           type: 'success',
-          text: 'Si guul ah ayaad ugu biirtay wargeyskayaga!'
+          text: 'Si guul ah ayaad ugu biirtay wargeyskayaga!',
         })
         setEmail('')
         return
@@ -103,14 +103,14 @@ export function FooterNewsletter() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={isSubscribing}
-                className="h-10 pl-10 bg-slate-800 border-slate-700 text-white placeholder:text-slate-400 focus:border-[#b01c14] focus:ring-[#b01c14]/20"
+                className="h-10 pl-10 bg-slate-800 border-slate-700 text-white placeholder:text-slate-400 focus:border-[#b01c14] focus:ring-[#b01c14]/80"
               />
               <Mail className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
             </div>
             <Button
               type="submit"
               disabled={isSubscribing || !email.trim()}
-              className="h-10 px-6 bg-[#b01c14] hover:bg-[#1e90a6] text-white border-0"
+              className="h-10 px-6 bg-[#b01c14] hover:bg-[#b01c14]/80 text-white border-0"
             >
               {isSubscribing ? (
                 <>

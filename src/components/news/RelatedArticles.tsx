@@ -89,7 +89,7 @@ export const RelatedArticles: React.FC<RelatedArticlesProps> = ({ posts, current
                   <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </div>
               ) : (
-                <div className="h-32 bg-gradient-to-r from-[#b01c14]/10 to-[#b01c14]/20 flex items-center justify-center">
+                <div className="h-32 bg-gradient-to-r from-[#b01c14]/80 to-[#b01c14]/80 flex items-center justify-center">
                   <span className="text-[#b01c14] font-medium">Akhri Maqaal</span>
                 </div>
               )}
@@ -121,7 +121,7 @@ export const RelatedArticles: React.FC<RelatedArticlesProps> = ({ posts, current
                             return (
                               <span
                                 key={index}
-                                className="inline-block px-2 py-0.5 text-xs bg-[#b01c14]/10 text-[#b01c14] rounded-full"
+                                className="inline-block px-2 py-0.5 text-xs bg-[#b01c14]/80 text-[#b01c14] rounded-full"
                               >
                                 {categoryName}
                               </span>
@@ -145,4 +145,3 @@ export const RelatedArticles: React.FC<RelatedArticlesProps> = ({ posts, current
     </div>
   )
 }
-

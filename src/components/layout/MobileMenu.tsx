@@ -163,7 +163,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
                     handleInstallClick()
                     setIsMenuOpen(false)
                   }}
-                  className="flex items-center gap-2 w-full px-4 py-3 bg-[#2EC6FE] text-white rounded-md hover:bg-[#26a8d1] transition-colors"
+                  className="flex items-center gap-2 w-full px-4 py-3 bg-[#b01c14] text-white rounded-md hover:bg-[#b01c14]/80 transition-colors"
                 >
                   <BiDownload className="h-5 w-5" />
                   <span className="font-medium">Ku rakib App-ka Dawan TV</span>

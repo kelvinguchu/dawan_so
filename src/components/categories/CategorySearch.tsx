@@ -98,7 +98,7 @@ export const CategorySearch: React.FC<CategorySearchProps> = ({
       <Button
         type="submit"
         size="default"
-        className={`bg-[#b01c14] hover:bg-[#238ca3] ${buttonClassName}`}
+        className={`bg-[#b01c14] hover:bg-[#b01c14]/80 ${buttonClassName}`}
       >
         <Search className="h-5 w-5" />
         <span className="sr-only">Raadi</span>

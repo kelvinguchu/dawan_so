@@ -129,7 +129,9 @@ export const CategoryPostsList: React.FC<CategoryPostsListProps> = ({
   if (isError) {
     return (
       <div className="container mx-auto px-4 py-12 text-center">
-        <p className="text-red-500">Khalad soo raridda wararka: {error?.message || 'Khalad aan la garanayn'}</p>
+        <p className="text-red-500">
+          Khalad soo raridda wararka: {error?.message || 'Khalad aan la garanayn'}
+        </p>
       </div>
     )
   }
@@ -183,7 +185,9 @@ export const CategoryPostsList: React.FC<CategoryPostsListProps> = ({
         <div className="text-center py-6 sm:py-8 md:py-10">
           <p className="text-lg sm:text-xl text-gray-500">Maqaallo lagama helin qaybtaan.</p>
           {searchTerm && (
-            <p className="text-sm text-gray-400 mt-2">Isku day inaad wax ka beddesho raadinta ama sifaynta.</p>
+            <p className="text-sm text-gray-400 mt-2">
+              Isku day inaad wax ka beddesho raadinta ama sifaynta.
+            </p>
           )}
         </div>
       )}
@@ -195,7 +199,7 @@ export const CategoryPostsList: React.FC<CategoryPostsListProps> = ({
             size="sm"
             onClick={goToPreviousPage}
             disabled={currentPage === 1}
-            className="h-8 w-8 sm:h-10 sm:w-10 p-0 hover:bg-[#b01c14]/10 hover:text-[#b01c14]"
+            className="h-8 w-8 sm:h-10 sm:w-10 p-0 hover:bg-[#b01c14]/80 hover:text-[#b01c14]"
           >
             <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
@@ -207,7 +211,7 @@ export const CategoryPostsList: React.FC<CategoryPostsListProps> = ({
             size="sm"
             onClick={goToNextPage}
             disabled={currentPage === totalPages}
-            className="h-8 w-8 sm:h-10 sm:w-10 p-0 hover:bg-[#b01c14]/10 hover:text-[#b01c14]"
+            className="h-8 w-8 sm:h-10 sm:w-10 p-0 hover:bg-[#b01c14]/80 hover:text-[#b01c14]"
           >
             <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>

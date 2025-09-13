@@ -171,7 +171,8 @@ export const NewsletterPopup: React.FC<NewsletterPopupProps> = ({ delay = 5000 }
                 Ha Seegin Sheeko
               </DialogTitle>
               <DialogDescription className="hidden text-base text-gray-600 mt-2">
-                Ku biir wargeyskayaga si aad u hesho cusboonaysiino gaar ah, maqaallo qoto dheer, iyo wararkii ugu dambeeyay ee Soomaaliya — si toos ah looguugu soo diro sanduuqaaga.
+                Ku biir wargeyskayaga si aad u hesho cusboonaysiino gaar ah, maqaallo qoto dheer,
+                iyo wararkii ugu dambeeyay ee Soomaaliya — si toos ah looguugu soo diro sanduuqaaga.
               </DialogDescription>
             </DialogHeader>
           </div>
@@ -190,7 +191,7 @@ export const NewsletterPopup: React.FC<NewsletterPopupProps> = ({ delay = 5000 }
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 disabled={isLoading}
-                className="h-11 border-slate-200 focus:border-[#b01c14] focus:ring-[#b01c14]/20"
+                className="h-11 border-slate-200 focus:border-[#b01c14] focus:ring-[#b01c14]/80"
               />
             </div>
 
@@ -207,7 +208,7 @@ export const NewsletterPopup: React.FC<NewsletterPopupProps> = ({ delay = 5000 }
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   disabled={isLoading}
-                  className="h-11 pl-11 border-slate-200 focus:border-[#b01c14] focus:ring-[#b01c14]/20"
+                  className="h-11 pl-11 border-slate-200 focus:border-[#b01c14] focus:ring-[#b01c14]/80"
                 />
                 <Mail className="absolute left-3 top-3.5 h-4 w-4 text-slate-400" />
               </div>
@@ -247,7 +248,7 @@ export const NewsletterPopup: React.FC<NewsletterPopupProps> = ({ delay = 5000 }
             <div className="flex flex-col pt-3">
               <Button
                 type="submit"
-                className="w-full h-11 bg-[#b01c14] hover:bg-[#1e90a6] text-white font-medium"
+                className="w-full h-11 bg-[#b01c14] hover:bg-[#b01c14]/80 text-white font-medium"
                 disabled={isLoading || !email.trim()}
               >
                 {isLoading ? (
@@ -262,7 +263,8 @@ export const NewsletterPopup: React.FC<NewsletterPopupProps> = ({ delay = 5000 }
             </div>
 
             <p className="text-xs text-slate-500 text-center leading-relaxed">
-              Ku biir kumannaan akhriste oo la soconaya wararka Soomaaliya. Waad ka bixi kartaa wakhti kasta.
+              Ku biir kumannaan akhriste oo la soconaya wararka Soomaaliya. Waad ka bixi kartaa
+              wakhti kasta.
             </p>
           </form>
         </div>

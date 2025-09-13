@@ -72,7 +72,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({ user, onUpdate }) => {
                 onChange={handleNameChange}
                 placeholder="Geli magacaaga oo dhammaystiran"
                 disabled={isSavingName}
-                className="bg-white border-slate-200 focus:border-[#b01c14] focus:ring-[#b01c14]/10 text-sm"
+                className="bg-white border-slate-200 focus:border-[#b01c14] focus:ring-[#b01c14]/80 text-sm"
               />
             </div>
 
@@ -93,7 +93,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({ user, onUpdate }) => {
               <Button
                 type="submit"
                 disabled={isSavingName || name === (user.name ?? '')}
-                className="bg-[#b01c14] hover:bg-[#238da1] shadow-sm transition-colors w-full sm:w-auto text-sm"
+                className="bg-[#b01c14] hover:bg-[#b01c14]/80 shadow-sm transition-colors w-full sm:w-auto text-sm"
               >
                 {isSavingName ? 'Kaydinaya...' : 'Kaydi Isbeddellada'}
               </Button>
@@ -138,7 +138,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({ user, onUpdate }) => {
                 {!user.isEmailVerified && (
                   <Button
                     variant="link"
-                    className="p-0 h-auto text-xs text-[#b01c14] hover:text-[#238da1] mt-1"
+                    className="p-0 h-auto text-xs text-[#b01c14] hover:text-[#b01c14]/80 mt-1"
                     onClick={handleResendVerification}
                   >
                     Dib u dir email-ka xaqiijinta

@@ -42,7 +42,7 @@ export const RecentNewsItem: React.FC<RecentNewsItemProps> = ({ post, imageUrl }
           ) : (
             <div
               className="flex h-full w-full items-center justify-center"
-              style={{ backgroundColor: 'rgba(42, 170, 198, 0.1)' }}
+              style={{ backgroundColor: 'rgba(176, 28, 20, 0.12)' }}
             >
               <span className="text-[10px] sm:text-xs" style={{ color: '#b01c14' }}>
                 Sawir ma jiro
