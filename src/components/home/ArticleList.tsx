@@ -26,7 +26,7 @@ export const ArticleList: React.FC<ArticleListProps> = ({ posts, className }) =>
             <Link
               key={post.id}
               href={`/news/${post.slug}`}
-              className="group overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm transition-all hover:shadow-md hover:border-gray-200"
+              className="group overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm transition-all hover:shadow-md hover:border-gray-200 flex flex-col"
               aria-label={`Akhri maqaalka: ${post.name}`}
             >
               <div className="relative aspect-[16/10] w-full overflow-hidden">
@@ -36,13 +36,15 @@ export const ArticleList: React.FC<ArticleListProps> = ({ posts, className }) =>
                   <div className="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200" />
                 )}
               </div>
-              <div className="p-3 sm:p-4">
-                <h3 className="font-sans text-sm sm:text-base font-semibold text-gray-900 line-clamp-2 group-hover:text-[#b01c14] transition-colors">
-                  {post.name}
-                </h3>
-                {excerpt && (
-                  <p className="mt-1 text-xs sm:text-sm text-gray-600 line-clamp-2">{excerpt}</p>
-                )}
+              <div className="p-3 sm:p-4 flex flex-col flex-grow">
+                <div className="flex-grow">
+                  <h3 className="font-sans text-sm sm:text-base font-semibold text-gray-900 line-clamp-2 group-hover:text-[#b01c14] transition-colors">
+                    {post.name}
+                  </h3>
+                  {excerpt && (
+                    <p className="mt-1 text-xs sm:text-sm text-gray-600 line-clamp-2">{excerpt}</p>
+                  )}
+                </div>
                 <div className="mt-2 text-[11px] sm:text-xs text-gray-500">{formatTimeAgo(post.createdAt)}</div>
               </div>
             </Link>

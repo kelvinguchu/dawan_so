@@ -82,15 +82,27 @@ export const FeaturedPosts: React.FC<FeaturedPostsProps> = ({
           </div>
         </div>
 
-        <>
-          <TopPosts posts={topPostsData} />
+        <> 
+          {tabbedPosts.length > 0 ? (
+            <>
+              <TopPosts posts={topPostsData} />
 
-          <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-12 mb-8 sm:mb-12 max-w-full">
-            <div className="lg:col-span-5">
-              {mainFeaturedPostData && <HeroFeatured post={mainFeaturedPostData} />}
+              <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-12 mb-8 sm:mb-12 max-w-full">
+                <div className="lg:col-span-5">
+                  {mainFeaturedPostData && <HeroFeatured post={mainFeaturedPostData} />}
+                </div>
+                <GridPosts posts={gridPostsData} />
+              </div>
+            </>
+          ) : (
+            <div className="mb-8 sm:mb-12">
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <p className="text-gray-500">Waqtigan xaadirka ah qoraallo ma jiraan.</p>
+                </CardContent>
+              </Card>
             </div>
-            <GridPosts posts={gridPostsData} />
-          </div>
+          )}
 
           <ArticleList posts={filteredRecentNews} />
         </>

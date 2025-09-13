@@ -26,11 +26,11 @@ export const TopPosts: React.FC<TopPostsProps> = ({ posts }) => {
         return (
           <Card
             key={post.id}
-            className="group overflow-hidden border-0 shadow-md transition-all duration-300 hover:shadow-xl hover:translate-y-[-4px] p-0 gap-0"
+            className="group overflow-hidden border-0 shadow-md transition-all duration-300 hover:shadow-xl hover:translate-y-[-4px] p-0 gap-0 flex flex-col"
           >
             <Link
               href={`/news/${post.slug}`}
-              className="block h-full"
+              className="h-full flex flex-col"
               aria-label={`Read article: ${post.name}`}
             >
               <div className="relative aspect-[16/9] overflow-hidden">
@@ -47,7 +47,15 @@ export const TopPosts: React.FC<TopPostsProps> = ({ posts }) => {
                   </div>
                 )}
               </div>
-              <CardContent className="p-3 sm:p-5">
+              <CardContent className="p-3 sm:p-5 flex flex-col flex-grow">
+                <div className="flex-grow">
+                  <h3 className="font-sans text-base sm:text-lg font-bold leading-tight line-clamp-2 mb-2 sm:mb-3 text-gray-800 group-hover:text-[#b01c14] transition-colors">
+                    {post.name}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-gray-600 line-clamp-2 mb-3 sm:mb-4">
+                    {excerpt}
+                  </p>
+                </div>
                 <div className="flex items-center text-[10px] sm:text-xs text-gray-500 mb-2 sm:mb-3 gap-2 sm:gap-3 flex-wrap">
                   <span className="flex items-center">
                     <Clock className="mr-1 h-2.5 w-2.5 sm:h-3 sm:w-3" />
@@ -60,12 +68,6 @@ export const TopPosts: React.FC<TopPostsProps> = ({ posts }) => {
                     </span>
                   )}
                 </div>
-                <h3 className="font-sans text-base sm:text-lg font-bold leading-tight line-clamp-2 mb-2 sm:mb-3 text-gray-800 group-hover:text-[#b01c14] transition-colors">
-                  {post.name}
-                </h3>
-                <p className="text-xs sm:text-sm text-gray-600 line-clamp-2 mb-3 sm:mb-4">
-                  {excerpt}
-                </p>
                 <div className="flex items-center text-[#b01c14] group-hover:text-[#b01c14]/80">
                   <span className="text-xs sm:text-sm">Akhri dheeraad</span>
                   <ArrowRight className="ml-1 sm:ml-2 h-3 w-3 sm:h-3.5 sm:w-3.5 transition-transform duration-300 group-hover:translate-x-1" />

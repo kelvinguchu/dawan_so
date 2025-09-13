@@ -65,7 +65,7 @@ export const CategorySection: React.FC<CategorySectionProps> = ({ categoriesWith
           return (
             <div
               key={category.id}
-              className="group relative bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 hover:-translate-y-1"
+              className="group relative bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 hover:-translate-y-1 flex flex-col"
             >
               {/* Category header - links to category page */}
               <Link href={`/categories/${category.slug}`} className="block">
@@ -91,27 +91,23 @@ export const CategorySection: React.FC<CategorySectionProps> = ({ categoriesWith
                 </div>
               </Link>
 
-              <div className="p-4 border-t border-gray-100">
+              <div className="p-4 border-t border-gray-100 flex flex-col flex-grow">
                 {post ? (
                   <>
-                    {/* Article preview - links to individual article */}
-                    <Link
-                      href={`/news/${post.slug}`}
-                      className="block group/article hover:bg-gray-50 -mx-2 px-2 py-2 rounded transition-colors"
-                      aria-label={`Akhri maqaalka: ${post.name}`}
-                    >
-                      <div className="flex flex-col">
-                        <h4 className="text-sm font-medium text-gray-900 line-clamp-2 group-hover/article:text-[#b01c14] transition-colors mb-2">
-                          {post.name}
-                        </h4>
-                        <span className="text-xs text-gray-500">
-                          {new Date(post.createdAt).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                          })}
-                        </span>
-                      </div>
-                    </Link>
+                    <div className="flex-grow">
+                      {/* Article preview - links to individual article */}
+                      <Link
+                        href={`/news/${post.slug}`}
+                        className="block group/article hover:bg-gray-50 -mx-2 px-2 py-2 rounded transition-colors"
+                        aria-label={`Akhri maqaalka: ${post.name}`}
+                      >
+                        <div className="flex flex-col">
+                          <h4 className="text-sm font-medium text-gray-900 line-clamp-2 group-hover/article:text-[#b01c14] transition-colors mb-2">
+                            {post.name}
+                          </h4>
+                        </div>
+                      </Link>
+                    </div>
 
                     {/* Category browse link */}
                     <Link href={`/categories/${category.slug}`} className="block">
@@ -126,10 +122,15 @@ export const CategorySection: React.FC<CategorySectionProps> = ({ categoriesWith
                     </Link>
                   </>
                 ) : (
-                  <Link href={`/categories/${category.slug}`} className="block">
-                    <p className="text-sm text-gray-600 mb-3">
-                      Ka baadh maqaalladii ugu dambeeyay ee {category.name.toLowerCase()}
-                    </p>
+                  <Link
+                    href={`/categories/${category.slug}`}
+                    className="flex flex-col flex-grow"
+                  >
+                    <div className="flex-grow">
+                      <p className="text-sm text-gray-600 mb-3">
+                        Ka baadh maqaalladii ugu dambeeyay ee {category.name.toLowerCase()}
+                      </p>
+                    </div>
                     <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center hover:text-[#b01c14]/80 transition-colors">
                       <span className="text-sm font-medium text-[#b01c14]">
                         Ka daalaco maqaallada

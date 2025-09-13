@@ -27,11 +27,11 @@ export const GridPosts: React.FC<GridPostsProps> = ({ posts }) => {
           return (
             <Card
               key={post.id}
-              className="group overflow-hidden border border-gray-100 shadow-sm transition-all duration-300 hover:shadow-md hover:border-gray-200 p-0 gap-0"
+              className="group overflow-hidden border border-gray-100 shadow-sm transition-all duration-300 hover:shadow-md hover:border-gray-200 p-0 gap-0 flex flex-col"
             >
               <Link
                 href={`/news/${post.slug}`}
-                className="block h-full"
+                className="h-full flex flex-col"
                 aria-label={`Akhri maqaalka: ${post.name}`}
               >
                 <div className="relative aspect-[16/10] overflow-hidden">
@@ -48,20 +48,22 @@ export const GridPosts: React.FC<GridPostsProps> = ({ posts }) => {
                     </div>
                   )}
                 </div>
-                <CardContent className="p-3 sm:p-4">
-                  <div className="text-[10px] sm:text-xs text-gray-500 mb-1.5 sm:mb-2 flex gap-2 items-center flex-wrap">
-                    {formatTimeAgo(post.createdAt)}
-                    {typeof post.author === 'object' && post.author && (
-                      <>
-                        <span className="inline-block w-1 h-1 rounded-full bg-gray-300"></span>
-                        <span>{authorName}</span>
-                      </>
-                    )}
+                <CardContent className="p-3 sm:p-4 flex flex-col flex-grow">
+                  <div className="flex-grow">
+                    <div className="text-[10px] sm:text-xs text-gray-500 mb-1.5 sm:mb-2 flex gap-2 items-center flex-wrap">
+                      {formatTimeAgo(post.createdAt)}
+                      {typeof post.author === 'object' && post.author && (
+                        <>
+                          <span className="inline-block w-1 h-1 rounded-full bg-gray-300"></span>
+                          <span>{authorName}</span>
+                        </>
+                      )}
+                    </div>
+                    <h3 className="font-sans text-sm sm:text-base font-bold line-clamp-2 mb-1.5 sm:mb-2 group-hover:text-[#b01c14] transition-colors break-words">
+                      {post.name}
+                    </h3>
+                    <p className="text-xs text-gray-600 line-clamp-2 mb-2 sm:mb-3">{excerpt}</p>
                   </div>
-                  <h3 className="font-sans text-sm sm:text-base font-bold line-clamp-2 mb-1.5 sm:mb-2 group-hover:text-[#b01c14] transition-colors break-words">
-                    {post.name}
-                  </h3>
-                  <p className="text-xs text-gray-600 line-clamp-2 mb-2 sm:mb-3">{excerpt}</p>
                   <div className="flex items-center text-[#b01c14] group-hover:text-[#b01c14]/80">
                     <span className="text-xs sm:text-sm">Akhri dheeraad</span>
                     <ArrowRight className="ml-1 sm:ml-2 h-3 w-3 sm:h-3.5 sm:w-3.5 transition-transform duration-300 group-hover:translate-x-1" />
