@@ -40,7 +40,7 @@ export async function getHomePageData(): Promise<HomePageData> {
     const latestPost: BlogPost | null = heroPosts.length > 0 ? heroPosts[0] : null
     const heroPostIds = heroPosts.map((post) => post.id)
 
-    const thirtyDaysAgo = subDays(new Date(), 30).toISOString()
+    const oneWeekAgo = subDays(new Date(), 7).toISOString()
     const trendingPostsResponse = await payload.find({
       collection: 'blogPosts',
       limit: 6,
@@ -56,7 +56,7 @@ export async function getHomePageData(): Promise<HomePageData> {
           },
           {
             createdAt: {
-              greater_than: thirtyDaysAgo,
+              greater_than: oneWeekAgo,
             },
           },
           {
@@ -77,9 +77,6 @@ export async function getHomePageData(): Promise<HomePageData> {
         and: [
           {
             status: { equals: 'published' },
-          },
-          {
-            featuredinhomepage: { equals: true },
           },
           {
             isEditorsPick: {
