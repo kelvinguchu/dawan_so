@@ -121,7 +121,7 @@ export const RelatedArticles: React.FC<RelatedArticlesProps> = ({ posts, current
                             return (
                               <span
                                 key={index}
-                                className="inline-block px-2 py-0.5 text-xs bg-[#b01c14]/80 text-[#b01c14] rounded-full"
+                                className="inline-block px-2 py-0.5 text-xs bg-[#b01c14]/80 text-white rounded-full"
                               >
                                 {categoryName}
                               </span>
