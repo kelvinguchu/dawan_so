@@ -10,6 +10,7 @@ async function getAllPosts() {
   const posts = await payload.find({
     collection: 'blogPosts',
     limit: 5000,
+    depth: 2,
   })
   return posts.docs
 }
@@ -57,7 +58,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     },
   ]
-    
+
   const countryPages = countries.map((country) => ({
     url: `${baseUrl}/news?search=${encodeURIComponent(country)}&amp;searchField=name`,
     lastModified: new Date(),
@@ -66,12 +67,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }))
 
   const posts = await getAllPosts()
-  const postPages = posts.map((post) => ({
-    url: `${baseUrl}/news/${post.slug}`,
-    lastModified: new Date(post.updatedAt),
-    changeFrequency: 'weekly' as const,
-    priority: 0.7,
-  }))
+  const postPages = posts.map((post) => {
+    const postEntry: MetadataRoute.Sitemap[0] = {
+      url: `${baseUrl}/news/${post.slug}`,
+      lastModified: new Date(post.updatedAt),
+      changeFrequency: 'weekly' as const,
+      priority: 0.7,
+    }
+
+    if (post.layout) {
+      const imageBlock = post.layout.find(
+        (block) => block.blockType === 'cover' || block.blockType === 'image',
+      )
+      if (imageBlock && imageBlock.image && typeof imageBlock.image === 'object' && 'url' in imageBlock.image) {
+        postEntry.images = [(imageBlock.image as { url: string }).url];      }
+    }
+
+    return postEntry
+  })
 
   const categories = await getAllCategories()
   const filteredCategories = categories.filter(
