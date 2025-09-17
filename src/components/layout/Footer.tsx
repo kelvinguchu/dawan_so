@@ -53,7 +53,7 @@ const Footer: React.FC = () => {
             </div>
             <div className="mt-4 sm:mt-6 flex space-x-3 sm:space-x-4">
               <a
-                href="https://youtube.com/@dawanafrica?si=MeDNmWJDGkFWiF45"
+                href="https://www.youtube.com/channel/UCI0ALvkEN9VQwbvmIMHcbvQ"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="bg-slate-800 p-1.5 sm:p-2 rounded-full hover:bg-[#b01c14] transition-colors"
@@ -61,7 +61,7 @@ const Footer: React.FC = () => {
                 <BiLogoYoutube className="h-4 w-4 sm:h-5 sm:w-5" />
               </a>
               <a
-                href="https://x.com/dawanafrica?s=11&t=cGgYbc_v8C1zcdmiZHSiRg"
+                href="https://x.com/dawan_tv"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="bg-slate-800 p-1.5 sm:p-2 rounded-full hover:bg-[#b01c14] transition-colors"
@@ -69,7 +69,7 @@ const Footer: React.FC = () => {
                 <BiLogoTwitter className="h-4 w-4 sm:h-5 sm:w-5" />
               </a>
               <a
-                href="https://www.facebook.com/share/1DLeMnVa2e/?mibextid=wwXIfr"
+                href="https://www.facebook.com/Dawantv/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="bg-slate-800 p-1.5 sm:p-2 rounded-full hover:bg-[#b01c14] transition-colors"
@@ -77,7 +77,7 @@ const Footer: React.FC = () => {
                 <BiLogoFacebook className="h-4 w-4 sm:h-5 sm:w-5" />
               </a>
               <a
-                href="https://www.tiktok.com/@dawanafrica?_t=ZS-8wXUI4l8QKX&_r=1"
+                href="https://www.tiktok.com/@dawan_tv"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="bg-slate-800 p-1.5 sm:p-2 rounded-full hover:bg-[#b01c14] transition-colors"

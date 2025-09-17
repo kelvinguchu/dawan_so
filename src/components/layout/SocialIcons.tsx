@@ -15,7 +15,7 @@ const SocialIcons: React.FC<SocialIconsProps> = ({
   return (
     <div className={className}>
       <a
-        href="https://youtube.com/@dawanafrica?si=MeDNmWJDGkFWiF45"
+        href="https://www.youtube.com/channel/UCI0ALvkEN9VQwbvmIMHcbvQ"
         target="_blank"
         rel="noopener noreferrer"
         className="text-gray-500 hover:text-[#b01c14] transition-colors"
@@ -23,7 +23,7 @@ const SocialIcons: React.FC<SocialIconsProps> = ({
         <BiLogoYoutube size={iconSize} />
       </a>
       <a
-        href="https://x.com/dawanafrica?s=11&t=cGgYbc_v8C1zcdmiZHSiRg"
+        href="https://x.com/dawan_tv"
         target="_blank"
         rel="noopener noreferrer"
         className="text-gray-500 hover:text-[#b01c14] transition-colors"
@@ -31,7 +31,7 @@ const SocialIcons: React.FC<SocialIconsProps> = ({
         <BiLogoTwitter size={iconSize} />
       </a>
       <a
-        href="https://www.facebook.com/share/1DLeMnVa2e/?mibextid=wwXIfr"
+        href="https://www.facebook.com/Dawantv/"
         target="_blank"
         rel="noopener noreferrer"
         className="text-gray-500 hover:text-[#b01c14] transition-colors"
@@ -39,7 +39,7 @@ const SocialIcons: React.FC<SocialIconsProps> = ({
         <BiLogoFacebook size={iconSize} />
       </a>
       <a
-        href="https://www.tiktok.com/@dawanafrica?_t=ZS-8wXUI4l8QKX&_r=1"
+        href="https://www.tiktok.com/@dawan_tv"
         target="_blank"
         rel="noopener noreferrer"
         className="text-gray-500 hover:text-[#b01c14] transition-colors"

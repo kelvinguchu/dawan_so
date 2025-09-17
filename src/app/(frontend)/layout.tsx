@@ -103,10 +103,10 @@ export default function RootLayout({ children }: { readonly children: React.Reac
     logo: `${siteConfig.url}/logo.png`,
     description: 'Warar iyo falanqayn qoto dheer oo ku saabsan Soomaaliya iyo Geeska Afrika',
     sameAs: [
-      'https://x.com/dawanafrica?s=11&t=cGgYbc_v8C1zcdmiZHSiRg',
-      'https://www.facebook.com/share/1DLeMnVa2e/?mibextid=wwXIfr',
-      'https://youtube.com/@dawanafrica?si=MeDNmWJDGkFWiF45',
-      'https://www.tiktok.com/@dawanafrica?_t=ZS-8wXUI4l8QKX&_r=1',
+      'https://x.com/dawan_tv',
+      'https://www.facebook.com/Dawantv/',
+      'https://www.youtube.com/channel/UCI0ALvkEN9VQwbvmIMHcbvQ',
+      'https://www.tiktok.com/@dawan_tv',
     ],
     contactPoint: {
       '@type': 'ContactPoint',
