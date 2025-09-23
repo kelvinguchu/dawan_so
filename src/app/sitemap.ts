@@ -80,7 +80,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         (block) => block.blockType === 'cover' || block.blockType === 'image',
       )
       if (imageBlock && imageBlock.image && typeof imageBlock.image === 'object' && 'url' in imageBlock.image) {
-        postEntry.images = [(imageBlock.image as { url: string }).url];      }
+        const imageUrl = (imageBlock.image as { url: string }).url
+        const absoluteImageUrl = imageUrl.startsWith('http') ? imageUrl : `${baseUrl}${imageUrl}`
+        postEntry.images = [absoluteImageUrl]
+      }
     }
 
     return postEntry
