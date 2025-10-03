@@ -3,6 +3,7 @@ import Image from 'next/image'
 import { Media } from '@/payload-types'
 import { FileText } from 'lucide-react'
 import { LexicalContent } from './BlockUtils'
+import ImageStructuredData from '@/components/structured-data/ImageStructuredData'
 
 interface ImageBlockProps {
   image: Media | string | null
@@ -47,18 +48,27 @@ export const ImageBlock: React.FC<ImageBlockProps> = ({ image, altText }) => {
     )
 
   return (
-    <figure className="my-8">
-      <div className="rounded-lg overflow-hidden shadow-lg transition-transform hover:scale-[1.01] duration-300">
-        <Image
-          src={imageUrl}
-          alt={alt}
-          width={imageObj?.width ?? 1200}
-          height={imageObj?.height ?? 800}
-          className="w-full h-auto object-contain max-h-[500px] sm:max-h-[600px] md:max-h-[700px]"
+    <>
+      <figure className="my-8">
+        <div className="rounded-lg overflow-hidden shadow-lg transition-transform hover:scale-[1.01] duration-300">
+          <Image
+            src={imageUrl}
+            alt={alt}
+            width={imageObj?.width ?? 1200}
+            height={imageObj?.height ?? 800}
+            className="w-full h-auto object-contain max-h-[500px] sm:max-h-[600px] md:max-h-[700px]"
+          />
+        </div>
+        {alt && <figcaption className="text-center text-sm text-gray-600 mt-3">{alt}</figcaption>}
+      </figure>
+      {imageObj && (
+        <ImageStructuredData
+          image={imageObj}
+          pageUrl={typeof window !== 'undefined' ? window.location.href : ''}
+          siteName="Dawan TV"
         />
-      </div>
-      {alt && <figcaption className="text-center text-sm text-gray-600 mt-3">{alt}</figcaption>}
-    </figure>
+      )}
+    </>
   )
 }
 
@@ -126,6 +136,15 @@ export const CoverBlock: React.FC<CoverBlockProps> = ({
 
       {/* Visual elements */}
       <div className="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-r from-white/0 via-white/10 to-white/0"></div>
+
+      {/* Structured data for SEO */}
+      {imageObj && imageObj.filename && (
+        <ImageStructuredData
+          image={imageObj}
+          pageUrl={typeof window !== 'undefined' ? window.location.href : ''}
+          siteName="Dawan TV"
+        />
+      )}
     </div>
   )
 }

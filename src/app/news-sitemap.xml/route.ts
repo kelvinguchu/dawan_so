@@ -70,7 +70,7 @@ export async function GET() {
         <news:news>
             <news:publication>
                 <news:name>${siteConfig.name}</news:name>
-                <news:language>en</news:language>
+                <news:language>so</news:language>
             </news:publication>
             <news:publication_date>${new Date(publicationDate).toISOString()}</news:publication_date>
             <news:title>${escapeXml(post.name)}</news:title>
