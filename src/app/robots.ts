@@ -7,15 +7,24 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/api/', '/_next/', '/admin/', '/private/'],
+        disallow: ['/api/auth/', '/api/users/', '/_next/', '/admin/', '/private/'],
         crawlDelay: 1,
       },
       {
         userAgent: 'Googlebot',
         allow: '/',
-        disallow: ['/api/', '/_next/', '/admin/', '/private/'],
+        disallow: ['/api/auth/', '/api/users/', '/_next/', '/admin/', '/private/'],
+      },
+      {
+        userAgent: 'Googlebot-Image',
+        allow: ['/api/media/'],
+        disallow: ['/api/auth/', '/api/users/', '/_next/', '/admin/', '/private/'],
       },
     ],
-    sitemap: `${siteConfig.url}/sitemap.xml`,
+    sitemap: [
+      `${siteConfig.url}/sitemap.xml`,
+      `${siteConfig.url}/news-sitemap.xml`,
+      `${siteConfig.url}/image-sitemap.xml`,
+    ],
   }
 }
