@@ -86,21 +86,7 @@ export default buildConfig({
     apiKey: process.env.RESEND_API_KEY || '',
   }),
 
-  cors: [
-    // Development origins
-    'http://localhost:3000',
-    'http://localhost:8081',
-    'http://127.0.0.1:3000',
-    'exp://192.168.1.100:8081',
 
-    // Production origins
-    'https://dawanafrica.vercel.app',
-    'https://www.dawan.africa',
-    'https://dawan.africa',
-    'https://dawanso-two.vercel.app',
-    'https://www.dawan.so',
-    'https://dawan.so',
-  ],
 
   express: {
     json: { limit: '500mb' },
