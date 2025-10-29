@@ -411,6 +411,9 @@ export const BlogPost: CollectionConfig = {
         condition: (data, _siblingData, _user) => {
           return !data?.useManualReporter
         },
+        components: {
+          Cell: '@/components/admin/cells/AuthorCell',
+        },
       },
       filterOptions: () => {
         return {
