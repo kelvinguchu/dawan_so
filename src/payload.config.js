@@ -81,7 +81,7 @@ export default buildConfig({
   }),
 
   email: resendAdapter({
-    defaultFromAddress: 'info@dawan.africa',
+    defaultFromAddress: 'info@dawan.so',
     defaultFromName: 'Dawan TV',
     apiKey: process.env.RESEND_API_KEY || '',
   }),
