@@ -1,12 +1,10 @@
 import React, { Suspense } from 'react'
 import type { Metadata } from 'next'
-import { cookies } from 'next/headers'
-
 import { PendingVerificationClient } from './PendingVerificationClient'
 
 export const metadata: Metadata = {
-  title: 'Sug xaqiijinta email-ka | Dawan Somali',
-  description: 'Hubi email-kaaga si aad u hawlgeliso akoonkaaga Dawan Somali.',
+  title: 'Xaqiiji Iimaylka | Dawan TV',
+  description: 'Hubi sanduuqaaga si aad u xaqiijiso akoonkaaga Dawan TV.',
   robots: 'noindex, nofollow',
 }
 
@@ -14,16 +12,16 @@ interface PendingVerificationPageProps {
   searchParams: Promise<{ email?: string }>
 }
 
-async function PendingVerificationContent({ searchParams }: PendingVerificationPageProps) {
+async function PendingVerificationContent({
+  searchParams,
+}: Readonly<PendingVerificationPageProps>) {
   const params = await searchParams
-  const cookieStore = await cookies()
-  const cachedEmail = cookieStore.get('last-registered-email')?.value
-  const email = params.email ?? cachedEmail ?? ''
+  const email = params.email ?? ''
 
   return <PendingVerificationClient initialEmail={email} />
 }
 
-export default function PendingVerificationPage(props: PendingVerificationPageProps) {
+export default function PendingVerificationPage(props: Readonly<PendingVerificationPageProps>) {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4 py-16 sm:py-24">
       <Suspense

@@ -12,11 +12,11 @@ export const generateVerificationEmailHTML = (args?: {
 
   const escapeHtml = (unsafe: string): string => {
     return unsafe
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#039;')
   }
 
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dawan.so'
@@ -96,4 +96,29 @@ export const generateVerificationEmailSubject = (_args?: {
   }
 }): string => {
   return 'Welcome to Dawan TV - Please Verify Your Email'
+}
+
+export const generateVerificationEmailText = (args?: {
+  token?: string
+  user?: {
+    email: string
+    name?: string
+  }
+}): string => {
+  const { token, user } = args || {}
+
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dawan.so'
+  const verifyEmailURL = `${baseUrl}/verify-email?token=${encodeURIComponent(token || '')}`
+
+  const name = user?.name ? `Hello ${user.name},` : 'Hello,'
+
+  return `${name}
+
+Thank you for joining Dawan TV. Please verify your email address to activate your account by visiting the link below:
+
+${verifyEmailURL}
+
+If you did not create this account, you can safely ignore this message.
+
+— The Dawan TV Team`
 }

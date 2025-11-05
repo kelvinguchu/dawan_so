@@ -9,25 +9,64 @@ import type { SanitizedPermissions } from 'payload'
 import {
   generateVerificationEmailHTML,
   generateVerificationEmailSubject,
+  generateVerificationEmailText,
 } from '@/templates/verification-email'
 
 const VERIFICATION_EMAIL_LIMIT = 5
 const VERIFICATION_EMAIL_WINDOW_MS = 7 * 24 * 60 * 60 * 1000
 const VERIFICATION_EMAIL_LOG_LIMIT = 10
 
-type ResendVerificationUser = {
-  id: string
-  email: string
-  name?: string | null
-  _verified?: boolean | null
-  isEmailVerified?: boolean | null
-  verificationEmailRequests?:
-    | {
-        sentAt: string
-        context?: string | null
-        id?: string | null
-      }[]
-    | null
+type PayloadInstance = Awaited<ReturnType<typeof getPayload>>
+type UserWithVerificationMeta = User & { _verificationToken?: string | null }
+
+async function findUserByVerificationToken(
+  payloadClient: PayloadInstance,
+  token: string,
+): Promise<UserWithVerificationMeta | undefined> {
+  try {
+    const lookup = await payloadClient.find({
+      collection: 'users',
+      where: {
+        _verificationToken: {
+          equals: token,
+        },
+      },
+      limit: 1,
+      showHiddenFields: true,
+      overrideAccess: true,
+    })
+
+    return (lookup.docs[0] as UserWithVerificationMeta | undefined) ?? undefined
+  } catch (error) {
+    payloadClient.logger?.warn?.(
+      {
+        err: error,
+      },
+      'Failed to locate user by verification token before verifying email.',
+    )
+    return undefined
+  }
+}
+
+async function syncVerifiedFlag(payloadClient: PayloadInstance, userId: string): Promise<void> {
+  try {
+    await payloadClient.update({
+      collection: 'users',
+      id: userId,
+      data: {
+        isEmailVerified: true,
+      },
+      overrideAccess: true,
+    })
+  } catch (error) {
+    payloadClient.logger?.warn?.(
+      {
+        err: error,
+        userId,
+      },
+      'Email verified but failed to update isEmailVerified flag.',
+    )
+  }
 }
 
 export interface AuthResult {
@@ -142,7 +181,7 @@ export async function registerUser(data: RegisterData): Promise<RegisterResult> 
   try {
     const payload = await getPayload({ config })
 
-    const user = (await payload.create({
+    const createdUser = (await payload.create({
       collection: 'users',
       data: {
         name: data.name.trim(),
@@ -150,11 +189,11 @@ export async function registerUser(data: RegisterData): Promise<RegisterResult> 
         password: data.password,
         roles: ['user'],
       },
-    })) as User
+    })) as unknown as User
 
     return {
       success: true,
-      user,
+      user: createdUser,
     }
   } catch (error) {
     console.error('Registration error:', error)
@@ -265,10 +304,7 @@ export async function resetPasswordUser(data: ResetPasswordData): Promise<ResetP
   }
 }
 
-export async function resendVerificationUser(
-  email: string,
-  options: { context?: string } = {},
-): Promise<ResendVerificationResult> {
+export async function resendVerificationUser(email: string): Promise<ResendVerificationResult> {
   try {
     const payload = await getPayload({ config })
 
@@ -278,7 +314,7 @@ export async function resendVerificationUser(
       return {
         success: false,
         code: 'invalid_request',
-        error: 'Fadlan geli ciwaan email sax ah.',
+        error: 'Fadlan geli cinwaan email oo sax ah.',
       }
     }
 
@@ -290,23 +326,33 @@ export async function resendVerificationUser(
         },
       },
       limit: 1,
+      showHiddenFields: true,
     })
 
     if (!users.docs.length) {
       return {
         success: false,
         code: 'not_found',
-        error: 'Haddii xisaab jirto, waxaan mar kale dirnay emaylka xaqiijinta.',
+        error: 'Haddii akoon jiro, waxaan dirnay emaylka xaqiijinta.',
       }
     }
 
-    const user = users.docs[0] as ResendVerificationUser
+    const user = users.docs[0] as User & {
+      verificationEmailRequests?:
+        | {
+            id?: string
+            sentAt?: string
+            context?: string | null
+          }[]
+        | null
+      _verificationToken?: string | null
+    }
 
     if (user._verified || user.isEmailVerified) {
       return {
         success: false,
         code: 'already_verified',
-        error: 'Ciwaankan email-ka hore ayaa loo xaqiijiyay.',
+        error: 'Cinwaankan email hore ayaa loo xaqiijiyay.',
       }
     }
 
@@ -318,20 +364,15 @@ export async function resendVerificationUser(
       : []
 
     const recentRequests = existingLog
-      .map((entry) => {
-        if (!entry?.sentAt) return null
-
+      .filter((entry): entry is { sentAt: string; context?: string | null; id?: string } => {
+        if (!entry?.sentAt) return false
         const parsed = new Date(entry.sentAt)
-        if (Number.isNaN(parsed.getTime()) || parsed < windowStart) {
-          return null
-        }
-
-        return {
-          sentAt: parsed,
-          context: entry.context ?? null,
-        }
+        return !Number.isNaN(parsed.getTime()) && parsed >= windowStart
       })
-      .filter((entry): entry is { sentAt: Date; context: string | null } => entry !== null)
+      .map((entry) => ({
+        sentAt: new Date(entry.sentAt),
+        context: entry.context ?? null,
+      }))
       .sort((a, b) => a.sentAt.getTime() - b.sentAt.getTime())
 
     if (recentRequests.length >= VERIFICATION_EMAIL_LIMIT) {
@@ -339,7 +380,7 @@ export async function resendVerificationUser(
         success: false,
         code: 'rate_limit',
         error:
-          'Waxaad gaadhay xadka codsiyada toddobaadlaha ah ee emayllada xaqiijinta. Fadlan isku day mar dambe.',
+          'Waxaad gaartay xadka todobaadlaha ee emayllada xaqiijinta. Fadlan mar dambe isku day.',
       }
     }
 
@@ -353,7 +394,7 @@ export async function resendVerificationUser(
       })),
       {
         sentAt: now.toISOString(),
-        context: options.context ?? 'self-service',
+        context: 'self-service',
       },
     ].slice(-VERIFICATION_EMAIL_LOG_LIMIT)
 
@@ -372,19 +413,16 @@ export async function resendVerificationUser(
       name: user.name ?? undefined,
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dawan.so'
-    const verificationUrl = `${baseUrl}/verify-email?token=${verificationToken}`
-
     await payload.sendEmail({
       to: normalizedEmail,
       subject: generateVerificationEmailSubject({ user: emailPayload }),
       html: generateVerificationEmailHTML({ token: verificationToken, user: emailPayload }),
-      text: `Ku dhameystir isdiiwaangelintaada adigoo booqanaya: ${verificationUrl}`,
+      text: generateVerificationEmailText({ token: verificationToken, user: emailPayload }),
     })
 
     return {
       success: true,
-      message: 'Emaylka xaqiijinta waa la diray. Fadlan hubi sanduuqaaga.',
+      message: 'Emaylka xaqiijinta waa la diray. Fadlan ka hubi sanduuqa ama spam.',
     }
   } catch (error) {
     console.error('Resend verification error:', error)
@@ -394,7 +432,7 @@ export async function resendVerificationUser(
         return {
           success: false,
           code: 'invalid_request',
-          error: 'Fadlan geli ciwaan email sax ah.',
+          error: 'Fadlan geli cinwaan email oo sax ah.',
         }
       }
     }
@@ -402,7 +440,7 @@ export async function resendVerificationUser(
     return {
       success: false,
       code: 'unknown',
-      error: 'Dib u dirista email-ka xaqiijinta waa ay fashilantay. Fadlan mar kale isku day.',
+      error: 'Emaylka xaqiijinta dib looma diri karin. Fadlan mar kale isku day.',
     }
   }
 }
@@ -473,83 +511,36 @@ export async function checkUserPermissions(
 
 export async function verifyUserEmail(token: string): Promise<VerifyEmailResult> {
   try {
-    const payload = await getPayload({ config })
+    const payloadClient = await getPayload({ config })
     const normalizedToken = token?.trim()
 
     if (!normalizedToken) {
       return {
         success: false,
-        error: 'Xiriirinta xaqiijintu waa khalad. Calaamad lama bixin.',
+        error: 'Xiriirka xaqiijinta ma shaqaynayo. Calaamad lama helin.',
       }
     }
 
-    type UserWithHiddenFields = {
-      id: string
-      isEmailVerified?: boolean | null
-      _verificationToken?: string | null
-    }
-
-    let matchedUser: UserWithHiddenFields | undefined
-
-    try {
-      const lookup = await payload.find({
-        collection: 'users',
-        where: {
-          _verificationToken: {
-            equals: normalizedToken,
-          },
-        },
-        limit: 1,
-        showHiddenFields: true,
-        overrideAccess: true,
-      })
-
-      matchedUser = (lookup.docs[0] as UserWithHiddenFields | undefined) ?? undefined
-    } catch (lookupError) {
-      payload.logger?.warn?.(
-        {
-          err: lookupError,
-        },
-        'Failed to locate user by verification token before verifying email.',
-      )
-    }
-
-    const result = await payload.verifyEmail({
+    const matchedUser = await findUserByVerificationToken(payloadClient, normalizedToken)
+    const verificationSucceeded = await payloadClient.verifyEmail({
       collection: 'users',
       token: normalizedToken,
     })
 
-    if (result) {
-      if (matchedUser?.id) {
-        try {
-          await payload.update({
-            collection: 'users',
-            id: matchedUser.id,
-            data: {
-              isEmailVerified: true,
-            },
-            overrideAccess: true,
-          })
-        } catch (syncError) {
-          payload.logger?.warn?.(
-            {
-              err: syncError,
-              userId: matchedUser.id,
-            },
-            'Email verified but failed to update isEmailVerified flag.',
-          )
-        }
-      }
-
-      return {
-        success: true,
-        message: 'Your email has been successfully verified!',
-      }
-    } else {
+    if (!verificationSucceeded) {
       return {
         success: false,
         error: 'Email verification failed. The token may be invalid or expired.',
       }
+    }
+
+    if (matchedUser?.id) {
+      await syncVerifiedFlag(payloadClient, matchedUser.id)
+    }
+
+    return {
+      success: true,
+      message: 'Your email has been successfully verified!',
     }
   } catch (error) {
     console.error('Email verification error:', error)
@@ -584,13 +575,13 @@ export async function getUserWithDetails(depth: number = 2): Promise<User | null
 
     if (!user) return null
 
-    const detailedUser = await payload.findByID({
+    const detailedUser = (await payload.findByID({
       collection: 'users',
       id: user.id,
       depth,
-    })
+    })) as unknown as User
 
-    return detailedUser as User
+    return detailedUser
   } catch (error) {
     console.error('Error fetching detailed user:', error)
     return null
@@ -607,13 +598,13 @@ export async function updateUserName(name: string): Promise<UpdateUserResult> {
       return { success: false, error: 'Not authenticated' }
     }
 
-    const updatedUser = await payload.update({
+    const updatedUser = (await payload.update({
       collection: 'users',
       id: user.id,
       data: { name },
-    })
+    })) as unknown as User
 
-    return { success: true, user: updatedUser as User }
+    return { success: true, user: updatedUser }
   } catch (error) {
     console.error('Error updating user name:', error)
     return {
@@ -633,13 +624,13 @@ export async function updateUserProfilePicture(mediaId: string): Promise<UpdateU
       return { success: false, error: 'Not authenticated' }
     }
 
-    const updatedUser = await payload.update({
+    const updatedUser = (await payload.update({
       collection: 'users',
       id: user.id,
       data: { profilePicture: mediaId },
-    })
+    })) as unknown as User
 
-    return { success: true, user: updatedUser as User }
+    return { success: true, user: updatedUser }
   } catch (error) {
     console.error('Error updating profile picture:', error)
     return {

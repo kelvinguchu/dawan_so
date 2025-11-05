@@ -167,11 +167,11 @@ export const Users: CollectionConfig = {
     {
       name: 'verificationEmailRequests',
       type: 'array',
-      label: 'Diiwaanka emayllada xaqiijinta',
+      label: 'Verification Email Log',
       admin: {
         readOnly: true,
         description:
-          'Waxay duubtaa emaylladii ugu dambeeyay ee xaqiijinta si looga hortago isticmaal xad-dhaaf ah.',
+          'Tracks the most recent verification emails sent to this user to prevent abuse.',
       },
       access: {
         read: ({ req, doc }) => {
@@ -185,13 +185,13 @@ export const Users: CollectionConfig = {
         {
           name: 'sentAt',
           type: 'date',
-          label: 'La diray',
+          label: 'Sent At',
           required: true,
         },
         {
           name: 'context',
           type: 'text',
-          label: 'Macnaha codsiga',
+          label: 'Context',
         },
       ],
     },
@@ -201,7 +201,7 @@ export const Users: CollectionConfig = {
       async ({ user, req }) => {
         if (!user?._verified) {
           throw new Error(
-            'Fadlan marka hore xaqiiji ciwaankaaga email-ka ka hor soo gelitaanka. Ka eeg sanduuqaaga emaylka xiriirinta xaqiijinta.',
+            'Please verify your email address before signing in. Check your email for a verification link.',
           )
         }
 
@@ -223,7 +223,7 @@ export const Users: CollectionConfig = {
                 err: error,
                 userId: user.id,
               },
-              'Unable to sync isEmailVerified flag during login.',
+              'Failed to sync isEmailVerified flag during login.',
             )
           }
         }

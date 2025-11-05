@@ -29,7 +29,7 @@ export const PendingVerificationClient: React.FC<PendingVerificationClientProps>
     if (!normalizedEmail) {
       setFeedback({
         type: 'error',
-        message: 'Fadlan geli ciwaanka email-ka ee aad isdiiwaangelinta ku isticmaashay.',
+        message: 'Fadlan geli cinwaanka email-ka ee aad iska diiwaangelisay.',
       })
       return
     }
@@ -45,14 +45,14 @@ export const PendingVerificationClient: React.FC<PendingVerificationClientProps>
           type: 'success',
           message:
             result.message ||
-            'Email-kii xaqiijinta waa la diray. Fadlan hubi sanduuqaaga iyo spam-ka.',
+            'Emaylka xaqiijinta waa la diray. Fadlan hubi sanduuqaaga, spam ama promotions.',
         })
       } else {
         setFeedback({
           type: 'error',
           message:
             result.error ||
-            'Dib u dirista email-ka xaqiijinta way fashilantay. Fadlan mar kale isku day.',
+            'Ma uusan guulaysan dirista emaylka xaqiijinta. Fadlan isku day mar kale.',
         })
       }
     } catch (error) {
@@ -72,11 +72,13 @@ export const PendingVerificationClient: React.FC<PendingVerificationClientProps>
         <div className="flex justify-center">
           <MailCheck className="h-12 w-12 text-[#b01c14]" />
         </div>
-        <CardTitle className="text-2xl font-semibold text-slate-900">Hubi email-kaaga</CardTitle>
+        <CardTitle className="text-2xl font-semibold text-slate-900">
+          Hubi sanduuqa emaylkaaga
+        </CardTitle>
         <CardDescription className="text-slate-600">
-          Waxaan dirnay xiriirinta xaqiijinta ee{' '}
-          <span className="font-medium text-slate-900">{normalizedEmail || 'email-kaaga'}</span>.
-          Fadlan xaqiiji si aad u hawlgeliso akoonkaaga.
+          Waxaan u dirnay xiriir xaqiijin ah{' '}
+          <span className="font-medium text-slate-900">{normalizedEmail || 'emaylkaaga'}</span>.
+          Fadlan xaqiiji si aad u shaqeysiiso akoonkaaga.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -84,15 +86,16 @@ export const PendingVerificationClient: React.FC<PendingVerificationClientProps>
           <div className="flex items-start space-x-3">
             <ShieldAlert className="h-5 w-5 text-[#b01c14] mt-0.5" />
             <div className="space-y-2">
-              <p className="font-medium text-slate-700">Ka hor intaadan sii wadin:</p>
+              <p className="font-medium text-slate-700">Kahor intaadan sii wadin:</p>
               <ul className="list-disc list-inside space-y-1 ml-1">
-                <li>Fur email-ka xaqiijinta oo guji xiriirinta si aad u hawlgeliso akoonkaaga.</li>
+                <li>Fur emaylka waxay ku jirtaa xiriir xaqiijin ah oo guji si aad u xaqiijiso.</li>
                 <li>
-                  Ma aragtay email-ka? Hubi spam ama qeybta xayeysiisyada ka hor intaadan helin
+                  Hadii aadan arag, hubi spam ama galka promos. Kadibna waxaad hoos ka codsan kartaa
                   xiriir cusub.
                 </li>
                 <li>
-                  Xiriirinta ayaa dhacayso muddo kooban ka dib, marka fadlan dhaqso u xaqiiji.
+                  Xiriirku wuxuu dhacayaa waqti kadib, sidaas darteed xaqiiji sida ugu dhakhsaha
+                  badan.
                 </li>
               </ul>
             </div>
@@ -109,7 +112,7 @@ export const PendingVerificationClient: React.FC<PendingVerificationClientProps>
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             placeholder="magac@example.com"
-            className="bg-white border-slate-200 focus:border-[#b01c14] focus:ring-[#b01c14]/80 text-sm"
+            className="bg-white border-slate-200 focus:border-[#b01c14] focus:ring-[#b01c14]/10 text-sm"
           />
           <Button
             type="button"
@@ -118,7 +121,7 @@ export const PendingVerificationClient: React.FC<PendingVerificationClientProps>
             className="mt-2 w-full bg-[#b01c14] hover:bg-[#b01c14]/80 text-sm"
           >
             <RefreshCw className="h-4 w-4 mr-2" />
-            {isResending ? 'Diraya...' : 'Dib u dir email-ka xaqiijinta'}
+            {isResending ? 'Diraya...' : 'Dib u dir emaylka xaqiijinta'}
           </Button>
 
           {feedback && (
@@ -135,12 +138,12 @@ export const PendingVerificationClient: React.FC<PendingVerificationClientProps>
         </div>
 
         <div className="text-center text-sm text-slate-600 space-y-2">
-          <p>Markaad xaqiijiso, waxaad sii wadan kartaa soo gelitaanka.</p>
+          <p>Markaad xaqiijiso, waad soo gali kartaa akoonkaaga.</p>
           <Link
             href="/login"
             className="inline-flex items-center text-[#b01c14] hover:text-[#b01c14]/80"
           >
-            Tag bogga soo gelidda
+            Tag bogga soo gelida
           </Link>
         </div>
       </CardContent>

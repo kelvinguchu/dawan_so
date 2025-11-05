@@ -35,8 +35,9 @@ export const RegisterForm: React.FC = () => {
     setIsLoading(true)
     try {
       const normalizedEmail = email.trim().toLowerCase()
+      const trimmedName = name.trim()
       const result = await register({
-        name,
+        name: trimmedName || name,
         email: normalizedEmail,
         password,
       })
@@ -45,14 +46,14 @@ export const RegisterForm: React.FC = () => {
         if (subscribeToNewsletter) {
           try {
             const extractFirstName = (fullName: string): string => {
-              const trimmedName = fullName.trim()
+              const cleanedName = fullName.trim()
 
-              if (!trimmedName) {
+              if (!cleanedName) {
                 return 'Akhriste'
               }
 
-              const nameParts = trimmedName.split(/\s+/).filter((part) => part.length > 0)
-              return nameParts.length > 0 ? nameParts[0] : trimmedName
+              const nameParts = cleanedName.split(/\s+/).filter((part) => part.length > 0)
+              return nameParts.length > 0 ? nameParts[0] : cleanedName
             }
 
             await fetch('/api/newsletter/subscribe', {
@@ -62,7 +63,7 @@ export const RegisterForm: React.FC = () => {
               },
               body: JSON.stringify({
                 email: normalizedEmail,
-                firstName: extractFirstName(name),
+                firstName: extractFirstName(trimmedName || name),
                 source: 'registration',
               }),
             })
