@@ -3,9 +3,9 @@ import { mongooseAdapter } from '@payloadcms/db-mongodb'
 import { payloadCloudPlugin } from '@payloadcms/payload-cloud'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { resendAdapter } from '@payloadcms/email-resend'
-import path from 'path'
+import path from 'node:path'
 import { buildConfig } from 'payload'
-import { fileURLToPath } from 'url'
+import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
 
 import { Users } from './collections/Users'
@@ -23,7 +23,8 @@ const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
 export default buildConfig({
-  serverURL: process.env.NODE_ENV === 'production' ? 'https://www.dawan.so' : 'http://localhost:3000',
+  serverURL:
+    process.env.NODE_ENV === 'production' ? 'https://www.dawan.so' : 'http://localhost:3000',
   admin: {
     user: Users.slug,
     meta: {
@@ -78,6 +79,16 @@ export default buildConfig({
   db: mongooseAdapter({
     url: process.env.DATABASE_URI ?? '',
     transactionOptions: false,
+    connectOptions: {
+      serverSelectionTimeoutMS: 10_000,
+      socketTimeoutMS: 45_000,
+      maxPoolSize: 10,
+      minPoolSize: 2,
+      retryWrites: true,
+      retryReads: true,
+      tls: shouldEnableTls,
+      tlsAllowInvalidCertificates: false,
+    },
   }),
 
   email: resendAdapter({
@@ -85,8 +96,6 @@ export default buildConfig({
     defaultFromName: 'Dawan TV',
     apiKey: process.env.RESEND_API_KEY || '',
   }),
-
-
 
   express: {
     json: { limit: '500mb' },
