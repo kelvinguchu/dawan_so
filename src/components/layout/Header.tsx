@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { format } from 'date-fns'
 import { useSearchParams, useRouter } from 'next/navigation'
 
 import { BiCalendar, BiSearch, BiMenu, BiX, BiDownload } from 'react-icons/bi'
@@ -36,11 +35,35 @@ interface HeaderProps {
 
 const countries = ['Somalia', 'Kenya', 'Djibouti', 'Ethiopia', 'Eritrea']
 
+const SOMALI_WEEKDAYS = ['Axad', 'Isniin', 'Talaado', 'Arbaco', 'Khamiis', 'Jimco', 'Sabti']
+const SOMALI_MONTHS = [
+  'Jannaayo',
+  'Febraayo',
+  'Maarso',
+  'Abriil',
+  'May',
+  'Juun',
+  'Julaay',
+  'Ogosto',
+  'Sebteembar',
+  'Oktoobar',
+  'Nofeembar',
+  'Diseembar',
+]
+
+const formatDateInSomali = (date: Date): string => {
+  const dayName = SOMALI_WEEKDAYS[date.getDay()]
+  const monthName = SOMALI_MONTHS[date.getMonth()]
+  const dayOfMonth = date.getDate()
+  const year = date.getFullYear()
+  return `${dayName}, ${monthName} ${dayOfMonth}, ${year}`
+}
+
 const getInitials = (name?: string | null, email?: string | null): string => {
   if (name) {
     const parts = name.split(' ')
     if (parts.length > 1) {
-      return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
+      return `${parts[0][0]}${parts.at(-1)?.[0]}`.toUpperCase()
     }
     return name.substring(0, 2).toUpperCase()
   }
@@ -85,10 +108,10 @@ const Header: React.FC<HeaderProps> = ({ initialCategories = [] }) => {
   }
 
   const today = new Date()
-  const formattedDate = format(today, 'EEEE, MMMM d, yyyy')
+  const formattedDate = formatDateInSomali(today)
 
   useEffect(() => {
-    if (window.matchMedia('(display-mode: standalone)').matches) {
+    if (globalThis.matchMedia('(display-mode: standalone)').matches) {
       setIsInstallable(false)
       return
     }
@@ -104,12 +127,12 @@ const Header: React.FC<HeaderProps> = ({ initialCategories = [] }) => {
       setIsInstallable(false)
     }
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
-    window.addEventListener('appinstalled', handleAppInstalled)
+    globalThis.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+    globalThis.addEventListener('appinstalled', handleAppInstalled)
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
-      window.removeEventListener('appinstalled', handleAppInstalled)
+      globalThis.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+      globalThis.removeEventListener('appinstalled', handleAppInstalled)
     }
   }, [])
 
