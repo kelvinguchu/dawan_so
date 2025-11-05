@@ -34,9 +34,10 @@ export const RegisterForm: React.FC = () => {
 
     setIsLoading(true)
     try {
+      const normalizedEmail = email.trim().toLowerCase()
       const result = await register({
         name,
-        email: email.trim().toLowerCase(),
+        email: normalizedEmail,
         password,
       })
 
@@ -60,7 +61,7 @@ export const RegisterForm: React.FC = () => {
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify({
-                email: email.trim(),
+                email: normalizedEmail,
                 firstName: extractFirstName(name),
                 source: 'registration',
               }),
@@ -70,7 +71,7 @@ export const RegisterForm: React.FC = () => {
           }
         }
 
-        router.push('/login?registered=true&verify_email=true')
+        router.push(`/verify-email/pending?email=${encodeURIComponent(normalizedEmail)}`)
       } else {
         setError(result.error || 'Diiwaangelintu way fashilantay. Fadlan mar kale isku day.')
       }

@@ -8,6 +8,8 @@ import {
   generateForgotPasswordEmailSubject,
 } from '@/templates/forgot-password-email'
 
+const VERIFICATION_EMAIL_LOG_LIMIT = 10
+
 export const Users: CollectionConfig = {
   slug: 'users',
   auth: {
@@ -162,23 +164,116 @@ export const Users: CollectionConfig = {
         },
       },
     },
+    {
+      name: 'verificationEmailRequests',
+      type: 'array',
+      label: 'Diiwaanka emayllada xaqiijinta',
+      admin: {
+        readOnly: true,
+        description:
+          'Waxay duubtaa emaylladii ugu dambeeyay ee xaqiijinta si looga hortago isticmaal xad-dhaaf ah.',
+      },
+      access: {
+        read: ({ req, doc }) => {
+          const user = req.user
+          if (!user) return false
+          if (user.roles?.includes('admin')) return true
+          return user.id === doc?.id
+        },
+      },
+      fields: [
+        {
+          name: 'sentAt',
+          type: 'date',
+          label: 'La diray',
+          required: true,
+        },
+        {
+          name: 'context',
+          type: 'text',
+          label: 'Macnaha codsiga',
+        },
+      ],
+    },
   ],
   hooks: {
     beforeLogin: [
-      async ({ user }) => {
-        if (!user._verified || !user.isEmailVerified) {
+      async ({ user, req }) => {
+        if (!user?._verified) {
           throw new Error(
-            'Please verify your email address before signing in. Check your email for a verification link.',
+            'Fadlan marka hore xaqiiji ciwaankaaga email-ka ka hor soo gelitaanka. Ka eeg sanduuqaaga emaylka xiriirinta xaqiijinta.',
           )
         }
+
+        if (!user.isEmailVerified && req?.payload) {
+          try {
+            await req.payload.update({
+              collection: 'users',
+              id: user.id,
+              data: {
+                isEmailVerified: true,
+              },
+              overrideAccess: true,
+            })
+
+            user.isEmailVerified = true
+          } catch (error) {
+            req.payload.logger?.warn?.(
+              {
+                err: error,
+                userId: user.id,
+              },
+              'Unable to sync isEmailVerified flag during login.',
+            )
+          }
+        }
+
         return user
       },
     ],
     beforeChange: [
-      ({ data, req: _req, operation: _operation }) => {
+      ({ data, operation }) => {
         if (data._verified !== undefined) {
           data.isEmailVerified = data._verified
         }
+
+        const nowISOString = new Date().toISOString()
+
+        if (operation === 'create') {
+          const hasExistingLog = Array.isArray(data.verificationEmailRequests)
+            ? data.verificationEmailRequests.length > 0
+            : false
+
+          if (!hasExistingLog) {
+            data.verificationEmailRequests = [
+              {
+                sentAt: nowISOString,
+                context: 'auto-create',
+              },
+            ]
+          }
+        }
+
+        if (Array.isArray(data.verificationEmailRequests)) {
+          const sanitizedEntries = data.verificationEmailRequests
+            .filter((entry) => {
+              if (!entry?.sentAt) return false
+              const parsed = new Date(entry.sentAt as string)
+              return !Number.isNaN(parsed.getTime())
+            })
+            .map((entry) => ({
+              ...entry,
+              sentAt: new Date(entry.sentAt as string).toISOString(),
+            }))
+            .sort(
+              (a, b) =>
+                new Date(a.sentAt as string).getTime() - new Date(b.sentAt as string).getTime(),
+            )
+            .slice(-VERIFICATION_EMAIL_LOG_LIMIT)
+
+          data.verificationEmailRequests = sanitizedEntries
+        }
+
         return data
       },
     ],

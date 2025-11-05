@@ -6,6 +6,29 @@ import { login as payloadLogin, logout as payloadLogout } from '@payloadcms/next
 import config from '@/payload.config'
 import type { User } from '@/payload-types'
 import type { SanitizedPermissions } from 'payload'
+import {
+  generateVerificationEmailHTML,
+  generateVerificationEmailSubject,
+} from '@/templates/verification-email'
+
+const VERIFICATION_EMAIL_LIMIT = 5
+const VERIFICATION_EMAIL_WINDOW_MS = 7 * 24 * 60 * 60 * 1000
+const VERIFICATION_EMAIL_LOG_LIMIT = 10
+
+type ResendVerificationUser = {
+  id: string
+  email: string
+  name?: string | null
+  _verified?: boolean | null
+  isEmailVerified?: boolean | null
+  verificationEmailRequests?:
+    | {
+        sentAt: string
+        context?: string | null
+        id?: string | null
+      }[]
+    | null
+}
 
 export interface AuthResult {
   user: User | null
@@ -60,6 +83,7 @@ export interface ResendVerificationResult {
   success: boolean
   message?: string
   error?: string
+  code?: 'rate_limit' | 'already_verified' | 'not_found' | 'invalid_request' | 'unknown'
 }
 
 export interface VerifyEmailResult {
@@ -241,15 +265,28 @@ export async function resetPasswordUser(data: ResetPasswordData): Promise<ResetP
   }
 }
 
-export async function resendVerificationUser(email: string): Promise<ResendVerificationResult> {
+export async function resendVerificationUser(
+  email: string,
+  options: { context?: string } = {},
+): Promise<ResendVerificationResult> {
   try {
     const payload = await getPayload({ config })
+
+    const normalizedEmail = email.trim().toLowerCase()
+
+    if (!normalizedEmail) {
+      return {
+        success: false,
+        code: 'invalid_request',
+        error: 'Fadlan geli ciwaan email sax ah.',
+      }
+    }
 
     const users = await payload.find({
       collection: 'users',
       where: {
         email: {
-          equals: email.trim().toLowerCase(),
+          equals: normalizedEmail,
         },
       },
       limit: 1,
@@ -258,31 +295,96 @@ export async function resendVerificationUser(email: string): Promise<ResendVerif
     if (!users.docs.length) {
       return {
         success: false,
-        error: 'No account found with this email address.',
+        code: 'not_found',
+        error: 'Haddii xisaab jirto, waxaan mar kale dirnay emaylka xaqiijinta.',
       }
     }
 
-    const user = users.docs[0]
+    const user = users.docs[0] as ResendVerificationUser
 
     if (user._verified || user.isEmailVerified) {
       return {
         success: false,
-        error: 'This email address is already verified.',
+        code: 'already_verified',
+        error: 'Ciwaankan email-ka hore ayaa loo xaqiijiyay.',
       }
     }
+
+    const now = new Date()
+    const windowStart = new Date(now.getTime() - VERIFICATION_EMAIL_WINDOW_MS)
+
+    const existingLog = Array.isArray(user.verificationEmailRequests)
+      ? user.verificationEmailRequests
+      : []
+
+    const recentRequests = existingLog
+      .map((entry) => {
+        if (!entry?.sentAt) return null
+
+        const parsed = new Date(entry.sentAt)
+        if (Number.isNaN(parsed.getTime()) || parsed < windowStart) {
+          return null
+        }
+
+        return {
+          sentAt: parsed,
+          context: entry.context ?? null,
+        }
+      })
+      .filter((entry): entry is { sentAt: Date; context: string | null } => entry !== null)
+      .sort((a, b) => a.sentAt.getTime() - b.sentAt.getTime())
+
+    if (recentRequests.length >= VERIFICATION_EMAIL_LIMIT) {
+      return {
+        success: false,
+        code: 'rate_limit',
+        error:
+          'Waxaad gaadhay xadka codsiyada toddobaadlaha ah ee emayllada xaqiijinta. Fadlan isku day mar dambe.',
+      }
+    }
+
+    const crypto = await import('node:crypto')
+    const verificationToken = crypto.randomBytes(32).toString('hex')
+
+    const updatedLog = [
+      ...recentRequests.map((entry) => ({
+        sentAt: entry.sentAt.toISOString(),
+        context: entry.context ?? null,
+      })),
+      {
+        sentAt: now.toISOString(),
+        context: options.context ?? 'self-service',
+      },
+    ].slice(-VERIFICATION_EMAIL_LOG_LIMIT)
 
     await payload.update({
       collection: 'users',
       id: user.id,
       data: {
-        updatedAt: new Date().toISOString(),
+        _verificationToken: verificationToken,
+        verificationEmailRequests: updatedLog,
       },
       overrideAccess: true,
     })
 
+    const emailPayload = {
+      email: user.email,
+      name: user.name ?? undefined,
+    }
+
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dawan.so'
+    const verificationUrl = `${baseUrl}/verify-email?token=${verificationToken}`
+
+    await payload.sendEmail({
+      to: normalizedEmail,
+      subject: generateVerificationEmailSubject({ user: emailPayload }),
+      html: generateVerificationEmailHTML({ token: verificationToken, user: emailPayload }),
+      text: `Ku dhameystir isdiiwaangelintaada adigoo booqanaya: ${verificationUrl}`,
+    })
+
     return {
       success: true,
-      message: 'Verification email has been resent. Please check your inbox.',
+      message: 'Emaylka xaqiijinta waa la diray. Fadlan hubi sanduuqaaga.',
     }
   } catch (error) {
     console.error('Resend verification error:', error)
@@ -291,14 +393,16 @@ export async function resendVerificationUser(email: string): Promise<ResendVerif
       if (error.message.includes('email')) {
         return {
           success: false,
-          error: 'Please provide a valid email address.',
+          code: 'invalid_request',
+          error: 'Fadlan geli ciwaan email sax ah.',
         }
       }
     }
 
     return {
       success: false,
-      error: 'Failed to resend verification email. Please try again.',
+      code: 'unknown',
+      error: 'Dib u dirista email-ka xaqiijinta waa ay fashilantay. Fadlan mar kale isku day.',
     }
   }
 }
@@ -370,13 +474,73 @@ export async function checkUserPermissions(
 export async function verifyUserEmail(token: string): Promise<VerifyEmailResult> {
   try {
     const payload = await getPayload({ config })
+    const normalizedToken = token?.trim()
+
+    if (!normalizedToken) {
+      return {
+        success: false,
+        error: 'Xiriirinta xaqiijintu waa khalad. Calaamad lama bixin.',
+      }
+    }
+
+    type UserWithHiddenFields = {
+      id: string
+      isEmailVerified?: boolean | null
+      _verificationToken?: string | null
+    }
+
+    let matchedUser: UserWithHiddenFields | undefined
+
+    try {
+      const lookup = await payload.find({
+        collection: 'users',
+        where: {
+          _verificationToken: {
+            equals: normalizedToken,
+          },
+        },
+        limit: 1,
+        showHiddenFields: true,
+        overrideAccess: true,
+      })
+
+      matchedUser = (lookup.docs[0] as UserWithHiddenFields | undefined) ?? undefined
+    } catch (lookupError) {
+      payload.logger?.warn?.(
+        {
+          err: lookupError,
+        },
+        'Failed to locate user by verification token before verifying email.',
+      )
+    }
 
     const result = await payload.verifyEmail({
       collection: 'users',
-      token,
+      token: normalizedToken,
     })
 
     if (result) {
+      if (matchedUser?.id) {
+        try {
+          await payload.update({
+            collection: 'users',
+            id: matchedUser.id,
+            data: {
+              isEmailVerified: true,
+            },
+            overrideAccess: true,
+          })
+        } catch (syncError) {
+          payload.logger?.warn?.(
+            {
+              err: syncError,
+              userId: matchedUser.id,
+            },
+            'Email verified but failed to update isEmailVerified flag.',
+          )
+        }
+      }
+
       return {
         success: true,
         message: 'Your email has been successfully verified!',
