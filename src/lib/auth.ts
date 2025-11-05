@@ -199,16 +199,28 @@ export async function registerUser(data: RegisterData): Promise<RegisterResult> 
     console.error('Registration error:', error)
 
     if (error instanceof Error) {
-      if (error.message.includes('email')) {
+      const normalizedMessage = error.message.toLowerCase()
+
+      if (
+        normalizedMessage.includes('already exists') ||
+        normalizedMessage.includes('duplicate') ||
+        normalizedMessage.includes('unique')
+      ) {
         return {
           success: false,
           error: 'An account with this email already exists.',
         }
       }
-      if (error.message.includes('validation')) {
+      if (normalizedMessage.includes('validation')) {
         return {
           success: false,
           error: 'Please check your information and try again.',
+        }
+      }
+      if (normalizedMessage.includes('email')) {
+        return {
+          success: false,
+          error: 'We could not send the verification email. Please try again in a moment.',
         }
       }
     }
