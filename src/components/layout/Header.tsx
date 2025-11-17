@@ -153,7 +153,7 @@ const Header: React.FC<HeaderProps> = ({ initialCategories = [] }) => {
   }
 
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-50">
+    <header className="sticky top-0 z-50 w-full bg-white shadow-sm overflow-x-hidden">
       <div className="border-b border-gray-100">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between py-2">

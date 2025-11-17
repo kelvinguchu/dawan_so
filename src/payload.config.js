@@ -3,6 +3,7 @@ import { mongooseAdapter } from '@payloadcms/db-mongodb'
 import { payloadCloudPlugin } from '@payloadcms/payload-cloud'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { resendAdapter } from '@payloadcms/email-resend'
+import { bunnyStorage } from '@seshuk/payload-storage-bunny'
 import path from 'node:path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'node:url'
@@ -13,14 +14,27 @@ import { Media } from './collections/Media'
 import { BlogPost } from './collections/BlogPosts'
 import { BlogCategories } from './collections/BlogCategories'
 import { Podcasts } from './collections/Podcasts'
+import { PodcastAudio } from './collections/PodcastAudio'
+import { ArticleAudio } from './collections/ArticleAudio'
 import { Staging } from './collections/Staging'
 import { Newsletter } from './collections/Newsletter'
 import { NewsletterCampaigns } from './collections/NewsletterCampaigns'
 import { PodcastSeries } from './collections/PodcastSeries'
 import { PushSubscriptions } from './collections/PushSubscriptions'
+import { VideoAssets } from './collections/VideoAssets'
+import { sendDailyDigestTask } from './jobs/sendDailyDigest'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
+const databaseUrl = process.env.DATABASE_URI ?? ''
+const shouldEnableTls =
+  process.env.MONGODB_TLS !== 'false' && databaseUrl.trim().startsWith('mongodb+srv://')
+const bunnyStorageKey = process.env.BUNNY_STORAGE_API_KEY ?? ''
+const bunnyHostname = process.env.BUNNY_HOSTNAME ?? ''
+const bunnyZoneName = process.env.BUNNY_PULL_ZONE ?? ''
+const bunnyVideoLibraryId = Number.parseInt(process.env.BUNNY_VIDEO_LIBRARY_ID ?? '', 10)
+const isBunnyConfigured = Boolean(bunnyStorageKey && bunnyHostname && bunnyZoneName)
+const isBunnyStreamConfigured = Boolean(isBunnyConfigured && Number.isFinite(bunnyVideoLibraryId))
 
 export default buildConfig({
   serverURL:
@@ -60,6 +74,9 @@ export default buildConfig({
   collections: [
     Users,
     Media,
+    VideoAssets,
+    PodcastAudio,
+    ArticleAudio,
     BlogPost,
     BlogCategories,
     Podcasts,
@@ -77,7 +94,7 @@ export default buildConfig({
   },
 
   db: mongooseAdapter({
-    url: process.env.DATABASE_URI ?? '',
+    url: databaseUrl,
     transactionOptions: false,
     connectOptions: {
       serverSelectionTimeoutMS: 10_000,
@@ -120,15 +137,66 @@ export default buildConfig({
         acl: 'public-read',
         clientUploads: true,
         routerInputConfig: {
-          video: { maxFileSize: '300MB' },
-          audio: { maxFileSize: '500MB' },
-          blob: { maxFileSize: '300MB' },
-          pdf: { maxFileSize: '100MB' },
           image: { maxFileSize: '20MB' },
         },
       },
     }),
+    ...(isBunnyConfigured
+      ? [
+          bunnyStorage({
+            collections: {
+              podcastAudio: {
+                prefix: 'podcasts/audio',
+                disablePayloadAccessControl: true,
+                mediaPreview: true,
+                stream: false,
+              },
+              articleAudio: {
+                prefix: 'articles/audio',
+                disablePayloadAccessControl: true,
+                mediaPreview: true,
+                stream: false,
+              },
+              videoAssets: {
+                prefix: 'media/videos',
+                disablePayloadAccessControl: true,
+                mediaPreview: true,
+              },
+            },
+            storage: {
+              apiKey: bunnyStorageKey,
+              hostname: bunnyHostname,
+              zoneName: bunnyZoneName,
+              uploadTimeout: 18_000_000,
+            },
+            ...(isBunnyStreamConfigured
+              ? {
+                  stream: {
+                    apiKey: bunnyStorageKey,
+                    hostname: bunnyHostname,
+                    libraryId: bunnyVideoLibraryId,
+                    tus: {
+                      autoMode: true,
+                      uploadTimeout: 18_000,
+                    },
+                  },
+                }
+              : {}),
+          }),
+        ]
+      : []),
 
     payloadCloudPlugin(),
   ],
+
+  jobs: {
+    tasks: [sendDailyDigestTask],
+    autoRun: [
+      {
+        cron: '*/5 * * * *',
+        queue: 'newsletter',
+        limit: 25,
+      },
+    ],
+  },
 })

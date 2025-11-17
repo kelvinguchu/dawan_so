@@ -3,7 +3,6 @@
 import React from 'react'
 import { useRouter } from 'next/navigation'
 import { BlogCategory } from '@/payload-types'
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { SearchInput } from '@/components/common/SearchInput'
 import { useSearchStore } from '@/store/searchStore'
 import CategoryLinks from './CategoryLinks'
@@ -39,16 +38,12 @@ const DesktopNav: React.FC<DesktopNavProps> = ({ categories, countries }) => {
               placeholder="Raadi maqaallo..."
             />
           </div>
-          <div className="col-span-9 relative z-10">
-            <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-white to-transparent z-30 pointer-events-none" />
-            <ScrollArea className="w-full bg-white" type="scroll">
-              <CategoryLinks
-                categories={categories}
-                countries={countries}
-                onCountrySelect={handleCountrySearch}
-              />
-              <ScrollBar orientation="horizontal" className="h-2" />
-            </ScrollArea>
+          <div className="col-span-9 relative z-10 bg-white">
+            <CategoryLinks
+              categories={categories}
+              countries={countries}
+              onCountrySelect={handleCountrySearch}
+            />
           </div>
         </div>
       </div>

@@ -19,7 +19,8 @@ import { WebVitals } from '@/hooks/useWebVitals'
 import { RSSDiscovery } from '@/components/rss'
 import Script from 'next/script'
 import { PageViewTracker } from '@/components/analytics/GoogleAnalyticsEvents'
-
+import { AudioPlayerProvider } from '@/contexts/AudioPlayerContext'
+import { FloatingAudioPlayer } from '@/components/audio/FloatingAudioPlayer'
 
 const roboto = Roboto({
   subsets: ['latin'],
@@ -259,11 +260,14 @@ export default function RootLayout({ children }: { readonly children: React.Reac
           <AuthProvider>
             <QueryProvider>
               <NavigationProvider>
-                <Toaster richColors position="top-right" />
-                <HeaderServer />
-                <main className="flex-grow">{children}</main>
-                <Footer />
-                <NewsletterPopup delay={5000} />
+                <AudioPlayerProvider>
+                  <Toaster richColors position="top-right" />
+                  <HeaderServer />
+                  <main className="flex-grow">{children}</main>
+                  <Footer />
+                  <FloatingAudioPlayer />
+                  <NewsletterPopup delay={5000} />
+                </AudioPlayerProvider>
               </NavigationProvider>
             </QueryProvider>
           </AuthProvider>

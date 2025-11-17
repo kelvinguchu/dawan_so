@@ -1,9 +1,23 @@
 import React from 'react'
 import Image from 'next/image'
-import { Media } from '@/payload-types'
+import type { Media, VideoAsset } from '@/payload-types'
 import { FileText } from 'lucide-react'
 import { LexicalContent } from './BlockUtils'
 import ImageStructuredData from '@/components/structured-data/ImageStructuredData'
+import type Hls from 'hls.js'
+
+const resolvePageUrl = (): string => {
+  if (typeof globalThis === 'undefined') {
+    return ''
+  }
+
+  const location = (globalThis as { location?: Location }).location
+  return location?.href ?? ''
+}
+
+const isLexicalContent = (value: unknown): value is LexicalContent => {
+  return typeof value === 'object' && value !== null && 'root' in value
+}
 
 interface ImageBlockProps {
   image: Media | string | null
@@ -27,7 +41,7 @@ interface OptimizedVideoProps {
 }
 
 interface VideoBlockProps {
-  video?: Media | string | null
+  video?: VideoAsset | string | null
   autoplay?: boolean
   muted?: boolean
   controls?: boolean
@@ -62,11 +76,7 @@ export const ImageBlock: React.FC<ImageBlockProps> = ({ image, altText }) => {
         {alt && <figcaption className="text-center text-sm text-gray-600 mt-3">{alt}</figcaption>}
       </figure>
       {imageObj && (
-        <ImageStructuredData
-          image={imageObj}
-          pageUrl={typeof window !== 'undefined' ? window.location.href : ''}
-          siteName="Dawan TV"
-        />
+        <ImageStructuredData image={imageObj} pageUrl={resolvePageUrl()} siteName="Dawan TV" />
       )}
     </>
   )
@@ -84,9 +94,9 @@ export const CoverBlock: React.FC<CoverBlockProps> = ({
   // Extract heading text from Lexical data structure if available
   let headingText = 'Cinwaanka Maqaalka'
 
-  if (heading && typeof heading === 'object') {
+  if (isLexicalContent(heading)) {
     // Try to extract from Lexical structure
-    const lexicalHeading = heading as LexicalContent
+    const lexicalHeading = heading
     if (lexicalHeading.root?.children?.[0]) {
       const firstChild = lexicalHeading.root.children[0]
       if (
@@ -138,12 +148,8 @@ export const CoverBlock: React.FC<CoverBlockProps> = ({
       <div className="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-r from-white/0 via-white/10 to-white/0"></div>
 
       {/* Structured data for SEO */}
-      {imageObj && imageObj.filename && (
-        <ImageStructuredData
-          image={imageObj}
-          pageUrl={typeof window !== 'undefined' ? window.location.href : ''}
-          siteName="Dawan TV"
-        />
+      {imageObj?.filename && (
+        <ImageStructuredData image={imageObj} pageUrl={resolvePageUrl()} siteName="Dawan TV" />
       )}
     </div>
   )
@@ -173,6 +179,75 @@ export const OptimizedVideo: React.FC<OptimizedVideoProps> = ({
 }) => {
   const [isLoading, setIsLoading] = React.useState(true)
   const [hasError, setHasError] = React.useState(false)
+  const videoRef = React.useRef<HTMLVideoElement | null>(null)
+  const isHlsSource = /\.m3u8($|\?)/i.test(videoUrl)
+
+  React.useEffect(() => {
+    if (!isHlsSource) {
+      return
+    }
+
+    const video = videoRef.current
+    if (!video) {
+      return
+    }
+
+    let hls: Hls | null = null
+    let cancelled = false
+
+    const attachNative = () => {
+      video.src = videoUrl
+      video.load()
+    }
+
+    const setup = async () => {
+      if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        attachNative()
+        return
+      }
+
+      try {
+        const { default: HlsLib } = await import('hls.js')
+        if (cancelled) return
+
+        if (!HlsLib.isSupported()) {
+          console.warn('HLS.js unsupported, falling back to native playback (may fail).')
+          attachNative()
+          return
+        }
+
+        hls = new HlsLib({ enableWorker: true, backBufferLength: 120 })
+        hls.attachMedia(video)
+        hls.on(HlsLib.Events.MEDIA_ATTACHED, () => {
+          if (!cancelled) {
+            hls?.loadSource(videoUrl)
+          }
+        })
+        hls.on(HlsLib.Events.ERROR, (_event, data) => {
+          if (data?.fatal) {
+            console.error('Fatal HLS error', data)
+            setHasError(true)
+            setIsLoading(false)
+            hls?.destroy()
+            hls = null
+          }
+        })
+      } catch (error) {
+        console.error('Failed to initialize HLS.js', error)
+        attachNative()
+      }
+    }
+
+    setup()
+
+    return () => {
+      cancelled = true
+      if (hls) {
+        hls.destroy()
+        hls = null
+      }
+    }
+  }, [videoUrl, isHlsSource])
 
   return (
     <figure className="my-8">
@@ -196,7 +271,8 @@ export const OptimizedVideo: React.FC<OptimizedVideoProps> = ({
 
         {/* Actual video element */}
         <video
-          src={videoUrl}
+          ref={videoRef}
+          src={isHlsSource ? undefined : videoUrl}
           autoPlay={autoplay}
           muted={muted}
           controls={controls}
@@ -214,7 +290,13 @@ export const OptimizedVideo: React.FC<OptimizedVideoProps> = ({
           }}
           aria-label={caption ?? 'Video content'}
         >
-          <source src={videoUrl} type="video/mp4" />
+          {!isHlsSource && <source src={videoUrl} type="video/mp4" />}
+          <track
+            kind="captions"
+            label="Captions"
+            srcLang="so"
+            src="data:text/vtt;charset=utf-8,WEBVTT"
+          />
           Brawser-kaagu ma taageero qaybta muuqaalka.
         </video>
       </div>
@@ -234,8 +316,8 @@ export const VideoBlock: React.FC<VideoBlockProps> = ({
   controls = true,
   loop = false,
 }) => {
-  const videoUrl = typeof video === 'string' ? video : (video as Media | null)?.url
   const videoObj = typeof video === 'string' ? null : video
+  const videoUrl = typeof video === 'string' ? video : (videoObj?.url ?? null)
   const caption = videoObj?.caption
 
   if (!videoUrl) {

@@ -5,7 +5,7 @@ export const PodcastSeries: CollectionConfig = {
   slug: 'podcastSeries',
   admin: {
     useAsTitle: 'name',
-    group: 'Content Management',
+    group: 'Audio Hub',
   },
   access: {
     read: () => true,

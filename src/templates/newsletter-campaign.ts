@@ -7,6 +7,15 @@ interface NewsletterCampaignTemplateParams {
   subscriberEmail: string
   unsubscribeUrl: string
   siteUrl?: string
+  topArticles?: NewsletterTopArticle[]
+}
+
+interface NewsletterTopArticle {
+  title: string
+  summary?: string
+  url: string
+  views?: number
+  imageUrl?: string
 }
 
 interface LexicalNode {
@@ -80,6 +89,43 @@ function convertLexicalNodesToText(nodes: LexicalNode[]): string {
     .join('')
 }
 
+const lexicalNodeHandlers: Record<string, (node: LexicalNode) => string> = {
+  paragraph: (node) => {
+    const paragraphContent = node.children ? convertLexicalNodesToText(node.children) : ''
+    return `${paragraphContent}\n`
+  },
+  heading: (node) => {
+    const headingContent = node.children ? convertLexicalNodesToText(node.children) : ''
+    const level = node.tag?.replace('h', '') || '1'
+    const prefixMap: Record<string, string> = {
+      '1': '# ',
+      '2': '## ',
+      '3': '### ',
+    }
+    const prefix = prefixMap[level] || ''
+    return `${prefix}${headingContent}\n\n`
+  },
+  list: (node) => {
+    const listContent = node.children ? convertLexicalNodesToText(node.children) : ''
+    return `${listContent}\n`
+  },
+  listitem: (node) => {
+    const listItemContent = node.children ? convertLexicalNodesToText(node.children) : ''
+    return `• ${listItemContent.replace(/\n+$/, '')}\n`
+  },
+  quote: (node) => {
+    const quoteContent = node.children ? convertLexicalNodesToText(node.children) : ''
+    return `> ${quoteContent.replace(/\n+$/, '')}\n\n`
+  },
+  horizontalrule: () => '─────────────────────────────────────\n\n',
+  link: (node) => {
+    const linkContent = node.children ? convertLexicalNodesToText(node.children) : ''
+    const url = node.fields?.url || node.url || '#'
+    return `${linkContent} (${url})`
+  },
+  linebreak: () => '\n',
+}
+
 function convertLexicalNodeToText(node: LexicalNode): string {
   if (!node) return ''
 
@@ -87,57 +133,76 @@ function convertLexicalNodeToText(node: LexicalNode): string {
     return node.text || ''
   }
 
-  switch (node.type) {
-    case 'paragraph': {
-      const paragraphContent = node.children ? convertLexicalNodesToText(node.children) : ''
-      return paragraphContent + '\n'
-    }
-
-    case 'heading': {
-      const headingContent = node.children ? convertLexicalNodesToText(node.children) : ''
-      const level = node.tag?.replace('h', '') || '1'
-      const prefixMap: { [key: string]: string } = {
-        '1': '# ',
-        '2': '## ',
-        '3': '### ',
-      }
-      const prefix = prefixMap[level] || ''
-      return prefix + headingContent + '\n\n'
-    }
-
-    case 'list': {
-      const listContent = node.children ? convertLexicalNodesToText(node.children) : ''
-      return listContent + '\n'
-    }
-
-    case 'listitem': {
-      const listItemContent = node.children ? convertLexicalNodesToText(node.children) : ''
-      return '• ' + listItemContent.replace(/\n+$/, '') + '\n'
-    }
-
-    case 'quote': {
-      const quoteContent = node.children ? convertLexicalNodesToText(node.children) : ''
-      return '> ' + quoteContent.replace(/\n+$/, '') + '\n\n'
-    }
-
-    case 'horizontalrule':
-      return '─────────────────────────────────────\n\n'
-
-    case 'link': {
-      const linkContent = node.children ? convertLexicalNodesToText(node.children) : ''
-      const url = node.fields?.url || node.url || '#'
-      return `${linkContent} (${url})`
-    }
-
-    case 'linebreak':
-      return '\n'
-
-    default:
-      if (node.children) {
-        return convertLexicalNodesToText(node.children)
-      }
-      return ''
+  const handler = node.type ? lexicalNodeHandlers[node.type] : undefined
+  if (handler) {
+    return handler(node)
   }
+
+  if (node.children) {
+    return convertLexicalNodesToText(node.children)
+  }
+
+  return ''
+}
+
+function buildTopStoriesHtml(articles: NewsletterTopArticle[] | undefined): string {
+  if (!articles || articles.length === 0) {
+    return ''
+  }
+
+  const cards = articles
+    .map((article) => {
+      const safeTitle = escapeHtml(article.title)
+      const safeSummary = escapeHtml(
+        article.summary || 'Akhriso warbixinta oo dhammaystiran boggayaga.',
+      )
+      const safeUrl = escapeHtml(article.url)
+      const image = article.imageUrl
+        ? `<img src="${escapeHtml(article.imageUrl)}" alt="${safeTitle}" style="width: 100%; max-height: 180px; object-fit: cover; border-radius: 8px; margin-bottom: 12px;" />`
+        : ''
+      const viewsBadge =
+        typeof article.views === 'number'
+          ? `<span style="font-size: 12px; color: #6c757d;">${article.views.toLocaleString('en-US')} views</span>`
+          : ''
+
+      return `
+        <div style="border: 1px solid #e9ecef; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+          ${image}
+          <h3 style="margin: 0 0 8px 0; font-size: 18px; color: #0f172a;">${safeTitle}</h3>
+          <p style="margin: 0 0 12px 0; color: #444; font-size: 14px; line-height: 1.5;">${safeSummary}</p>
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+            <a href="${safeUrl}" style="color: #b01c14; font-weight: bold; text-decoration: none;">Akhri Warbixinta →</a>
+            ${viewsBadge}
+          </div>
+        </div>
+      `
+    })
+    .join('')
+
+  return `
+    <section style="margin-bottom: 32px;">
+      <p style="text-transform: uppercase; letter-spacing: 1px; font-size: 12px; color: #6c757d; margin-bottom: 12px;">5-ta War ee Maanta</p>
+      ${cards}
+    </section>
+  `
+}
+
+function buildTopStoriesText(articles: NewsletterTopArticle[] | undefined): string {
+  if (!articles || articles.length === 0) return ''
+
+  const lines = ['TOP STORIES', '================================']
+
+  for (const [index, article] of articles.entries()) {
+    const viewsText = typeof article.views === 'number' ? ` (Views: ${article.views})` : ''
+    lines.push(
+      `${index + 1}. ${article.title}`,
+      article.summary ? article.summary : 'Akhriso warbixinta oo dhammaystiran boggayaga.',
+      `Link: ${article.url}${viewsText}`,
+      '',
+    )
+  }
+
+  return lines.join('\n')
 }
 
 export async function renderNewsletterCampaignHtml({
@@ -146,6 +211,7 @@ export async function renderNewsletterCampaignHtml({
   subscriberEmail,
   unsubscribeUrl,
   siteUrl,
+  topArticles,
 }: NewsletterCampaignTemplateParams): Promise<string> {
   let htmlContent = ''
 
@@ -216,6 +282,7 @@ export async function renderNewsletterCampaignHtml({
   const resolvedSiteUrl = siteUrl || 'https://dawan.so'
   const normalizedSiteUrl = resolvedSiteUrl.replace(/\/$/, '')
   const preferencesUrl = `${normalizedSiteUrl}/newsletter`
+  const topStoriesSection = buildTopStoriesHtml(topArticles)
   const currentYear = new Date().getFullYear()
 
   return `
@@ -392,7 +459,8 @@ export async function renderNewsletterCampaignHtml({
         
         <!-- Main Content -->
         <div class="content">
-            ${htmlContent}
+          ${topStoriesSection}
+          ${htmlContent}
             
             <div class="cta-section">
                 <a href="${normalizedSiteUrl}" class="cta-button">Visit Our Website</a>
@@ -430,6 +498,7 @@ export function renderNewsletterCampaignText({
   subscriberEmail,
   unsubscribeUrl,
   siteUrl,
+  topArticles,
 }: NewsletterCampaignTemplateParams): string {
   let textContent = ''
 
@@ -447,12 +516,15 @@ export function renderNewsletterCampaignText({
   const resolvedSiteUrl = siteUrl || 'https://dawan.so'
   const normalizedSiteUrl = resolvedSiteUrl.replace(/\/$/, '')
   const preferencesUrl = `${normalizedSiteUrl}/newsletter`
+  const topStoriesText = buildTopStoriesText(topArticles)
   const currentYear = new Date().getFullYear()
 
   return `
 Dawan TV NEWSLETTER
 ${subject}
 ================================
+
+${topStoriesText}
 
 ${textContent}
 

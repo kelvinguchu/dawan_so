@@ -1,15 +1,21 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Podcast } from '@/payload-types'
-import { Headphones, Play, Calendar, MoreHorizontal } from 'lucide-react'
+import { Headphones, Play, Calendar, MoreHorizontal, Pause } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
-import { getPodcastDisplayTitle, getPodcastCoverImage } from '@/utils/podcastUtils'
+import {
+  getPodcastDisplayTitle,
+  getPodcastCoverImage,
+  getPodcastAudioUrl,
+  formatPeopleInvolved,
+} from '@/utils/podcastUtils'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { PodcastDetailsSheet } from './PodcastDetailsSheet'
+import { useAudioPlayer, AudioTrack } from '@/contexts/AudioPlayerContext'
 
 interface PodcastCardProps {
   podcast: Podcast
@@ -29,11 +35,60 @@ const formatDate = (dateString: string) => {
   }
 }
 
-export const PodcastCard: React.FC<PodcastCardProps> = ({ podcast, variant = 'default' }) => {
+export const PodcastCard: React.FC<PodcastCardProps> = ({
+  podcast,
+  variant = 'default',
+  showCategories = false,
+}) => {
   const [isDetailOpen, setIsDetailOpen] = useState(false)
+  const { currentTrack, isPlaying, setCurrentTrack, togglePlayPause, showPlayer, prefetchTrack } =
+    useAudioPlayer()
 
   const coverImageUrl = getPodcastCoverImage(podcast)
   const displayTitle = getPodcastDisplayTitle(podcast)
+  const audioUrl = getPodcastAudioUrl(podcast)
+  const peopleInvolved = formatPeopleInvolved(podcast.peopleInvolved)
+  const categoryNames = useMemo(() => {
+    if (!showCategories || !podcast.categories || !Array.isArray(podcast.categories)) {
+      return [] as string[]
+    }
+    return podcast.categories
+      .map((category) => (typeof category === 'object' && category?.name ? category.name : null))
+      .filter(Boolean) as string[]
+  }, [podcast.categories, showCategories])
+
+  const audioTrack: AudioTrack | null = useMemo(() => {
+    if (!audioUrl) return null
+    return {
+      id: `podcast-${podcast.id}`,
+      title: displayTitle,
+      artist: peopleInvolved || undefined,
+      src: audioUrl,
+      duration: podcast.duration ?? undefined,
+      thumbnail: coverImageUrl ?? undefined,
+    }
+  }, [audioUrl, coverImageUrl, displayTitle, peopleInvolved, podcast.duration, podcast.id])
+
+  useEffect(() => {
+    if (audioTrack) {
+      prefetchTrack(audioTrack)
+    }
+  }, [audioTrack, prefetchTrack])
+
+  const isCurrentTrack = audioTrack && currentTrack?.id === audioTrack.id
+  const isCurrentlyPlaying = Boolean(isCurrentTrack && isPlaying)
+
+  const handlePlayClick = () => {
+    if (!audioTrack) return
+
+    if (isCurrentTrack) {
+      showPlayer()
+      togglePlayPause()
+      return
+    }
+
+    setCurrentTrack(audioTrack, true)
+  }
 
   if (variant === 'compact') {
     return (
@@ -83,16 +138,27 @@ export const PodcastCard: React.FC<PodcastCardProps> = ({ podcast, variant = 'de
                   {displayTitle}
                 </Link>
               </h3>
+              {categoryNames.length > 0 && (
+                <p className="text-[11px] text-slate-500 line-clamp-1">
+                  {categoryNames.join(', ')}
+                </p>
+              )}
             </div>
 
             {/* Action Buttons */}
             <div className="flex items-center gap-2 flex-shrink-0">
               <Button
+                type="button"
                 variant="outline"
                 size="sm"
-                className="w-9 h-9 border-[#b01c14]/80 text-[#b01c14] hover:bg-[#b01c14]/80 hover:border-[#b01c14]/40"
+                onClick={handlePlayClick}
+                disabled={!audioTrack}
+                aria-label={isCurrentlyPlaying ? 'Hakadi qaybta' : 'Dhageyso qaybta'}
+                className={`w-9 h-9 border-[#b01c14]/80 text-[#b01c14] hover:bg-[#b01c14]/80 hover:text-white hover:border-[#b01c14]/40 ${
+                  isCurrentlyPlaying ? 'bg-[#b01c14]/80 text-white' : ''
+                }`}
               >
-                <Play className="w-4 h-4 ml-0.5" />
+                {isCurrentlyPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
               </Button>
 
               <PodcastDetailsSheet
@@ -162,6 +228,11 @@ export const PodcastCard: React.FC<PodcastCardProps> = ({ podcast, variant = 'de
                   {displayTitle}
                 </Link>
               </h3>
+              {categoryNames.length > 0 && (
+                <p className="text-xs text-white/80 mt-1 line-clamp-1">
+                  {categoryNames.join(', ')}
+                </p>
+              )}
             </div>
           </div>
         )}
@@ -170,11 +241,22 @@ export const PodcastCard: React.FC<PodcastCardProps> = ({ podcast, variant = 'de
         <CardContent className="p-4">
           <div className="flex gap-2">
             <Button
+              type="button"
               variant="outline"
-              className="flex-1 h-9 font-semibold transition-all duration-300 rounded-lg text-sm border-[#b01c14]/80 text-[#b01c14] hover:bg-[#b01c14]/80 hover:border-[#b01c14]/40"
+              onClick={handlePlayClick}
+              disabled={!audioTrack}
+              className={`flex-1 h-9 font-semibold transition-all duration-300 rounded-lg text-sm border-[#b01c14]/80 hover:border-[#b01c14]/40 ${
+                isCurrentlyPlaying
+                  ? 'bg-[#b01c14]/80 text-white'
+                  : 'text-[#b01c14] hover:bg-[#b01c14]/80'
+              }`}
             >
-              <Play className="w-4 h-4 mr-2" />
-              Faahfaahin
+              {isCurrentlyPlaying ? (
+                <Pause className="w-4 h-4 mr-2" />
+              ) : (
+                <Play className="w-4 h-4 mr-2" />
+              )}
+              {isCurrentlyPlaying ? 'Hakadi' : 'Dhageyso'}
             </Button>
 
             <PodcastDetailsSheet

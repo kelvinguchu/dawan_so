@@ -233,13 +233,7 @@ export const SeriesDisplay: React.FC<SeriesDisplayProps> = ({
                             </Link>
                           </h4>
 
-                          <div className="flex items-center gap-2 flex-shrink-0">
-                            {podcast.featured && (
-                              <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 text-xs">
-                                La iftiimiyay
-                              </Badge>
-                            )}
-                          </div>
+                          <div className="flex items-center gap-2 flex-shrink-0" />
                         </div>
 
                         <div className="flex items-center gap-4 text-sm text-slate-500">
@@ -284,16 +278,7 @@ export const SeriesDisplay: React.FC<SeriesDisplayProps> = ({
           {/* Show More/Less Buttons */}
           {hasMoreEpisodes && (
             <div className="p-6 pt-4">
-              {!showAll ? (
-                <div className="text-center">
-                  <Button
-                    onClick={() => setShowAll(true)}
-                    className="bg-[#b01c14] hover:bg-[#b01c14]/90 text-white h-11 px-8 rounded-full shadow-lg hover:shadow-xl hover:shadow-[#b01c14]/30 transition-all duration-300"
-                  >
-                    Muuji {seriesEpisodes.length - maxEpisodesPreview} qaybood oo dheeraad ah
-                  </Button>
-                </div>
-              ) : (
+              {showAll ? (
                 <div className="text-center">
                   <Button
                     variant="ghost"
@@ -301,6 +286,15 @@ export const SeriesDisplay: React.FC<SeriesDisplayProps> = ({
                     className="text-slate-600 hover:text-[#b01c14] h-11 px-8 rounded-full hover:bg-[#b01c14]/80 transition-all duration-300"
                   >
                     Muuji wax yar
+                  </Button>
+                </div>
+              ) : (
+                <div className="text-center">
+                  <Button
+                    onClick={() => setShowAll(true)}
+                    className="bg-[#b01c14] hover:bg-[#b01c14]/90 text-white h-11 px-8 rounded-full shadow-lg hover:shadow-xl hover:shadow-[#b01c14]/30 transition-all duration-300"
+                  >
+                    Muuji {seriesEpisodes.length - maxEpisodesPreview} qaybood oo dheeraad ah
                   </Button>
                 </div>
               )}

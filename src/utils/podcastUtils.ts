@@ -1,4 +1,13 @@
-import { Podcast, Media, PodcastSery } from '@/payload-types'
+import type { Podcast, Media, PodcastSery, PodcastAudio } from '@/payload-types'
+
+const isSeriesDoc = (series: Podcast['series']): series is PodcastSery =>
+  typeof series === 'object' && series !== null
+
+const isMediaDoc = (media: Podcast['coverImage']): media is Media =>
+  typeof media === 'object' && media !== null
+
+const isAudioDoc = (audio: Podcast['audioFile']): audio is PodcastAudio =>
+  typeof audio === 'object' && audio !== null
 
 export const formatDuration = (seconds: number | null | undefined): string => {
   if (!seconds || seconds <= 0) return '0s'
@@ -33,8 +42,7 @@ export const formatDurationClock = (seconds: number | null | undefined): string 
 export const getPodcastDisplayTitle = (podcast: Podcast): string => {
   if (!podcast.series) return podcast.title
 
-  const seriesName =
-    typeof podcast.series === 'string' ? '' : (podcast.series as PodcastSery)?.name || ''
+  const seriesName = isSeriesDoc(podcast.series) ? podcast.series.name || '' : ''
   const episode = podcast.episodeNumber
 
   const parts: string[] = []
@@ -56,19 +64,17 @@ export const getPodcastSeriesLabel = (podcast: Podcast): string => {
 export const getPodcastCoverImage = (podcast: Podcast): string | null => {
   if (!podcast.coverImage) return null
 
-  if (typeof podcast.coverImage === 'string') return null
+  if (!isMediaDoc(podcast.coverImage)) return null
 
-  const media = podcast.coverImage as Media
-  return media.url || null
+  return podcast.coverImage.url || null
 }
 
 export const getPodcastAudioUrl = (podcast: Podcast): string | null => {
   if (!podcast.audioFile) return null
 
-  if (typeof podcast.audioFile === 'string') return null
+  if (!isAudioDoc(podcast.audioFile)) return null
 
-  const media = podcast.audioFile as Media
-  return media.url || null
+  return podcast.audioFile.url || null
 }
 
 export const formatPeopleInvolved = (peopleInvolved: Podcast['peopleInvolved']): string => {
@@ -78,13 +84,13 @@ export const formatPeopleInvolved = (peopleInvolved: Podcast['peopleInvolved']):
 
   const roleGroups: Record<string, string[]> = {}
 
-  peopleInvolved.forEach((person) => {
+  for (const person of peopleInvolved) {
     const role = formatPersonRole(person.role)
     if (!roleGroups[role]) {
       roleGroups[role] = []
     }
     roleGroups[role].push(person.name)
-  })
+  }
 
   const roleStrings = Object.entries(roleGroups).map(([role, names]) => {
     if (names.length === 1) {
@@ -143,20 +149,20 @@ export const groupPodcastsBySeries = (podcasts: Podcast[]): Record<string, Podca
     Standalone: [],
   }
 
-  podcasts.forEach((podcast) => {
+  for (const podcast of podcasts) {
     if (podcast.series) {
-      const seriesName =
-        typeof podcast.series === 'string'
-          ? 'Unknown Series'
-          : (podcast.series as PodcastSery)?.name || 'Unknown Series'
+      const seriesName = isSeriesDoc(podcast.series)
+        ? podcast.series.name || 'Unknown Series'
+        : 'Unknown Series'
+
       if (!groups[seriesName]) {
         groups[seriesName] = []
       }
       groups[seriesName].push(podcast)
     } else {
-      groups['Standalone'].push(podcast)
+      groups.Standalone.push(podcast)
     }
-  })
+  }
 
   return groups
 }
@@ -181,14 +187,11 @@ export const isPodcastInSeries = (podcast: Podcast): boolean => {
 export const getUniqueSeriesNames = (podcasts: Podcast[]): { id: string; name: string }[] => {
   const seriesMap = new Map<string, { id: string; name: string }>()
 
-  podcasts.forEach((podcast) => {
-    if (podcast.series && typeof podcast.series === 'object') {
-      const series = podcast.series as PodcastSery
-      if (series.id && series.name) {
-        seriesMap.set(series.id, { id: series.id, name: series.name })
-      }
+  for (const podcast of podcasts) {
+    if (isSeriesDoc(podcast.series) && podcast.series.id && podcast.series.name) {
+      seriesMap.set(podcast.series.id, { id: podcast.series.id, name: podcast.series.name })
     }
-  })
+  }
 
   return Array.from(seriesMap.values()).sort((a, b) => a.name.localeCompare(b.name))
 }

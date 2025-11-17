@@ -1,4 +1,4 @@
-import { Media } from '../../../payload-types'
+import { Media, VideoAsset } from '../../../payload-types'
 
 // Lexical Editor Types
 export interface LexicalTextNode {
@@ -131,7 +131,7 @@ export interface ImageBlockData {
 
 export interface VideoBlockData {
   blockType: 'video'
-  video: string | Media
+  video: string | VideoAsset
   autoplay?: boolean | null
   muted?: boolean | null
   controls?: boolean | null
@@ -494,7 +494,7 @@ export const isHtmlContent = (content: string): boolean => {
 
 // Utility function to extract plain text from HTML
 export const stripHtml = (html: string): string => {
-  return html.replace(/<[^>]*>/g, '')
+  return html.replaceAll(/<[^>]*>/g, '')
 }
 
 // Utility function to truncate text with ellipsis

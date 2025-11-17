@@ -27,6 +27,25 @@ const nextConfig = {
   },
 
   async headers() {
+    const scriptSrc = [
+      "'self'",
+      "'unsafe-inline'",
+      'https://www.googletagmanager.com',
+      'https://www.google-analytics.com',
+      'https://www.google.com',
+      'https://www.gstatic.com',
+      'https://tpc.googlesyndication.com',
+      'https://pagead2.googlesyndication.com',
+      'https://securepubads.g.doubleclick.net',
+      'https://googleads.g.doubleclick.net',
+      'https://fundingchoicesmessages.google.com',
+      'https://ep2.adtrafficquality.google',
+    ]
+
+    if (process.env.NODE_ENV !== 'production') {
+      scriptSrc.push("'unsafe-eval'")
+    }
+
     return [
       {
         source: '/api/(.*)',
@@ -57,15 +76,16 @@ const nextConfig = {
             value:
               "frame-ancestors 'self'; " +
               "frame-src 'self' https://www.googletagmanager.com https://*.doubleclick.net https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://www.google.com https://pagead2.googlesyndication.com https://fundingchoicesmessages.google.com https://*.google.com https://www.scoreaxis.com https://scoreaxis.com https://*.scoreaxis.com; " +
-              "connect-src 'self' https://*.google-analytics.com https://www.googletagmanager.com https://www.google.com https://*.google.com https://*.doubleclick.net https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://fundingchoicesmessages.google.com https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google https://api.open-meteo.com https://pro-api.coinmarketcap.com; " +
-              "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://www.google.com https://www.gstatic.com https://tpc.googlesyndication.com https://pagead2.googlesyndication.com https://securepubads.g.doubleclick.net https://googleads.g.doubleclick.net https://fundingchoicesmessages.google.com https://ep2.adtrafficquality.google; " +
+              "connect-src 'self' https://*.google-analytics.com https://www.googletagmanager.com https://www.google.com https://*.google.com https://*.doubleclick.net https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://fundingchoicesmessages.google.com https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google https://api.open-meteo.com https://pro-api.coinmarketcap.com https://video.bunnycdn.com https://video.bunnycdn.com/tusupload https://*.b-cdn.net; " +
+              "media-src 'self' https://video.bunnycdn.com https://*.b-cdn.net data: blob:; " +
+              `script-src ${scriptSrc.join(' ')}; ` +
               'img-src * data: blob:; ' +
               "style-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.gstatic.com; ",
           },
         ],
       },
       {
-        source: '/(.*\\.(?:mp4|webm|avi|mov|wmv|flv|mkv|m4v))',
+        source: String.raw`/(.*\.(?:mp4|webm|avi|mov|wmv|flv|mkv|m4v))`,
         headers: [
           { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
           { key: 'Accept-Ranges', value: 'bytes' },

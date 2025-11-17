@@ -1,14 +1,14 @@
 import React from 'react'
-import { BlogPost, BlogCategory } from '@/payload-types'
+import type { BlogPost } from '@/payload-types'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { getPostExcerpt, getPostImageFromLayout } from '@/utils/postUtils'
-import { ArticleClientView } from '@/components/news/ArticleClientView'
+import { Article } from '@/components/news/Article'
 import siteConfig, { sharedMetadata } from '@/app/shared-metadata'
 import { getPostBySlug, getRelatedPosts } from '@/lib/blog-actions'
 
 type Props = {
-  params: Promise<{ slug: string }>
+  readonly params: Promise<{ readonly slug: string }>
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -24,12 +24,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const excerpt = getPostExcerpt(post)
   const coverImageUrl = getPostImageFromLayout(post.layout)
-
-  const ogImageUrl = coverImageUrl
-    ? coverImageUrl.startsWith('http')
+  let ogImageUrl = `${siteConfig.url}/og-default.png`
+  if (coverImageUrl) {
+    ogImageUrl = coverImageUrl.startsWith('http')
       ? coverImageUrl
       : `${siteConfig.url}${coverImageUrl}`
-    : `${siteConfig.url}/og-default.png`
+  }
 
   return {
     ...sharedMetadata,
@@ -82,10 +82,7 @@ export default async function Page({ params }: Props) {
   let relatedPosts: BlogPost[] = []
   if (post.categories && post.categories.length > 0) {
     const categoryIds = post.categories
-      .map((cat) => {
-        if (typeof cat === 'string') return cat
-        return (cat as BlogCategory).id
-      })
+      .map((cat) => (typeof cat === 'string' ? cat : cat.id))
       .filter((id): id is string => id != null)
 
     if (categoryIds.length > 0) {
@@ -95,7 +92,7 @@ export default async function Page({ params }: Props) {
 
   return (
     <main className="bg-gray-50 min-h-screen">
-      <ArticleClientView post={post} relatedPosts={relatedPosts} />
+      <Article post={post} relatedPosts={relatedPosts} />
     </main>
   )
 }

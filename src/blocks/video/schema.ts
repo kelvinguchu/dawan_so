@@ -11,7 +11,7 @@ export const Video: Block = {
       name: 'video',
       type: 'upload',
       label: 'Video File',
-      relationTo: 'media',
+      relationTo: 'videoAssets',
       required: true,
       filterOptions: {
         mimeType: { contains: 'video' },
@@ -59,4 +59,3 @@ export const Video: Block = {
     },
   ],
 }
- 

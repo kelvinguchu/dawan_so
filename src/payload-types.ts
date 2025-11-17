@@ -69,6 +69,9 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
+    videoAssets: VideoAsset;
+    podcastAudio: PodcastAudio;
+    articleAudio: ArticleAudio;
     blogPosts: BlogPost;
     blogCategories: BlogCategory;
     podcasts: Podcast;
@@ -77,6 +80,8 @@ export interface Config {
     newsletterCampaigns: NewsletterCampaign;
     podcastSeries: PodcastSery;
     'push-subscriptions': PushSubscription;
+    'payload-kv': PayloadKv;
+    'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -85,6 +90,9 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    videoAssets: VideoAssetsSelect<false> | VideoAssetsSelect<true>;
+    podcastAudio: PodcastAudioSelect<false> | PodcastAudioSelect<true>;
+    articleAudio: ArticleAudioSelect<false> | ArticleAudioSelect<true>;
     blogPosts: BlogPostsSelect<false> | BlogPostsSelect<true>;
     blogCategories: BlogCategoriesSelect<false> | BlogCategoriesSelect<true>;
     podcasts: PodcastsSelect<false> | PodcastsSelect<true>;
@@ -93,6 +101,8 @@ export interface Config {
     newsletterCampaigns: NewsletterCampaignsSelect<false> | NewsletterCampaignsSelect<true>;
     podcastSeries: PodcastSeriesSelect<false> | PodcastSeriesSelect<true>;
     'push-subscriptions': PushSubscriptionsSelect<false> | PushSubscriptionsSelect<true>;
+    'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
+    'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -100,14 +110,24 @@ export interface Config {
   db: {
     defaultIDType: string;
   };
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    'payload-jobs-stats': PayloadJobsStat;
+  };
+  globalsSelect: {
+    'payload-jobs-stats': PayloadJobsStatsSelect<false> | PayloadJobsStatsSelect<true>;
+  };
   locale: null;
   user: User & {
     collection: 'users';
   };
   jobs: {
-    tasks: unknown;
+    tasks: {
+      sendDailyDigest: TaskSendDailyDigest;
+      inline: {
+        input: unknown;
+        output: unknown;
+      };
+    };
     workflows: unknown;
   };
 }
@@ -270,7 +290,7 @@ export interface BlogPost {
               root: {
                 type: string;
                 children: {
-                  type: string;
+                  type: any;
                   version: number;
                   [k: string]: unknown;
                 }[];
@@ -290,7 +310,7 @@ export interface BlogPost {
               root: {
                 type: string;
                 children: {
-                  type: string;
+                  type: any;
                   version: number;
                   [k: string]: unknown;
                 }[];
@@ -317,7 +337,7 @@ export interface BlogPost {
             /**
              * Upload a video file (MP4, WebM, etc.)
              */
-            video: string | Media;
+            video: string | VideoAsset;
             /**
              * Whether the video should start playing automatically (note: most browsers require videos to be muted for autoplay)
              */
@@ -378,6 +398,10 @@ export interface BlogPost {
           }
       )[]
     | null;
+  /**
+   * Optional narrated audio uploaded manually. You can add or replace later.
+   */
+  articleAudio?: (string | null) | ArticleAudio;
   categories?: (string | BlogCategory)[] | null;
   /**
    * Check this to manually enter reporter details instead of selecting a user account.
@@ -431,6 +455,61 @@ export interface BlogPost {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "videoAssets".
+ */
+export interface VideoAsset {
+  id: string;
+  /**
+   * Internal label shown in the media library.
+   */
+  title: string;
+  /**
+   * Optional notes or synopsis for the uploaded episode.
+   */
+  description?: string | null;
+  bunnyVideoId?: string | null;
+  prefix?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
+ * Narrated article audio uploads.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "articleAudio".
+ */
+export interface ArticleAudio {
+  id: string;
+  /**
+   * Optional label to help editors find article narrations.
+   */
+  title?: string | null;
+  description?: string | null;
+  bunnyVideoId?: string | null;
+  prefix?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "blogCategories".
  */
 export interface BlogCategory {
@@ -442,6 +521,31 @@ export interface BlogCategory {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "podcastAudio".
+ */
+export interface PodcastAudio {
+  id: string;
+  /**
+   * Optional label that makes audio uploads easier to find.
+   */
+  title?: string | null;
+  description?: string | null;
+  bunnyVideoId?: string | null;
+  prefix?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "podcasts".
  */
 export interface Podcast {
@@ -449,7 +553,7 @@ export interface Podcast {
   title: string;
   slug: string;
   description: string;
-  audioFile: string | Media;
+  audioFile: string | PodcastAudio;
   series?: (string | null) | PodcastSery;
   episodeNumber?: number | null;
   duration?: number | null;
@@ -465,7 +569,6 @@ export interface Podcast {
   coverImage?: (string | null) | Media;
   publishedAt?: string | null;
   isPublished?: boolean | null;
-  featured?: boolean | null;
   playCount?: number | null;
   likes?: number | null;
   externalLinks?:
@@ -558,7 +661,7 @@ export interface NewsletterCampaign {
     root: {
       type: string;
       children: {
-        type: string;
+        type: any;
         version: number;
         [k: string]: unknown;
       }[];
@@ -569,6 +672,30 @@ export interface NewsletterCampaign {
     };
     [k: string]: unknown;
   };
+  /**
+   * Automatically populated each evening with the 5 most viewed stories.
+   */
+  topArticles?:
+    | {
+        post?: (string | null) | BlogPost;
+        title: string;
+        summary?: string | null;
+        url: string;
+        views?: number | null;
+        /**
+         * Optional hero image URL for this article.
+         */
+        imageUrl?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  digestDate?: string | null;
+  /**
+   * Indicates whether this campaign was prepared by the nightly job.
+   */
+  autoGenerated?: boolean | null;
+  lastGeneratedAt?: string | null;
+  generationSummary?: string | null;
   status?: ('draft' | 'send_now' | 'sent' | 'failed') | null;
   sentAt?: string | null;
   sentCount?: number | null;
@@ -596,6 +723,124 @@ export interface PushSubscription {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-kv".
+ */
+export interface PayloadKv {
+  id: string;
+  key: string;
+  data:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs".
+ */
+export interface PayloadJob {
+  id: string;
+  /**
+   * Input data provided to the job
+   */
+  input?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  taskStatus?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  completedAt?: string | null;
+  totalTried?: number | null;
+  /**
+   * If hasError is true this job will not be retried
+   */
+  hasError?: boolean | null;
+  /**
+   * If hasError is true, this is the error that caused it
+   */
+  error?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Task execution log
+   */
+  log?:
+    | {
+        executedAt: string;
+        completedAt: string;
+        taskSlug: 'inline' | 'sendDailyDigest';
+        taskID: string;
+        input?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        output?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        state: 'failed' | 'succeeded';
+        error?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  taskSlug?: ('inline' | 'sendDailyDigest') | null;
+  queue?: string | null;
+  waitUntil?: string | null;
+  processing?: boolean | null;
+  meta?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -608,6 +853,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'media';
         value: string | Media;
+      } | null)
+    | ({
+        relationTo: 'videoAssets';
+        value: string | VideoAsset;
+      } | null)
+    | ({
+        relationTo: 'podcastAudio';
+        value: string | PodcastAudio;
+      } | null)
+    | ({
+        relationTo: 'articleAudio';
+        value: string | ArticleAudio;
       } | null)
     | ({
         relationTo: 'blogPosts';
@@ -780,6 +1037,69 @@ export interface MediaSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "videoAssets_select".
+ */
+export interface VideoAssetsSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  bunnyVideoId?: T;
+  prefix?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "podcastAudio_select".
+ */
+export interface PodcastAudioSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  bunnyVideoId?: T;
+  prefix?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "articleAudio_select".
+ */
+export interface ArticleAudioSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  bunnyVideoId?: T;
+  prefix?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "blogPosts_select".
  */
 export interface BlogPostsSelect<T extends boolean = true> {
@@ -844,6 +1164,7 @@ export interface BlogPostsSelect<T extends boolean = true> {
               blockName?: T;
             };
       };
+  articleAudio?: T;
   categories?: T;
   useManualReporter?: T;
   manualReporter?:
@@ -897,7 +1218,6 @@ export interface PodcastsSelect<T extends boolean = true> {
   coverImage?: T;
   publishedAt?: T;
   isPublished?: T;
-  featured?: T;
   playCount?: T;
   likes?: T;
   externalLinks?:
@@ -972,6 +1292,21 @@ export interface NewsletterSelect<T extends boolean = true> {
 export interface NewsletterCampaignsSelect<T extends boolean = true> {
   subject?: T;
   content?: T;
+  topArticles?:
+    | T
+    | {
+        post?: T;
+        title?: T;
+        summary?: T;
+        url?: T;
+        views?: T;
+        imageUrl?: T;
+        id?: T;
+      };
+  digestDate?: T;
+  autoGenerated?: T;
+  lastGeneratedAt?: T;
+  generationSummary?: T;
   status?: T;
   sentAt?: T;
   sentCount?: T;
@@ -1009,6 +1344,46 @@ export interface PushSubscriptionsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-kv_select".
+ */
+export interface PayloadKvSelect<T extends boolean = true> {
+  key?: T;
+  data?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs_select".
+ */
+export interface PayloadJobsSelect<T extends boolean = true> {
+  input?: T;
+  taskStatus?: T;
+  completedAt?: T;
+  totalTried?: T;
+  hasError?: T;
+  error?: T;
+  log?:
+    | T
+    | {
+        executedAt?: T;
+        completedAt?: T;
+        taskSlug?: T;
+        taskID?: T;
+        input?: T;
+        output?: T;
+        state?: T;
+        error?: T;
+        id?: T;
+      };
+  taskSlug?: T;
+  queue?: T;
+  waitUntil?: T;
+  processing?: T;
+  meta?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents_select".
  */
 export interface PayloadLockedDocumentsSelect<T extends boolean = true> {
@@ -1038,6 +1413,42 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs-stats".
+ */
+export interface PayloadJobsStat {
+  id: string;
+  stats?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs-stats_select".
+ */
+export interface PayloadJobsStatsSelect<T extends boolean = true> {
+  stats?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskSendDailyDigest".
+ */
+export interface TaskSendDailyDigest {
+  input?: unknown;
+  output?: unknown;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

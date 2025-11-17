@@ -2,23 +2,52 @@ import { BlogPost, Media, User } from '@/payload-types'
 
 type ImageSize = 'thumbnail' | 'card' | 'tablet'
 
-export const getPostImageFromLayout = (  layout: BlogPost['layout'],  size?: ImageSize,): string | null => {
-  if (!layout) return null
+const isMedia = (value: unknown): value is Media => {
+  return Boolean(value) && typeof value === 'object' && 'url' in (value as Record<string, unknown>)
+}
+
+const resolveMediaUrl = (image: unknown, size?: ImageSize): string | null => {
+  if (!isMedia(image)) {
+    return null
+  }
+
+  if (size) {
+    return image.sizes?.[size]?.url ?? image.url ?? null
+  }
+
+  return image.url ?? null
+}
+
+export const getPostImageFromLayout = (
+  layout: BlogPost['layout'],
+  size?: ImageSize,
+): string | null => {
+  if (!layout) {
+    return null
+  }
+
+  let fallbackUrl: string | null = null
+
   for (const block of layout) {
-    if (block.blockType === 'cover' && block.image) {
-      const media = typeof block.image === 'string' ? null : (block.image as Media)
-      if (!media) return null
-      return size ? media.sizes?.[size]?.url ?? media.url ?? null : media.url ?? null
+    if (!block || (block.blockType !== 'cover' && block.blockType !== 'image')) {
+      continue
+    }
+
+    const imageUrl = resolveMediaUrl(block.image, size)
+    if (!imageUrl) {
+      continue
+    }
+
+    if (block.blockType === 'cover') {
+      return imageUrl
+    }
+
+    if (!fallbackUrl) {
+      fallbackUrl = imageUrl
     }
   }
-  for (const block of layout) {
-    if (block.blockType === 'image' && block.image) {
-      const media = typeof block.image === 'string' ? null : (block.image as Media)
-      if (!media) return null
-      return size ? media.sizes?.[size]?.url ?? media.url ?? null : media.url ?? null
-    }
-  }
-  return null
+
+  return fallbackUrl
 }
 
 interface GetPostExcerptOptions {
@@ -26,83 +55,115 @@ interface GetPostExcerptOptions {
   maxLength?: number
 }
 
-export const getPostExcerpt = (
-  post: BlogPost,
-  options: GetPostExcerptOptions = { prioritizeCoverSubheading: true, maxLength: 180 },
-): string => {
-  const { prioritizeCoverSubheading = true, maxLength = 180 } = options
-  if (!post.layout) return ''
+const DEFAULT_EXCERPT_OPTIONS: Required<GetPostExcerptOptions> = {
+  prioritizeCoverSubheading: true,
+  maxLength: 180,
+}
 
-  if (prioritizeCoverSubheading) {
-    for (const block of post.layout) {
-      if (block.blockType === 'cover' && block.subheading) {
-        const subheading = block.subheading as string
-        return subheading.length > maxLength
-          ? `${subheading.substring(0, maxLength)}...`
-          : subheading
+const truncateText = (text: string, maxLength: number): string => {
+  return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text
+}
+
+const findCoverSubheading = (layout: BlogPost['layout']): string | null => {
+  if (!layout) {
+    return null
+  }
+
+  for (const block of layout) {
+    if (block.blockType === 'cover' && typeof block.subheading === 'string') {
+      return block.subheading
+    }
+  }
+
+  return null
+}
+
+const findFirstRichText = (layout: BlogPost['layout']): string | null => {
+  if (!layout) {
+    return null
+  }
+
+  for (const block of layout) {
+    if (block.blockType === 'richtext' && 'content' in block) {
+      const textNode = block.content?.root?.children?.[0]
+      if (textNode && typeof textNode.text === 'string') {
+        return textNode.text
       }
     }
   }
 
-  for (const block of post.layout) {
-    if (block.blockType === 'richtext' && block.content?.root?.children?.[0]?.text) {
-      const text = block.content.root.children[0].text as string
-      return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text
+  return null
+}
+
+export const getPostExcerpt = (post: BlogPost, options?: GetPostExcerptOptions): string => {
+  if (!post.layout) {
+    return ''
+  }
+
+  const { prioritizeCoverSubheading, maxLength } = {
+    ...DEFAULT_EXCERPT_OPTIONS,
+    ...options,
+  }
+
+  if (prioritizeCoverSubheading) {
+    const coverExcerpt = findCoverSubheading(post.layout)
+    if (coverExcerpt) {
+      return truncateText(coverExcerpt, maxLength)
     }
   }
 
-  return ''
+  const richTextExcerpt = findFirstRichText(post.layout)
+  return richTextExcerpt ? truncateText(richTextExcerpt, maxLength) : ''
+}
+
+const isUserAuthor = (author: BlogPost['author']): author is User => {
+  return Boolean(author) && typeof author === 'object'
+}
+
+const getUserFromAuthor = (author: BlogPost['author']): User | null => {
+  return isUserAuthor(author) ? author : null
 }
 
 export const getAuthorDisplayName = (author: BlogPost['author']): string => {
-  if (!author) return 'Unknown Author'
-
-  if (typeof author === 'object' && author !== null) {
-    const user = author as User
-    return user.name || user.email?.split('@')[0] || 'Unknown Author'
+  const user = getUserFromAuthor(author)
+  if (!user) {
+    return 'Unknown Author'
   }
-  return 'Unknown Author'
+
+  return user.name || user.email?.split('@')[0] || 'Unknown Author'
 }
 
 export const getAuthorName = (author: BlogPost['author']): string => {
-  if (!author) return 'Unknown Author'
-
-  if (typeof author === 'object' && author !== null) {
-    const user = author as User
-    return user.name || 'Unknown Author'
-  }
-  return 'Unknown Author'
+  const user = getUserFromAuthor(author)
+  return user?.name || 'Unknown Author'
 }
 
+const CONTENT_CREATOR_ROLES = new Set(['analyst', 'columnist', 'reporter', 'contributor'])
+
 export const getAuthorRole = (author: BlogPost['author']): string => {
-  if (!author) return 'Contributor'
-
-  if (typeof author === 'object' && author !== null) {
-    const user = author as User
-    if (user.roles && user.roles.length > 0) {
-      const contentCreatorRoles = ['analyst', 'columnist', 'reporter', 'contributor']
-      const contentCreatorRole = user.roles.find((role) => contentCreatorRoles.includes(role))
-
-      const primaryRole =
-        contentCreatorRole || user.roles.find((role) => role !== 'user') || user.roles[0]
-
-      switch (primaryRole) {
-        case 'admin':
-          return 'Admin'
-        case 'analyst':
-          return 'Analyst'
-        case 'columnist':
-          return 'Columnist'
-        case 'reporter':
-          return 'Reporter'
-        case 'contributor':
-          return 'Contributor'
-        default:
-          return 'Contributor'
-      }
-    }
+  const user = getUserFromAuthor(author)
+  if (!user?.roles?.length) {
+    return 'Contributor'
   }
-  return 'Contributor'
+
+  const contentCreatorRole = user.roles.find((role) => CONTENT_CREATOR_ROLES.has(role))
+  const primaryRole =
+    contentCreatorRole || user.roles.find((role) => role !== 'user') || user.roles[0]
+
+  switch (primaryRole) {
+    case 'admin':
+      return 'Admin'
+    case 'analyst':
+      return 'Analyst'
+    case 'columnist':
+      return 'Columnist'
+    case 'reporter':
+      return 'Reporter'
+    case 'contributor':
+      return 'Contributor'
+    default:
+      return 'Contributor'
+  }
 }
 
 export const getPostAuthorName = (post: BlogPost): string => {

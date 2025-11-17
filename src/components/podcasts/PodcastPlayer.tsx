@@ -1,11 +1,10 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Podcast } from '@/payload-types'
 import {
-  Play,
   Maximize2,
   Minimize2,
   ExternalLink,
@@ -16,7 +15,6 @@ import {
   Calendar,
   Tag,
   Headphones,
-  Download,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -29,6 +27,8 @@ import {
   formatPeopleInvolved,
 } from '@/utils/podcastUtils'
 import { formatTimeAgo } from '@/utils/dateUtils'
+import { AudioTrigger } from '@/components/audio/AudioTrigger'
+import { AudioTrack } from '@/contexts/AudioPlayerContext'
 
 interface PodcastPlayerProps {
   podcast: Podcast
@@ -52,6 +52,17 @@ export const PodcastPlayer: React.FC<PodcastPlayerProps> = ({
   const excerpt = getPodcastExcerpt(podcast, 200)
   const peopleInvolved = formatPeopleInvolved(podcast.peopleInvolved)
   const categories = podcast.categories
+  const audioTrack: AudioTrack | null = useMemo(() => {
+    if (!audioUrl) return null
+    return {
+      id: `podcast-${podcast.id}`,
+      title: displayTitle,
+      artist: peopleInvolved || undefined,
+      src: audioUrl,
+      duration: podcast.duration ?? undefined,
+      thumbnail: coverImageUrl ?? undefined,
+    }
+  }, [audioUrl, coverImageUrl, displayTitle, peopleInvolved, podcast.duration, podcast.id])
 
   if (variant === 'compact') {
     return (
@@ -103,14 +114,7 @@ export const PodcastPlayer: React.FC<PodcastPlayerProps> = ({
 
             {/* Controls */}
             <div className="flex items-center gap-3 flex-shrink-0">
-              <Button
-                variant="ghost"
-                size="sm"
-                disabled={!audioUrl}
-                className="w-10 h-10 p-0 rounded-full bg-[#b01c14]/80 hover:bg-[#b01c14]/80 text-[#b01c14] transition-all duration-300"
-              >
-                <Play className="w-4 h-4 ml-0.5" />
-              </Button>
+              {audioTrack && <AudioTrigger track={audioTrack} size="sm" />}
             </div>
           </div>
         </div>
@@ -147,11 +151,6 @@ export const PodcastPlayer: React.FC<PodcastPlayerProps> = ({
                 <Badge className="bg-[#b01c14]/80 text-[#b01c14] border-[#b01c14]/80 font-medium">
                   Podcast Episode
                 </Badge>
-                {podcast.featured && (
-                  <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0">
-                    Featured
-                  </Badge>
-                )}
               </div>
 
               <h1 className="text-3xl font-bold text-slate-900 leading-tight">{displayTitle}</h1>
@@ -253,30 +252,24 @@ export const PodcastPlayer: React.FC<PodcastPlayerProps> = ({
 
           {/* Controls & Info */}
           <div className="flex-grow space-y-8">
-            {/* Audio player controls removed */}
-            <div className="flex items-center justify-center">
-              <p className="text-slate-500 text-sm">
-                Shaqada ciyaar-maal ah ee maqal waa la naafo yeelay
-              </p>
-            </div>
+            {audioTrack ? (
+              <div className="flex items-center justify-center">
+                <AudioTrigger track={audioTrack} size="lg" className="w-full sm:w-auto" showTitle />
+              </div>
+            ) : (
+              <div className="flex items-center justify-center">
+                <p className="text-slate-500 text-sm">Ma jiro maqal diyaarsan qaybtaan.</p>
+              </div>
+            )}
 
-            <div className="flex items-center gap-2">
-              {podcast.playCount && podcast.playCount > 0 && (
+            {podcast.playCount && podcast.playCount > 0 && (
+              <div className="flex items-center gap-2">
                 <span className="text-sm text-slate-500 flex items-center gap-1">
                   <Headphones className="w-4 h-4" />
                   {podcast.playCount.toLocaleString()} jeer la dhegeystay
                 </span>
-              )}
-
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-10 px-4 rounded-full hover:bg-slate-100 text-slate-600 hover:text-[#b01c14] transition-all duration-300"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Soo deji
-              </Button>
-            </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -303,27 +296,30 @@ export const PodcastPlayer: React.FC<PodcastPlayerProps> = ({
           >
             <h3 className="font-semibold text-slate-900 mb-4 text-lg">Khayraad & Xiriirro</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {podcast.externalLinks.map((link, index) => (
-                <a
-                  key={index}
-                  href={link.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 p-4 rounded-xl border border-slate-200 hover:border-[#b01c14]/30 hover:bg-[#b01c14]/5 transition-all duration-300 group"
-                >
-                  <div className="w-10 h-10 rounded-full bg-[#b01c14]/80 flex items-center justify-center group-hover:bg-[#b01c14]/80 transition-colors">
-                    <ExternalLink className="w-5 h-5 text-[#b01c14]" />
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-slate-900 group-hover:text-[#b01c14] transition-colors">
-                      {link.title}
-                    </h4>
-                    {link.description && (
-                      <p className="text-sm text-slate-600 mt-1">{link.description}</p>
-                    )}
-                  </div>
-                </a>
-              ))}
+              {podcast.externalLinks.map((link, index) => {
+                const key = link.url ?? `${index}-${link.title ?? 'link'}`
+                return (
+                  <a
+                    key={key}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-4 rounded-xl border border-slate-200 hover:border-[#b01c14]/30 hover:bg-[#b01c14]/5 transition-all duration-300 group"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-[#b01c14]/80 flex items-center justify-center group-hover:bg-[#b01c14]/80 transition-colors">
+                      <ExternalLink className="w-5 h-5 text-[#b01c14]" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-slate-900 group-hover:text-[#b01c14] transition-colors">
+                        {link.title}
+                      </h4>
+                      {link.description && (
+                        <p className="text-sm text-slate-600 mt-1">{link.description}</p>
+                      )}
+                    </div>
+                  </a>
+                )
+              })}
             </div>
           </div>
         )}

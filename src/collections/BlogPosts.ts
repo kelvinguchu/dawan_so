@@ -289,6 +289,19 @@ export const BlogPost: CollectionConfig = {
       blocks: [RichText, Cover, Image, Video, PDF, Embed],
     },
     {
+      name: 'articleAudio',
+      type: 'upload',
+      relationTo: 'articleAudio',
+      label: 'Article Audio',
+      admin: {
+        position: 'sidebar',
+        description: 'Optional narrated audio uploaded manually. You can add or replace later.',
+      },
+      filterOptions: {
+        mimeType: { contains: 'audio' },
+      },
+    },
+    {
       name: 'categories',
       type: 'relationship',
       relationTo: 'blogCategories',

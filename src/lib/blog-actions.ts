@@ -50,7 +50,7 @@ export async function getRelatedPosts(
           },
         ],
       },
-      limit: 3,
+      limit: 8,
       sort: '-createdAt',
       depth: 1,
     })
