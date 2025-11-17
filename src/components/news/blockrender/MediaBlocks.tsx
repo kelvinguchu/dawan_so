@@ -318,7 +318,7 @@ export const VideoBlock: React.FC<VideoBlockProps> = ({
 }) => {
   const videoObj = typeof video === 'string' ? null : video
   const videoUrl = typeof video === 'string' ? video : (videoObj?.url ?? null)
-  const caption = videoObj?.caption
+  const caption = videoObj?.description ?? videoObj?.title ?? undefined
 
   if (!videoUrl) {
     return (
@@ -333,7 +333,7 @@ export const VideoBlock: React.FC<VideoBlockProps> = ({
   return (
     <OptimizedVideo
       videoUrl={videoUrl}
-      caption={caption || undefined}
+      caption={caption}
       autoplay={autoplay}
       muted={muted}
       controls={controls}

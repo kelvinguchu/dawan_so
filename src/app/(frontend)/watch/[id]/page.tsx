@@ -7,11 +7,11 @@ import { getVideoById, getVideos } from '@/lib/video-actions'
 import siteConfig, { sharedMetadata } from '@/app/shared-metadata'
 
 interface WatchDetailPageProps {
-  readonly params: { id: string }
+  readonly params: Promise<{ readonly id: string }>
 }
 
 export async function generateMetadata({ params }: WatchDetailPageProps): Promise<Metadata> {
-  const { id } = params
+  const { id } = await params
   const video = await getVideoById(id)
 
   if (!video) {
@@ -49,14 +49,12 @@ export async function generateMetadata({ params }: WatchDetailPageProps): Promis
 }
 
 export default async function WatchDetailPage({ params }: WatchDetailPageProps) {
-  const { id } = params
-  const videoData = await getVideoById(id)
+  const { id } = await params
+  const video = await getVideoById(id)
 
-  if (!videoData) {
+  if (!video) {
     notFound()
   }
-
-  const video = videoData
   const recommendationsResponse = await getVideos({ limit: 6 })
   const recommendations = recommendationsResponse.docs
     .filter((item) => item.id !== video.id)
