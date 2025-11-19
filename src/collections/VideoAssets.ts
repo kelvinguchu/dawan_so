@@ -25,8 +25,19 @@ export const VideoAssets: CollectionConfig = {
       name: 'description',
       type: 'textarea',
       label: 'Description',
+      required: true,
       admin: {
         description: 'Optional notes or synopsis for the uploaded episode.',
+      },
+    },
+    {
+      name: 'thumbnail',
+      type: 'upload',
+      relationTo: 'media',
+      required: true,
+      label: 'Thumbnail Image',
+      admin: {
+        description: 'Upload a thumbnail image for this video.',
       },
     },
   ],
