@@ -466,7 +466,11 @@ export interface VideoAsset {
   /**
    * Optional notes or synopsis for the uploaded episode.
    */
-  description?: string | null;
+  description: string;
+  /**
+   * Upload a thumbnail image for this video.
+   */
+  thumbnail: string | Media;
   bunnyVideoId?: string | null;
   prefix?: string | null;
   updatedAt: string;
@@ -1042,6 +1046,7 @@ export interface MediaSelect<T extends boolean = true> {
 export interface VideoAssetsSelect<T extends boolean = true> {
   title?: T;
   description?: T;
+  thumbnail?: T;
   bunnyVideoId?: T;
   prefix?: T;
   updatedAt?: T;

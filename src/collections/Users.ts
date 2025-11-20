@@ -127,9 +127,7 @@ export const Users: CollectionConfig = {
         description: 'Automatically updated when user verifies their email.',
       },
       access: {
-        read: ({ req }) => {
-          return Boolean(req.user)
-        },
+        read: () => true,
       },
     },
     {
@@ -300,4 +298,40 @@ export const Users: CollectionConfig = {
       return Boolean(user?.roles?.includes('admin'))
     },
   },
+  endpoints: [
+    {
+      path: '/check-verification',
+      method: 'get',
+      handler: async (req) => {
+        if (!req.url) {
+          return Response.json({ error: 'Invalid request' }, { status: 400 })
+        }
+        const { searchParams } = new URL(req.url)
+        const email = searchParams.get('email')
+
+        if (!email) {
+          return Response.json({ error: 'Email required' }, { status: 400 })
+        }
+
+        const users = await req.payload.find({
+          collection: 'users',
+          where: { email: { equals: email } },
+          limit: 1,
+          overrideAccess: true,
+        })
+
+        if (users.docs.length === 0) {
+          return Response.json({ verified: false, message: 'User not found' })
+        }
+
+        const user = users.docs[0]
+        const isVerified = user._verified === true || user.isEmailVerified === true
+
+        return Response.json({
+          verified: isVerified,
+          message: isVerified ? 'Verified' : 'Not verified',
+        })
+      },
+    },
+  ],
 }
