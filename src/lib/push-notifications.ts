@@ -1,9 +1,9 @@
 'use server'
 
 import webpush from 'web-push'
+import { Expo } from 'expo-server-sdk'
 import { getPayload } from 'payload'
 import configPromise from '@/payload.config'
-import type { User } from 'payload'
 import { getPostImageFromLayout } from '@/utils/postUtils'
 import siteConfig from '@/app/shared-metadata'
 
@@ -30,7 +30,7 @@ export async function subscribeUser(subscription: PushSubscriptionData) {
 
   try {
     const payload = await getPayload({ config: configPromise })
-    const user = (await payload.auth({ headers: new Headers() }))?.user as User | null
+    const user = (await payload.auth({ headers: new Headers() }))?.user
     const userId = user?.id ? String(user.id) : undefined
 
     const existingSubscription = await payload.find({
@@ -64,6 +64,42 @@ export async function subscribeUser(subscription: PushSubscriptionData) {
   }
 }
 
+export async function subscribeMobileUser(token: string, platform: 'ios' | 'android' | 'web') {
+  try {
+    const payload = await getPayload({ config: configPromise })
+
+    const existing = await payload.find({
+      collection: 'mobile-push-subscriptions',
+      where: { token: { equals: token } },
+      limit: 1,
+    })
+
+    if (existing.docs.length > 0) {
+      await payload.update({
+        collection: 'mobile-push-subscriptions',
+        id: existing.docs[0].id,
+        data: {
+          lastActive: new Date().toISOString(),
+          platform,
+        },
+      })
+    } else {
+      await payload.create({
+        collection: 'mobile-push-subscriptions',
+        data: {
+          token,
+          platform,
+          lastActive: new Date().toISOString(),
+        },
+      })
+    }
+    return { success: true }
+  } catch (error) {
+    console.error('Error subscribing mobile user:', error)
+    return { success: false, error: 'Failed to subscribe mobile user' }
+  }
+}
+
 export async function unsubscribeUser(subscription: PushSubscriptionData) {
   try {
     const payload = await getPayload({ config: configPromise })
@@ -87,13 +123,54 @@ export async function unsubscribeUser(subscription: PushSubscriptionData) {
   }
 }
 
+async function sendMobileNotifications(title: string, body: string, data: any) {
+  const expo = new Expo()
+  const payload = await getPayload({ config: configPromise })
+
+  const subscriptions = await payload.find({
+    collection: 'mobile-push-subscriptions',
+    limit: 10000,
+  })
+
+  const messages = []
+  for (const sub of subscriptions.docs) {
+    if (!Expo.isExpoPushToken(sub.token)) {
+      console.error(`Push token ${sub.token} is not a valid Expo push token`)
+      continue
+    }
+
+    messages.push({
+      to: sub.token,
+      sound: 'default',
+      title,
+      body,
+      data,
+    })
+  }
+
+  const chunks = expo.chunkPushNotifications(messages)
+
+  for (const chunk of chunks) {
+    try {
+      await expo.sendPushNotificationsAsync(chunk)
+    } catch (error) {
+      console.error(error)
+    }
+  }
+}
+
 export async function sendNotificationToAll(
   title: string,
   body: string,
   url?: string,
   image?: string,
+  data?: any,
 ) {
   try {
+    // Send Mobile Notifications
+    await sendMobileNotifications(title, body, data || { url, image })
+
+    // Send Web Push Notifications
     const payload = await getPayload({ config: configPromise })
 
     const notificationPayload = JSON.stringify({
@@ -167,20 +244,24 @@ export async function sendNewPostNotification(postId: string) {
     const url = `/news/${post.slug}`
 
     const coverImageUrl = getPostImageFromLayout(post.layout)
-    const notificationImage = coverImageUrl
-      ? coverImageUrl.startsWith('http')
-        ? coverImageUrl
-        : `${siteConfig.url}${coverImageUrl}`
-      : undefined
+    let notificationImage: string | undefined = undefined
 
-    return await sendNotificationToAll(title, body, url, notificationImage)
+    if (coverImageUrl) {
+      if (coverImageUrl.startsWith('http')) {
+        notificationImage = coverImageUrl
+      } else {
+        notificationImage = `${siteConfig.url}${coverImageUrl}`
+      }
+    }
+
+    const data = {
+      articleSlug: post.slug,
+      type: 'new-article',
+      imageUrl: notificationImage,
+    }
+
+    return await sendNotificationToAll(title, body, url, notificationImage, data)
   } catch {
     return { success: false, error: 'Failed to send new post notification' }
   }
-}
-
-export async function getSubscriptionCount() {
-  const payload = await getPayload({ config: configPromise })
-  const { totalDocs } = await payload.find({ collection: 'push-subscriptions' })
-  return totalDocs
 }

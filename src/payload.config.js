@@ -21,6 +21,7 @@ import { Newsletter } from './collections/Newsletter'
 import { NewsletterCampaigns } from './collections/NewsletterCampaigns'
 import { PodcastSeries } from './collections/PodcastSeries'
 import { PushSubscriptions } from './collections/PushSubscriptions'
+import { MobilePushSubscriptions } from './collections/MobilePushSubscriptions'
 import { VideoAssets } from './collections/VideoAssets'
 import { sendDailyDigestTask } from './jobs/sendDailyDigest'
 
@@ -85,6 +86,7 @@ export default buildConfig({
     NewsletterCampaigns,
     PodcastSeries,
     PushSubscriptions,
+    MobilePushSubscriptions,
   ],
   editor: lexicalEditor(),
 

@@ -80,6 +80,7 @@ export interface Config {
     newsletterCampaigns: NewsletterCampaign;
     podcastSeries: PodcastSery;
     'push-subscriptions': PushSubscription;
+    'mobile-push-subscriptions': MobilePushSubscription;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
@@ -101,6 +102,7 @@ export interface Config {
     newsletterCampaigns: NewsletterCampaignsSelect<false> | NewsletterCampaignsSelect<true>;
     podcastSeries: PodcastSeriesSelect<false> | PodcastSeriesSelect<true>;
     'push-subscriptions': PushSubscriptionsSelect<false> | PushSubscriptionsSelect<true>;
+    'mobile-push-subscriptions': MobilePushSubscriptionsSelect<false> | MobilePushSubscriptionsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -402,6 +404,10 @@ export interface BlogPost {
    * Optional narrated audio uploaded manually. You can add or replace later.
    */
   articleAudio?: (string | null) | ArticleAudio;
+  /**
+   * Select countries related to this article.
+   */
+  countryTags?: ('International' | 'Somalia' | 'Kenya' | 'Djibouti' | 'Ethiopia' | 'Eritrea')[] | null;
   categories?: (string | BlogCategory)[] | null;
   /**
    * Check this to manually enter reporter details instead of selecting a user account.
@@ -726,6 +732,21 @@ export interface PushSubscription {
   createdAt: string;
 }
 /**
+ * Stores Expo push tokens for mobile app notifications.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "mobile-push-subscriptions".
+ */
+export interface MobilePushSubscription {
+  id: string;
+  token: string;
+  platform: 'ios' | 'android' | 'web';
+  user?: (string | null) | User;
+  lastActive?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -901,6 +922,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'push-subscriptions';
         value: string | PushSubscription;
+      } | null)
+    | ({
+        relationTo: 'mobile-push-subscriptions';
+        value: string | MobilePushSubscription;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1170,6 +1195,7 @@ export interface BlogPostsSelect<T extends boolean = true> {
             };
       };
   articleAudio?: T;
+  countryTags?: T;
   categories?: T;
   useManualReporter?: T;
   manualReporter?:
@@ -1344,6 +1370,18 @@ export interface PushSubscriptionsSelect<T extends boolean = true> {
         auth?: T;
       };
   user?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "mobile-push-subscriptions_select".
+ */
+export interface MobilePushSubscriptionsSelect<T extends boolean = true> {
+  token?: T;
+  platform?: T;
+  user?: T;
+  lastActive?: T;
   updatedAt?: T;
   createdAt?: T;
 }

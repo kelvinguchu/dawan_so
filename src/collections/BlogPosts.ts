@@ -302,6 +302,24 @@ export const BlogPost: CollectionConfig = {
       },
     },
     {
+      name: 'countryTags',
+      type: 'select',
+      label: 'Countries',
+      hasMany: true,
+      options: [
+        { label: 'Caalami', value: 'International' },
+        { label: 'Soomaaliya', value: 'Somalia' },
+        { label: 'Kenya', value: 'Kenya' },
+        { label: 'Jabuuti', value: 'Djibouti' },
+        { label: 'Itoobiya', value: 'Ethiopia' },
+        { label: 'Ereteriya', value: 'Eritrea' },
+      ],
+      admin: {
+        position: 'sidebar',
+        description: 'Select countries related to this article.',
+      },
+    },
+    {
       name: 'categories',
       type: 'relationship',
       relationTo: 'blogCategories',
@@ -577,6 +595,7 @@ export const BlogPost: CollectionConfig = {
       'status',
       'author',
       'categories',
+      'countryTags',
       'views',
       'isEditorsPick',
       'featuredinhomepage',
