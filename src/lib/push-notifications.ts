@@ -154,6 +154,7 @@ async function sendMobileNotifications(title: string, body: string, data: Record
       title,
       body,
       data,
+      categoryId: 'NEW_ARTICLE_SO',
     }
 
     // Add rich media support
@@ -265,8 +266,31 @@ export async function sendNewPostNotification(postId: string) {
       return { success: false, error: 'Post not found or not published' }
     }
 
+    // Check if we have already sent a notification for this article
+    const existingLog = await payload.find({
+      collection: 'notification-logs',
+      where: {
+        articleSlug: { equals: post.slug },
+      },
+      limit: 1,
+    })
+
+    if (existingLog.totalDocs > 0) {
+      console.log(`Notification already sent for post ${post.slug}. Skipping.`)
+      return { success: false, error: 'Notification already sent for this post' }
+    }
+
     const title = '📰 New Article Published!'
-    const body = `${post.name}`
+
+    // Get author name
+    let authorName = 'Staff Writer'
+    if (post.useManualReporter && post.manualReporter?.name) {
+      authorName = post.manualReporter.name
+    } else if (post.author && typeof post.author !== 'string' && post.author.name) {
+      authorName = post.author.name
+    }
+
+    const body = `${post.name}\nW/Q ${authorName}`
     const url = `/news/${post.slug}`
 
     const coverImageUrl = getPostImageFromLayout(post.layout)
