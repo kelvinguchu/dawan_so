@@ -1,7 +1,7 @@
 'use server'
 
 import webpush from 'web-push'
-import { Expo } from 'expo-server-sdk'
+import { Expo, ExpoPushMessage } from 'expo-server-sdk'
 import { getPayload } from 'payload'
 import configPromise from '@/payload.config'
 import { getPostImageFromLayout } from '@/utils/postUtils'
@@ -21,6 +21,15 @@ export interface PushSubscriptionData {
     p256dh: string
     auth: string
   }
+}
+
+interface ExtendedExpoPushMessage extends ExpoPushMessage {
+  image?: string
+  attachments?: Array<{
+    url: string
+    identifier: string
+    typeHint: string
+  }>
 }
 
 export async function subscribeUser(subscription: PushSubscriptionData) {
@@ -123,7 +132,7 @@ export async function unsubscribeUser(subscription: PushSubscriptionData) {
   }
 }
 
-async function sendMobileNotifications(title: string, body: string, data: any) {
+async function sendMobileNotifications(title: string, body: string, data: Record<string, unknown>) {
   const expo = new Expo()
   const payload = await getPayload({ config: configPromise })
 
@@ -132,23 +141,40 @@ async function sendMobileNotifications(title: string, body: string, data: any) {
     limit: 10000,
   })
 
-  const messages = []
+  const messages: ExtendedExpoPushMessage[] = []
   for (const sub of subscriptions.docs) {
     if (!Expo.isExpoPushToken(sub.token)) {
       console.error(`Push token ${sub.token} is not a valid Expo push token`)
       continue
     }
 
-    messages.push({
+    const message: ExtendedExpoPushMessage = {
       to: sub.token,
       sound: 'default',
       title,
       body,
       data,
-    })
+    }
+
+    // Add rich media support
+    if (data?.imageUrl && typeof data.imageUrl === 'string') {
+      // Android - displays in the notification tray
+      message.image = data.imageUrl
+
+      // iOS - displays in the notification banner
+      message.attachments = [
+        {
+          url: data.imageUrl,
+          identifier: 'image',
+          typeHint: 'image',
+        },
+      ]
+    }
+
+    messages.push(message)
   }
 
-  const chunks = expo.chunkPushNotifications(messages)
+  const chunks = expo.chunkPushNotifications(messages as ExpoPushMessage[])
 
   for (const chunk of chunks) {
     try {
@@ -164,7 +190,7 @@ export async function sendNotificationToAll(
   body: string,
   url?: string,
   image?: string,
-  data?: any,
+  data?: Record<string, unknown>,
 ) {
   try {
     // Send Mobile Notifications
@@ -235,7 +261,7 @@ export async function sendNewPostNotification(postId: string) {
       depth: 2,
     })
 
-    if (!post || post.status !== 'published') {
+    if (post?.status !== 'published') {
       return { success: false, error: 'Post not found or not published' }
     }
 
