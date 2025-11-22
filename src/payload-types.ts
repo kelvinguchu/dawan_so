@@ -81,6 +81,7 @@ export interface Config {
     podcastSeries: PodcastSery;
     'push-subscriptions': PushSubscription;
     'mobile-push-subscriptions': MobilePushSubscription;
+    'notification-logs': NotificationLog;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
@@ -103,6 +104,7 @@ export interface Config {
     podcastSeries: PodcastSeriesSelect<false> | PodcastSeriesSelect<true>;
     'push-subscriptions': PushSubscriptionsSelect<false> | PushSubscriptionsSelect<true>;
     'mobile-push-subscriptions': MobilePushSubscriptionsSelect<false> | MobilePushSubscriptionsSelect<true>;
+    'notification-logs': NotificationLogsSelect<false> | NotificationLogsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -747,6 +749,21 @@ export interface MobilePushSubscription {
   createdAt: string;
 }
 /**
+ * Log of sent global push notifications for rate limiting.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notification-logs".
+ */
+export interface NotificationLog {
+  id: string;
+  type: string;
+  sentAt: string;
+  timeBlock: 'morning' | 'afternoon' | 'evening';
+  articleSlug?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -926,6 +943,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'mobile-push-subscriptions';
         value: string | MobilePushSubscription;
+      } | null)
+    | ({
+        relationTo: 'notification-logs';
+        value: string | NotificationLog;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1382,6 +1403,18 @@ export interface MobilePushSubscriptionsSelect<T extends boolean = true> {
   platform?: T;
   user?: T;
   lastActive?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notification-logs_select".
+ */
+export interface NotificationLogsSelect<T extends boolean = true> {
+  type?: T;
+  sentAt?: T;
+  timeBlock?: T;
+  articleSlug?: T;
   updatedAt?: T;
   createdAt?: T;
 }

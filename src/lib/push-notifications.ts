@@ -286,6 +286,64 @@ export async function sendNewPostNotification(postId: string) {
       imageUrl: notificationImage,
     }
 
+    // Rate Limiting Logic
+    const now = new Date()
+    const hour = now.getHours()
+    let timeBlock: 'morning' | 'afternoon' | 'evening'
+    let limit = 0
+
+    if (hour >= 0 && hour < 12) {
+      timeBlock = 'morning'
+      limit = 2
+    } else if (hour >= 12 && hour < 18) {
+      timeBlock = 'afternoon'
+      limit = 2
+    } else {
+      timeBlock = 'evening'
+      limit = 1
+    }
+
+    const todayStart = new Date(now)
+    todayStart.setHours(0, 0, 0, 0)
+
+    const logs = await payload.find({
+      collection: 'notification-logs',
+      where: {
+        and: [
+          { sentAt: { greater_than_equal: todayStart.toISOString() } },
+          { timeBlock: { equals: timeBlock } },
+          { type: { equals: 'new-article' } },
+        ],
+      },
+      sort: '-sentAt',
+    })
+
+    if (logs.totalDocs >= limit) {
+      console.log(`Rate limit reached for ${timeBlock}. Skipping notification for post ${postId}`)
+      return { success: false, error: `Rate limit reached for ${timeBlock}` }
+    }
+
+    // Check spacing (e.g., 2 hours)
+    if (logs.docs.length > 0) {
+      const lastSent = new Date(logs.docs[0].sentAt)
+      const diffHours = (now.getTime() - lastSent.getTime()) / (1000 * 60 * 60)
+      if (diffHours < 2) {
+        console.log(`Notification spacing too short (${diffHours.toFixed(2)}h). Skipping.`)
+        return { success: false, error: 'Notification spacing too short' }
+      }
+    }
+
+    // Log the notification
+    await payload.create({
+      collection: 'notification-logs',
+      data: {
+        type: 'new-article',
+        sentAt: now.toISOString(),
+        timeBlock,
+        articleSlug: post.slug,
+      },
+    })
+
     return await sendNotificationToAll(title, body, url, notificationImage, data)
   } catch {
     return { success: false, error: 'Failed to send new post notification' }
