@@ -2,8 +2,7 @@ import React, { Suspense } from 'react'
 import { NewsList } from '@/components/news/NewsList'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { Metadata } from 'next'
-import { sharedMetadata } from '@/app/shared-metadata'
-import siteConfig from '@/app/shared-metadata'
+import siteConfig, { sharedMetadata } from '@/app/shared-metadata'
 
 export async function generateMetadata({
   searchParams,

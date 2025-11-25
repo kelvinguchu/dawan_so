@@ -276,7 +276,6 @@ export async function sendNewPostNotification(postId: string) {
     })
 
     if (existingLog.totalDocs > 0) {
-      console.log(`Notification already sent for post ${post.slug}. Skipping.`)
       return { success: false, error: 'Notification already sent for this post' }
     }
 
@@ -343,7 +342,6 @@ export async function sendNewPostNotification(postId: string) {
     })
 
     if (logs.totalDocs >= limit) {
-      console.log(`Rate limit reached for ${timeBlock}. Skipping notification for post ${postId}`)
       return { success: false, error: `Rate limit reached for ${timeBlock}` }
     }
 
@@ -352,7 +350,6 @@ export async function sendNewPostNotification(postId: string) {
       const lastSent = new Date(logs.docs[0].sentAt)
       const diffHours = (now.getTime() - lastSent.getTime()) / (1000 * 60 * 60)
       if (diffHours < 2) {
-        console.log(`Notification spacing too short (${diffHours.toFixed(2)}h). Skipping.`)
         return { success: false, error: 'Notification spacing too short' }
       }
     }

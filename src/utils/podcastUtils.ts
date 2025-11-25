@@ -1,13 +1,13 @@
-import type { Podcast, Media, PodcastSery, PodcastAudio } from '@/payload-types'
+import type { Podcast, Media, PodcastPlaylist, PodcastAsset } from '@/payload-types'
 
-const isSeriesDoc = (series: Podcast['series']): series is PodcastSery =>
-  typeof series === 'object' && series !== null
+const isPlaylistDoc = (playlist: Podcast['playlist']): playlist is PodcastPlaylist =>
+  typeof playlist === 'object' && playlist !== null
 
 const isMediaDoc = (media: Podcast['coverImage']): media is Media =>
   typeof media === 'object' && media !== null
 
-const isAudioDoc = (audio: Podcast['audioFile']): audio is PodcastAudio =>
-  typeof audio === 'object' && audio !== null
+const isMediaAsset = (media: Podcast['media']): media is PodcastAsset =>
+  typeof media === 'object' && media !== null
 
 export const formatDuration = (seconds: number | null | undefined): string => {
   if (!seconds || seconds <= 0) return '0s'
@@ -40,13 +40,14 @@ export const formatDurationClock = (seconds: number | null | undefined): string 
 }
 
 export const getPodcastDisplayTitle = (podcast: Podcast): string => {
-  if (!podcast.series) return podcast.title
+  const playlist = podcast.playlist
+  if (!playlist) return podcast.title
 
-  const seriesName = isSeriesDoc(podcast.series) ? podcast.series.name || '' : ''
+  const playlistName = isPlaylistDoc(playlist) ? playlist.name || '' : ''
   const episode = podcast.episodeNumber
 
   const parts: string[] = []
-  if (seriesName) parts.push(seriesName)
+  if (playlistName) parts.push(playlistName)
   if (episode) parts.push(`Ep. ${episode}`)
 
   if (parts.length === 0) return podcast.title
@@ -54,8 +55,8 @@ export const getPodcastDisplayTitle = (podcast: Podcast): string => {
   return `${parts.join(' ')}: ${podcast.title}`
 }
 
-export const getPodcastSeriesLabel = (podcast: Podcast): string => {
-  if (!podcast.series) return ''
+export const getPodcastPlaylistLabel = (podcast: Podcast): string => {
+  if (!podcast.playlist) return ''
   const episode = podcast.episodeNumber
   if (episode) return `Ep. ${episode}`
   return ''
@@ -70,16 +71,32 @@ export const getPodcastCoverImage = (podcast: Podcast): string | null => {
 }
 
 export const getPodcastAudioUrl = (podcast: Podcast): string | null => {
-  if (!podcast.audioFile) return null
+  if (!podcast.media) return null
 
-  if (!isAudioDoc(podcast.audioFile)) return null
+  if (!isMediaAsset(podcast.media)) return null
 
-  return podcast.audioFile.url || null
+  if (podcast.media.mimeType?.startsWith('audio/')) {
+    return podcast.media.url || null
+  }
+
+  return null
 }
 
-export const formatPeopleInvolved = (peopleInvolved: Podcast['peopleInvolved']): string => {
+export const getPodcastVideoUrl = (podcast: Podcast): string | null => {
+  if (!podcast.media) return null
+
+  if (!isMediaAsset(podcast.media)) return null
+
+  if (podcast.media.mimeType?.startsWith('video/')) {
+    return podcast.media.url || null
+  }
+
+  return null
+}
+
+export const formatPeopleInvolved = (peopleInvolved: Podcast['peopleInvolved']): string | null => {
   if (!peopleInvolved || peopleInvolved.length === 0) {
-    return 'Unknown'
+    return null
   }
 
   const roleGroups: Record<string, string[]> = {}
@@ -144,21 +161,22 @@ export const getPodcastExcerpt = (podcast: Podcast, maxLength: number = 150): st
   return truncated + '...'
 }
 
-export const groupPodcastsBySeries = (podcasts: Podcast[]): Record<string, Podcast[]> => {
+export const groupPodcastsByPlaylist = (podcasts: Podcast[]): Record<string, Podcast[]> => {
   const groups: Record<string, Podcast[]> = {
     Standalone: [],
   }
 
   for (const podcast of podcasts) {
-    if (podcast.series) {
-      const seriesName = isSeriesDoc(podcast.series)
-        ? podcast.series.name || 'Unknown Series'
-        : 'Unknown Series'
+    const playlist = podcast.playlist
+    if (playlist) {
+      const playlistName = isPlaylistDoc(playlist)
+        ? playlist.name || 'Unknown Playlist'
+        : 'Unknown Playlist'
 
-      if (!groups[seriesName]) {
-        groups[seriesName] = []
+      if (!groups[playlistName]) {
+        groups[playlistName] = []
       }
-      groups[seriesName].push(podcast)
+      groups[playlistName].push(podcast)
     } else {
       groups.Standalone.push(podcast)
     }
@@ -167,7 +185,7 @@ export const groupPodcastsBySeries = (podcasts: Podcast[]): Record<string, Podca
   return groups
 }
 
-export const sortPodcastsBySeries = (podcasts: Podcast[]): Podcast[] => {
+export const sortPodcastsByPlaylist = (podcasts: Podcast[]): Podcast[] => {
   return [...podcasts].sort((a, b) => {
     const episodeA = a.episodeNumber || 0
     const episodeB = b.episodeNumber || 0
@@ -180,18 +198,19 @@ export const sortPodcastsBySeries = (podcasts: Podcast[]): Podcast[] => {
   })
 }
 
-export const isPodcastInSeries = (podcast: Podcast): boolean => {
-  return Boolean(podcast.series)
+export const isPodcastInPlaylist = (podcast: Podcast): boolean => {
+  return Boolean(podcast.playlist)
 }
 
-export const getUniqueSeriesNames = (podcasts: Podcast[]): { id: string; name: string }[] => {
-  const seriesMap = new Map<string, { id: string; name: string }>()
+export const getUniquePlaylistNames = (podcasts: Podcast[]): { id: string; name: string }[] => {
+  const playlistMap = new Map<string, { id: string; name: string }>()
 
   for (const podcast of podcasts) {
-    if (isSeriesDoc(podcast.series) && podcast.series.id && podcast.series.name) {
-      seriesMap.set(podcast.series.id, { id: podcast.series.id, name: podcast.series.name })
+    const playlist = podcast.playlist
+    if (isPlaylistDoc(playlist) && playlist.id && playlist.name) {
+      playlistMap.set(playlist.id, { id: playlist.id, name: playlist.name })
     }
   }
 
-  return Array.from(seriesMap.values()).sort((a, b) => a.name.localeCompare(b.name))
+  return Array.from(playlistMap.values()).sort((a, b) => a.name.localeCompare(b.name))
 }

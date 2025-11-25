@@ -2,14 +2,14 @@
 
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import { Podcast } from '@/payload-types'
+import { Podcast, PodcastPlaylist } from '@/payload-types'
 
 interface PodcastQueryOptions {
   page?: number
   limit?: number
   searchTerm?: string
   category?: string
-  series?: string
+  playlist?: string
   sortBy?: string
 }
 
@@ -29,7 +29,7 @@ type WhereCondition = {
     description?: { contains: string }
   }>
   categories?: { contains: string }
-  series?: { equals: string }
+  playlist?: { equals: string }
 }
 
 export async function getPodcasts({
@@ -37,7 +37,7 @@ export async function getPodcasts({
   limit = 20,
   searchTerm,
   category,
-  series,
+  playlist,
   sortBy,
 }: PodcastQueryOptions = {}): Promise<PodcastsResponse> {
   try {
@@ -74,15 +74,14 @@ export async function getPodcasts({
       })
     }
 
-    if (series && series !== 'all') {
+    if (playlist && playlist !== 'all') {
       whereConditions.push({
-        series: {
-          equals: series,
+        playlist: {
+          equals: playlist,
         },
       })
     }
-
-    let sort = '-publishedAt'
+    let sort: string
     switch (sortBy) {
       case 'oldest':
         sort = 'publishedAt'
@@ -121,5 +120,86 @@ export async function getPodcasts({
   } catch (error) {
     console.error('Error fetching podcasts:', error)
     throw error
+  }
+}
+
+export async function getPodcastBySlug(slug: string): Promise<Podcast | null> {
+  if (!slug) return null
+
+  try {
+    const payload = await getPayload({ config })
+    const result = await payload.find({
+      collection: 'podcasts',
+      where: {
+        slug: {
+          equals: slug,
+        },
+      },
+      limit: 1,
+      depth: 2,
+    })
+
+    return result.docs[0] || null
+  } catch (error) {
+    console.error('Error fetching podcast by slug:', error)
+    return null
+  }
+}
+
+export interface PlaylistWithCount extends PodcastPlaylist {
+  count: number
+}
+
+export async function getPlaylists(): Promise<PlaylistWithCount[]> {
+  try {
+    const payload = await getPayload({ config })
+    const result = await payload.find({
+      collection: 'podcastPlaylists',
+      sort: 'name',
+      depth: 1,
+    })
+
+    const playlistsWithCounts = await Promise.all(
+      result.docs.map(async (playlist) => {
+        const countResult = await payload.find({
+          collection: 'podcasts',
+          where: {
+            playlist: {
+              equals: playlist.id,
+            },
+            isPublished: {
+              equals: true,
+            },
+          },
+          limit: 0,
+        })
+
+        return {
+          ...playlist,
+          count: countResult.totalDocs,
+        }
+      }),
+    )
+
+    return playlistsWithCounts
+  } catch (error) {
+    console.error('Error fetching playlists:', error)
+    return []
+  }
+}
+
+export async function getPlaylistById(id: string): Promise<PodcastPlaylist | null> {
+  if (!id) return null
+  try {
+    const payload = await getPayload({ config })
+    const result = await payload.findByID({
+      collection: 'podcastPlaylists',
+      id,
+      depth: 1,
+    })
+    return result
+  } catch (error) {
+    console.error('Error fetching playlist by id:', error)
+    return null
   }
 }

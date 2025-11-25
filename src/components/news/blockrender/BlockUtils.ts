@@ -1,4 +1,4 @@
-import { Media, VideoAsset } from '../../../payload-types'
+import { Media, HeadlineVideo } from '../../../payload-types'
 
 // Lexical Editor Types
 export interface LexicalTextNode {
@@ -131,7 +131,7 @@ export interface ImageBlockData {
 
 export interface VideoBlockData {
   blockType: 'video'
-  video: string | VideoAsset
+  video: string | HeadlineVideo
   autoplay?: boolean | null
   muted?: boolean | null
   controls?: boolean | null

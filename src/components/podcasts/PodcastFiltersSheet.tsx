@@ -13,9 +13,11 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Filter, X, SlidersHorizontal } from 'lucide-react'
-import { getUniqueSeriesNames } from '@/utils/podcastUtils'
+import { getUniquePlaylistNames } from '@/utils/podcastUtils'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
+
+type SortOption = 'newest' | 'oldest' | 'popularity'
 
 interface PodcastFiltersSheetProps {
   podcasts: Podcast[]
@@ -23,10 +25,10 @@ interface PodcastFiltersSheetProps {
   setSearchTerm: (term: string) => void
   selectedCategory: string
   setSelectedCategory: (category: string) => void
-  selectedSeries: string
-  setSelectedSeries: (series: string) => void
-  sortBy: 'newest' | 'oldest' | 'duration' | 'popularity'
-  setSortBy: (sort: 'newest' | 'oldest' | 'duration' | 'popularity') => void
+  selectedPlaylist: string
+  setSelectedPlaylist: (playlist: string) => void
+  sortBy: SortOption
+  setSortBy: (sort: SortOption) => void
   clearFilters: () => void
   hasActiveFilters: boolean
 }
@@ -37,8 +39,8 @@ export const PodcastFiltersSheet: React.FC<PodcastFiltersSheetProps> = ({
   setSearchTerm,
   selectedCategory,
   setSelectedCategory,
-  selectedSeries,
-  setSelectedSeries,
+  selectedPlaylist,
+  setSelectedPlaylist,
   sortBy,
   setSortBy,
   clearFilters,
@@ -53,17 +55,19 @@ export const PodcastFiltersSheet: React.FC<PodcastFiltersSheetProps> = ({
     ),
   )
 
-  const seriesNames = getUniqueSeriesNames(podcasts)
+  const playlistNames = getUniquePlaylistNames(podcasts)
 
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button
-          className="fixed bottom-6 left-6 h-16 w-16 rounded-full shadow-2xl bg-gradient-to-br from-[#b01c14] via-[#b01c14]/90 to-[#b01c14]/80 hover:from-[#b01c14]/90 hover:via-[#b01c14]/80 hover:to-[#b01c14]/70 text-white z-50 transition-all duration-500 hover:scale-110 hover:shadow-[#b01c14]/30"
-          size="icon"
+        <button
+          className="fixed bottom-4 left-4 z-50 bg-white rounded-lg shadow-2xl border border-gray-200 transition-all duration-300 w-16 h-16 flex items-center justify-center group hover:scale-105 cursor-pointer"
+          aria-label="Sifee Podkaasyada"
         >
-          <SlidersHorizontal className="w-6 h-6" />
-        </Button>
+          <div className="w-12 h-12 flex items-center justify-center bg-[#b01c14] group-hover:bg-[#8e140f] text-white rounded-lg transition-colors">
+            <SlidersHorizontal className="w-6 h-6" />
+          </div>
+        </button>
       </SheetTrigger>
       <SheetContent
         side="left"
@@ -89,7 +93,7 @@ export const PodcastFiltersSheet: React.FC<PodcastFiltersSheetProps> = ({
             <div className="p-4 space-y-4">
               {/* Category Filter */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">Qayb</label>
+                <div className="text-sm font-medium text-slate-700">Qayb</div>
                 <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                   <SelectTrigger className="h-10">
                     <SelectValue placeholder="Dhammaan qaybaha" />
@@ -105,18 +109,18 @@ export const PodcastFiltersSheet: React.FC<PodcastFiltersSheetProps> = ({
                 </Select>
               </div>
 
-              {/* Series Filter */}
+              {/* Playlist Filter */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">Silsilad</label>
-                <Select value={selectedSeries} onValueChange={setSelectedSeries}>
+                <div className="text-sm font-medium text-slate-700">Liiska</div>
+                <Select value={selectedPlaylist} onValueChange={setSelectedPlaylist}>
                   <SelectTrigger className="h-10">
-                    <SelectValue placeholder="Dhammaan silsiladaha" />
+                    <SelectValue placeholder="Dhammaan liisaska" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Dhammaan silsiladaha</SelectItem>
-                    {seriesNames.map((series) => (
-                      <SelectItem key={series.id} value={series.id}>
-                        {series.name}
+                    <SelectItem value="all">Dhammaan liisaska</SelectItem>
+                    {playlistNames.map((playlist) => (
+                      <SelectItem key={playlist.id} value={playlist.id}>
+                        {playlist.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -125,20 +129,14 @@ export const PodcastFiltersSheet: React.FC<PodcastFiltersSheetProps> = ({
 
               {/* Sort Filter */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">Kala saar</label>
-                <Select
-                  value={sortBy}
-                  onValueChange={(value) =>
-                    setSortBy(value as 'newest' | 'oldest' | 'duration' | 'popularity')
-                  }
-                >
+                <div className="text-sm font-medium text-slate-700">Kala saar</div>
+                <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
                   <SelectTrigger className="h-10">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="newest">Kuwa ugu cusub</SelectItem>
                     <SelectItem value="oldest">Kuwa ugu duugga</SelectItem>
-                    <SelectItem value="duration">Kuwa ugu dheer</SelectItem>
                     <SelectItem value="popularity">Kuwa ugu caansan</SelectItem>
                   </SelectContent>
                 </Select>
@@ -147,14 +145,14 @@ export const PodcastFiltersSheet: React.FC<PodcastFiltersSheetProps> = ({
               {/* Active Filters */}
               {hasActiveFilters && (
                 <div className="space-y-2 pt-4 border-t border-slate-200">
-                  <label className="text-sm font-medium text-slate-700">Sifeeyayaasha Firfircoon</label>
+                  <div className="text-sm font-medium text-slate-700">Sifeeyayaasha Firfircoon</div>
                   <div className="flex flex-wrap gap-2">
                     {searchTerm && (
                       <Badge variant="secondary" className="text-xs">
                         Raadinta: &quot;{searchTerm}&quot;
                         <button
                           onClick={() => setSearchTerm('')}
-                          className="ml-1 hover:text-slate-600"
+                          className="ml-1 hover:text-slate-600 cursor-pointer"
                         >
                           <X className="w-3 h-3" />
                         </button>
@@ -165,18 +163,18 @@ export const PodcastFiltersSheet: React.FC<PodcastFiltersSheetProps> = ({
                         {categories.find((c) => c.id === selectedCategory)?.name}
                         <button
                           onClick={() => setSelectedCategory('all')}
-                          className="ml-1 hover:text-slate-600"
+                          className="ml-1 hover:text-slate-600 cursor-pointer"
                         >
                           <X className="w-3 h-3" />
                         </button>
                       </Badge>
                     )}
-                    {selectedSeries !== 'all' && (
+                    {selectedPlaylist !== 'all' && (
                       <Badge variant="secondary" className="text-xs">
-                        {seriesNames.find((s) => s.id === selectedSeries)?.name}
+                        {playlistNames.find((p) => p.id === selectedPlaylist)?.name}
                         <button
-                          onClick={() => setSelectedSeries('all')}
-                          className="ml-1 hover:text-slate-600"
+                          onClick={() => setSelectedPlaylist('all')}
+                          className="ml-1 hover:text-slate-600 cursor-pointer"
                         >
                           <X className="w-3 h-3" />
                         </button>

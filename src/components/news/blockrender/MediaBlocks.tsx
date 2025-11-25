@@ -1,6 +1,6 @@
 import React from 'react'
 import Image from 'next/image'
-import type { Media, VideoAsset } from '@/payload-types'
+import type { Media, HeadlineVideo } from '@/payload-types'
 import { FileText } from 'lucide-react'
 import { LexicalContent } from './BlockUtils'
 import ImageStructuredData from '@/components/structured-data/ImageStructuredData'
@@ -41,7 +41,7 @@ interface OptimizedVideoProps {
 }
 
 interface VideoBlockProps {
-  video?: VideoAsset | string | null
+  video?: HeadlineVideo | string | null
   autoplay?: boolean
   muted?: boolean
   controls?: boolean

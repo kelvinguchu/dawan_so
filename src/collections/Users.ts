@@ -163,6 +163,38 @@ export const Users: CollectionConfig = {
       },
     },
     {
+      name: 'likedPodcasts',
+      type: 'relationship',
+      relationTo: 'podcasts',
+      hasMany: true,
+      label: 'Liked Podcasts',
+      admin: {
+        readOnly: true,
+      },
+      access: {
+        read: ({ req, doc }) => {
+          // Users can only see their own liked podcasts
+          return Boolean(req.user && req.user.id === doc?.id)
+        },
+      },
+    },
+    {
+      name: 'likedVideos',
+      type: 'relationship',
+      relationTo: 'headlineVideos',
+      hasMany: true,
+      label: 'Liked Videos',
+      admin: {
+        readOnly: true,
+      },
+      access: {
+        read: ({ req, doc }) => {
+          // Users can only see their own liked videos
+          return Boolean(req.user && req.user.id === doc?.id)
+        },
+      },
+    },
+    {
       name: 'verificationEmailRequests',
       type: 'array',
       label: 'Verification Email Log',

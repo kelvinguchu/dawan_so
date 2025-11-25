@@ -75,6 +75,7 @@ export const AudioPlayerProvider: React.FC<AudioPlayerProviderProps> = ({ childr
 
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const shouldAutoPlayRef = useRef<boolean>(false)
+  const hasCountedPlayRef = useRef<boolean>(false)
   const [autoPlayPending, setAutoPlayPending] = useState(false)
   const prefetchedSourcesRef = useRef<Set<string>>(new Set())
   const hlsRef = useRef<Hls | null>(null)
@@ -123,6 +124,7 @@ export const AudioPlayerProvider: React.FC<AudioPlayerProviderProps> = ({ childr
       setCurrentTime(0)
       setDuration(0)
       shouldAutoPlayRef.current = !!autoPlay
+      hasCountedPlayRef.current = false
       setAutoPlayPending(!!autoPlay)
       if (!isPlayerVisible) {
         setIsPlayerVisible(true)
@@ -432,7 +434,18 @@ export const AudioPlayerProvider: React.FC<AudioPlayerProviderProps> = ({ childr
         }}
         onTimeUpdate={() => {
           if (audioRef.current) {
-            updateCurrentTime(audioRef.current.currentTime)
+            const time = audioRef.current.currentTime
+            updateCurrentTime(time)
+
+            if (time > 10 && !hasCountedPlayRef.current && currentTrack?.id) {
+              hasCountedPlayRef.current = true
+              if (currentTrack.id.startsWith('podcast-')) {
+                const podcastId = currentTrack.id.replace('podcast-', '')
+                fetch(`/api/podcasts/${podcastId}/increment-views`, { method: 'POST' }).catch(
+                  (err) => console.error('Failed to increment podcast play count', err),
+                )
+              }
+            }
           }
         }}
       >

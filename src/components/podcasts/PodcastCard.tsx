@@ -3,23 +3,23 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { Podcast } from '@/payload-types'
-import { Headphones, Play, Calendar, MoreHorizontal, Pause } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
+import { Headphones, Play, Pause, Info, ThumbsUp } from 'lucide-react'
 import {
   getPodcastDisplayTitle,
   getPodcastCoverImage,
   getPodcastAudioUrl,
+  getPodcastVideoUrl,
   formatPeopleInvolved,
 } from '@/utils/podcastUtils'
-import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { PodcastDetailsSheet } from './PodcastDetailsSheet'
 import { useAudioPlayer, AudioTrack } from '@/contexts/AudioPlayerContext'
+import { PodcastDetailsSheet } from './PodcastDetailsSheet'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface PodcastCardProps {
   podcast: Podcast
-  showCategories?: boolean
   variant?: 'default' | 'compact'
 }
 
@@ -35,27 +35,66 @@ const formatDate = (dateString: string) => {
   }
 }
 
-export const PodcastCard: React.FC<PodcastCardProps> = ({
-  podcast,
-  variant = 'default',
-  showCategories = false,
-}) => {
-  const [isDetailOpen, setIsDetailOpen] = useState(false)
+export const PodcastCard: React.FC<PodcastCardProps> = ({ podcast, variant = 'default' }) => {
+  const router = useRouter()
+  const { user: currentUser } = useAuth()
   const { currentTrack, isPlaying, setCurrentTrack, togglePlayPause, showPlayer, prefetchTrack } =
     useAudioPlayer()
 
   const coverImageUrl = getPodcastCoverImage(podcast)
   const displayTitle = getPodcastDisplayTitle(podcast)
   const audioUrl = getPodcastAudioUrl(podcast)
+  const videoUrl = getPodcastVideoUrl(podcast)
+  const hasVideo = Boolean(videoUrl)
+  const hasAudio = Boolean(audioUrl)
   const peopleInvolved = formatPeopleInvolved(podcast.peopleInvolved)
-  const categoryNames = useMemo(() => {
-    if (!showCategories || !podcast.categories || !Array.isArray(podcast.categories)) {
-      return [] as string[]
+
+  const [isLiked, setIsLiked] = useState(false)
+  const [likeCount, setLikeCount] = useState(podcast.likes || 0)
+  const [isUpdatingLike, setIsUpdatingLike] = useState(false)
+
+  useEffect(() => {
+    if (currentUser && podcast) {
+      const likedPodcastIds =
+        currentUser.likedPodcasts?.map((p) => (typeof p === 'string' ? p : p.id)) || []
+      setIsLiked(likedPodcastIds.includes(podcast.id))
+    } else {
+      setIsLiked(false)
     }
-    return podcast.categories
-      .map((category) => (typeof category === 'object' && category?.name ? category.name : null))
-      .filter(Boolean) as string[]
-  }, [podcast.categories, showCategories])
+  }, [currentUser, podcast])
+
+  const handleToggleLike = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    if (!currentUser) {
+      router.push('/login?redirect_to=' + encodeURIComponent(globalThis.location.pathname))
+      return
+    }
+    if (isUpdatingLike) return
+
+    setIsUpdatingLike(true)
+    const previousLiked = isLiked
+    const previousCount = likeCount
+    setIsLiked(!previousLiked)
+    setLikeCount((prev) => (previousLiked ? Math.max(0, prev - 1) : prev + 1))
+
+    try {
+      const res = await fetch(`/api/podcasts/${podcast.id}/like`, { method: 'POST' })
+      const data = await res.json()
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to toggle like')
+      }
+      setLikeCount(data.likeCount)
+      setIsLiked(data.liked)
+    } catch (error) {
+      console.error('Error toggling like:', error)
+      setIsLiked(previousLiked)
+      setLikeCount(previousCount)
+    } finally {
+      setIsUpdatingLike(false)
+    }
+  }
 
   const audioTrack: AudioTrack | null = useMemo(() => {
     if (!audioUrl) return null
@@ -64,10 +103,9 @@ export const PodcastCard: React.FC<PodcastCardProps> = ({
       title: displayTitle,
       artist: peopleInvolved || undefined,
       src: audioUrl,
-      duration: podcast.duration ?? undefined,
       thumbnail: coverImageUrl ?? undefined,
     }
-  }, [audioUrl, coverImageUrl, displayTitle, peopleInvolved, podcast.duration, podcast.id])
+  }, [audioUrl, coverImageUrl, displayTitle, peopleInvolved, podcast.id])
 
   useEffect(() => {
     if (audioTrack) {
@@ -78,7 +116,15 @@ export const PodcastCard: React.FC<PodcastCardProps> = ({
   const isCurrentTrack = audioTrack && currentTrack?.id === audioTrack.id
   const isCurrentlyPlaying = Boolean(isCurrentTrack && isPlaying)
 
-  const handlePlayClick = () => {
+  const handlePlayClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    if (hasVideo && !hasAudio) {
+      router.push(`/podcasts/${podcast.slug}`)
+      return
+    }
+
     if (!audioTrack) return
 
     if (isCurrentTrack) {
@@ -92,189 +138,164 @@ export const PodcastCard: React.FC<PodcastCardProps> = ({
 
   if (variant === 'compact') {
     return (
-      <Card className="group relative overflow-hidden bg-gradient-to-r from-white via-slate-50/50 to-white border border-slate-200/60 hover:border-[#b01c14]/30 hover:shadow-xl hover:shadow-[#b01c14]/80 transition-all duration-500 rounded-2xl">
-        <div className="absolute inset-0 bg-gradient-to-r from-[#b01c14]/5 via-transparent to-[#b01c14]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-        <CardContent className="relative p-4">
-          <div className="flex items-center gap-4">
-            {/* Cover Image */}
-            <div className="relative w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 shadow-lg ring-2 ring-white group-hover:ring-[#b01c14]/80 transition-all duration-300">
-              {coverImageUrl ? (
-                <Image
-                  src={coverImageUrl}
-                  alt={displayTitle}
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-110"
-                  sizes="56px"
-                />
-              ) : (
-                <div className="w-full h-full bg-gradient-to-br from-[#b01c14]/30 via-[#b01c14]/80 to-[#b01c14]/80 flex items-center justify-center">
-                  <Headphones className="w-6 h-6 text-[#b01c14]" />
-                </div>
-              )}
-            </div>
-
-            {/* Content */}
-            <div className="flex-grow min-w-0 space-y-1">
-              <div className="flex items-center gap-2 text-xs text-slate-500">
-                {podcast.episodeNumber && (
-                  <Badge className="bg-[#b01c14]/80 text-[#b01c14] border-[#b01c14]/80 text-xs">
-                    Ep. {podcast.episodeNumber}
-                  </Badge>
-                )}
-                {podcast.publishedAt && (
-                  <div className="flex items-center gap-1">
-                    <Calendar className="w-3 h-3" />
-                    {formatDate(podcast.publishedAt)}
-                  </div>
-                )}
-              </div>
-
-              <h3 className="font-semibold text-slate-900 line-clamp-2 text-sm group-hover:text-[#b01c14] transition-colors duration-300">
-                <Link
-                  href={`/podcasts/${podcast.slug}`}
-                  className="hover:text-[#b01c14] transition-colors"
-                >
-                  {displayTitle}
-                </Link>
-              </h3>
-              {categoryNames.length > 0 && (
-                <p className="text-[11px] text-slate-500 line-clamp-1">
-                  {categoryNames.join(', ')}
-                </p>
-              )}
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handlePlayClick}
-                disabled={!audioTrack}
-                aria-label={isCurrentlyPlaying ? 'Hakadi qaybta' : 'Dhageyso qaybta'}
-                className={`w-9 h-9 border-[#b01c14]/80 text-[#b01c14] hover:bg-[#b01c14]/80 hover:text-white hover:border-[#b01c14]/40 ${
-                  isCurrentlyPlaying ? 'bg-[#b01c14]/80 text-white' : ''
-                }`}
-              >
-                {isCurrentlyPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-              </Button>
-
-              <PodcastDetailsSheet
-                podcast={podcast}
-                open={isDetailOpen}
-                onOpenChange={setIsDetailOpen}
-                trigger={
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-9 h-9 border-[#b01c14]/80 text-[#b01c14] hover:bg-[#b01c14]/80 hover:border-[#b01c14]/40"
-                  >
-                    <MoreHorizontal className="w-4 h-4" />
-                  </Button>
-                }
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  return (
-    <Card className="group relative overflow-hidden bg-white border-0 shadow-lg hover:shadow-2xl hover:shadow-[#b01c14]/80 transition-all duration-700 rounded-2xl p-0">
-      <div className="absolute inset-0 bg-gradient-to-br from-[#b01c14]/5 via-transparent to-slate-50/30 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-
-      <div className="relative">
-        {/* Cover Image Section */}
-        {coverImageUrl && (
-          <div className="relative aspect-[16/9] overflow-hidden rounded-t-2xl">
+      <div className="flex group bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all overflow-hidden relative">
+        {/* Cover Image */}
+        <div className="relative w-40 aspect-video flex-shrink-0 bg-slate-100">
+          {coverImageUrl ? (
             <Image
               src={coverImageUrl}
               alt={displayTitle}
               fill
-              className="object-cover transition-transform duration-1000 group-hover:scale-105"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              className="object-cover"
+              sizes="160px"
             />
-
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-
-            {/* Episode number and date */}
-            <div className="absolute top-3 left-3 flex gap-2">
-              {podcast.episodeNumber && (
-                <Badge className="bg-black/60 text-white border-0 backdrop-blur-md text-xs font-semibold">
-                  Qeyb #{podcast.episodeNumber}
-                </Badge>
-              )}
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-slate-100">
+              <Headphones className="w-5 h-5 text-slate-400" />
             </div>
-
-            {podcast.publishedAt && (
-              <div className="absolute top-3 right-3">
-                <Badge className="bg-black/60 text-white border-0 backdrop-blur-md text-xs font-semibold flex items-center gap-1">
-                  <Calendar className="w-3 h-3" />
-                  {formatDate(podcast.publishedAt)}
-                </Badge>
-              </div>
-            )}
-
-            {/* Title overlay */}
-            <div className="absolute bottom-0 left-0 right-0 p-4">
-              <h3 className="font-bold text-white text-lg leading-tight line-clamp-2">
-                <Link
-                  href={`/podcasts/${podcast.slug}`}
-                  className="hover:text-[#b01c14] transition-colors duration-300"
-                >
-                  {displayTitle}
-                </Link>
-              </h3>
-              {categoryNames.length > 0 && (
-                <p className="text-xs text-white/80 mt-1 line-clamp-1">
-                  {categoryNames.join(', ')}
-                </p>
+          )}
+          {/* Play Overlay */}
+          <div className="absolute inset-0 flex items-center justify-center opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity bg-black/20 lg:bg-black/20">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handlePlayClick}
+              className="w-10 h-10 rounded-full cursor-pointer bg-black/60 text-white hover:bg-[#b01c14] hover:text-white p-0"
+            >
+              {isCurrentlyPlaying ? (
+                <Pause className="w-5 h-5" />
+              ) : (
+                <Play className="w-5 h-5 ml-0.5" />
               )}
+            </Button>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="flex flex-col gap-1 min-w-0 p-3 flex-1">
+          <h3 className="font-semibold text-sm text-gray-900 line-clamp-2 leading-tight group-hover:text-[#b01c14] transition-colors">
+            <Link
+              href={`/podcasts/${podcast.slug}`}
+              className="hover:text-[#b01c14] transition-colors"
+            >
+              {displayTitle}
+            </Link>
+          </h3>
+          <div className="flex flex-col text-xs text-gray-500">
+            <span>Dawan Podcast</span>
+            <div className="flex items-center gap-1">
+              {podcast.episodeNumber && <span>Ep. {podcast.episodeNumber} • </span>}
+              <span>{formatDate(podcast.publishedAt || podcast.createdAt)}</span>
             </div>
+          </div>
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleToggleLike}
+          disabled={isUpdatingLike}
+          className="absolute bottom-2 cursor-pointer right-2 h-8 w-8 text-gray-400 hover:text-[#b01c14] hover:bg-gray-50"
+        >
+          <ThumbsUp className={`h-4 w-4 ${isLiked ? 'fill-[#b01c14] text-[#b01c14]' : ''}`} />
+        </Button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="group flex flex-col bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all overflow-hidden">
+      <div className="relative aspect-video w-full bg-slate-100">
+        {/* Cover Image Section */}
+        {coverImageUrl ? (
+          <Image
+            src={coverImageUrl}
+            alt={displayTitle}
+            fill
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-slate-100">
+            <Headphones className="w-8 h-8 text-slate-400" />
           </div>
         )}
 
-        {/* Action buttons */}
-        <CardContent className="p-4">
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handlePlayClick}
-              disabled={!audioTrack}
-              className={`flex-1 h-9 font-semibold transition-all duration-300 rounded-lg text-sm border-[#b01c14]/80 hover:border-[#b01c14]/40 ${
-                isCurrentlyPlaying
-                  ? 'bg-[#b01c14]/80 text-white'
-                  : 'text-[#b01c14] hover:bg-[#b01c14]/80'
-              }`}
-            >
-              {isCurrentlyPlaying ? (
-                <Pause className="w-4 h-4 mr-2" />
-              ) : (
-                <Play className="w-4 h-4 mr-2" />
-              )}
-              {isCurrentlyPlaying ? 'Hakadi' : 'Dhageyso'}
-            </Button>
+        {/* Play Overlay */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity bg-black/10 lg:bg-black/10">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={handlePlayClick}
+            className="w-12 h-12 cursor-pointer rounded-full bg-black/60 text-white hover:bg-[#b01c14] hover:text-white backdrop-blur-sm transition-all transform hover:scale-110"
+          >
+            {isCurrentlyPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 ml-1" />}
+          </Button>
+        </div>
 
-            <PodcastDetailsSheet
-              podcast={podcast}
-              open={isDetailOpen}
-              onOpenChange={setIsDetailOpen}
-              trigger={
-                <Button
-                  variant="outline"
-                  className="h-9 px-3 border-2 border-[#b01c14]/80 text-[#b01c14] hover:bg-[#b01c14]/80 hover:border-[#b01c14]/40 rounded-lg transition-all duration-300"
-                >
-                  <MoreHorizontal className="w-4 h-4" />
-                </Button>
-              }
-            />
+        {/* Duration/Type Badge if needed */}
+        {hasVideo && (
+          <div className="absolute bottom-2 right-2 bg-black/80 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
+            VIDEO
           </div>
-        </CardContent>
+        )}
+        {!hasVideo && hasAudio && (
+          <div className="absolute bottom-2 right-2 bg-black/80 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
+            AUDIO
+          </div>
+        )}
       </div>
-    </Card>
+
+      {/* Content */}
+      <div className="flex flex-col gap-1 p-4">
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="font-bold text-base text-gray-900 line-clamp-2 leading-tight group-hover:text-[#b01c14] transition-colors">
+            <Link
+              href={`/podcasts/${podcast.slug}`}
+              className="hover:text-[#b01c14] transition-colors"
+            >
+              {displayTitle}
+            </Link>
+          </h3>
+          <div className="flex items-center gap-1 -mt-1 shrink-0">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleToggleLike}
+              disabled={isUpdatingLike}
+              className="h-8 w-8 text-gray-400 cursor-pointer hover:text-[#b01c14] hover:bg-gray-50"
+            >
+              <ThumbsUp className={`h-4 w-4 ${isLiked ? 'fill-[#b01c14] text-[#b01c14]' : ''}`} />
+            </Button>
+            {hasAudio && (
+              <PodcastDetailsSheet
+                podcast={podcast}
+                trigger={
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-gray-400 cursor-pointer hover:text-[#b01c14] hover:bg-gray-50"
+                  >
+                    <Info className="w-4 h-4" />
+                    <span className="sr-only">Faahfaahin</span>
+                  </Button>
+                }
+              />
+            )}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 text-sm text-gray-500">
+          <span>{formatDate(podcast.publishedAt || podcast.createdAt)}</span>
+          {podcast.episodeNumber && (
+            <>
+              <span>•</span>
+              <span>Ep {podcast.episodeNumber}</span>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
   )
 }

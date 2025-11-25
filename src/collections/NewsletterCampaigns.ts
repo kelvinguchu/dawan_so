@@ -79,21 +79,10 @@ export const NewsletterCampaigns: CollectionConfig = {
   hooks: {
     afterChange: [
       async ({ doc, operation, req, previousDoc }) => {
-        console.log('📧 Newsletter hook triggered:', {
-          operation,
-          currentStatus: doc.status,
-          previousStatus: previousDoc?.status,
-          docId: doc.id,
-        })
 
         const isNewSendNow = operation === 'create' && doc.status === 'send_now'
         const isStatusChangedToSendNow =
           operation === 'update' && previousDoc?.status !== 'send_now' && doc.status === 'send_now'
-
-        console.log('📧 Hook conditions:', {
-          isNewSendNow,
-          isStatusChangedToSendNow,
-        })
 
         if (isNewSendNow || isStatusChangedToSendNow) {
           setImmediate(async () => {
@@ -137,7 +126,6 @@ export const NewsletterCampaigns: CollectionConfig = {
                 total: number,
               ) => {
                 const redactedEmail = redactEmail(subscriber.email)
-                console.log(`📧 Sending email ${index + 1}/${total} to: ${redactedEmail}`)
 
                 const normalizedEmail = normalizeEmail(subscriber.email)
                 let unsubscribeUrl: string

@@ -1,8 +1,8 @@
 import React from 'react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { VideoHero } from '@/components/watch/VideoHero'
-import { VideoRecommendations } from '@/components/watch/VideoRecommendations'
+import { VideoHero } from '@/components/videos/VideoHero'
+import { VideoRecommendations } from '@/components/videos/VideoRecommendations'
 import { getVideoById, getVideos } from '@/lib/video-actions'
 import siteConfig, { sharedMetadata } from '@/app/shared-metadata'
 
@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: WatchDetailPageProps): Promis
       ...sharedMetadata.openGraph,
       title: `${video.title} | Daawo`,
       description,
-      url: new URL(`/watch/${video.id}`, siteConfig.url).toString(),
+      url: new URL(`/videos/${video.id}`, siteConfig.url).toString(),
       type: 'video.other',
       images: video.thumbnailURL
         ? [
@@ -55,17 +55,21 @@ export default async function WatchDetailPage({ params }: WatchDetailPageProps) 
   if (!video) {
     notFound()
   }
-  const recommendationsResponse = await getVideos({ limit: 6 })
+  const recommendationsResponse = await getVideos({ limit: 12 })
   const recommendations = recommendationsResponse.docs
     .filter((item) => item.id !== video.id)
-    .slice(0, 5)
+    .slice(0, 10)
 
   return (
-    <main className="min-h-screen bg-gray-50 pb-16">
-      <div className="container mx-auto px-4 pt-6">
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
-          <VideoHero video={video} />
-          <VideoRecommendations videos={recommendations} />
+    <main className="min-h-screen bg-white pb-10">
+      <div className="mx-auto max-w-[1800px] sm:px-6 sm:pt-6 lg:px-8">
+        <div className="grid gap-6 lg:grid-cols-[1fr_350px] xl:grid-cols-[1fr_400px]">
+          <div className="min-w-0">
+            <VideoHero video={video} />
+          </div>
+          <div className="w-full px-4 sm:px-0">
+            <VideoRecommendations videos={recommendations} />
+          </div>
         </div>
       </div>
     </main>

@@ -231,10 +231,6 @@ export const Staging: CollectionConfig = {
         if (!statusChanged) return doc
 
         try {
-          console.log(
-            `🔄 [STAGING SYNC] Syncing status change: ${previousDoc?.status} → ${doc.status}`,
-          )
-
           const blogPostId = typeof doc.blogPost === 'string' ? doc.blogPost : doc.blogPost?.id
 
           if (!blogPostId) {
@@ -267,8 +263,6 @@ export const Staging: CollectionConfig = {
               skipWorkflowSync: true,
             },
           })
-
-          console.log(`✅ [STAGING SYNC] Blog post status updated to: ${blogStatus}`)
         } catch (error) {
           console.error(`❌ [STAGING SYNC] Error syncing status to blog post:`, error)
         }

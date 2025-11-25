@@ -212,7 +212,7 @@ export const Article: React.FC<ArticleProps> = ({
   const articleAudio = resolveArticleAudio(post.articleAudio)
 
   return (
-    <div className="container mx-auto mt-4">
+    <div className="container mx-auto">
       <div className="grid grid-cols-12 gap-8">
         <div className="col-span-2 hidden xl:block">
           <div className="sticky top-40 w-full">
@@ -306,7 +306,7 @@ const AuthorMeta: React.FC<{ post: BlogPost; articleAudio: ArticleAudioData | nu
       }
     }
   } catch (error) {
-    console.log('Error resolving profile picture:', error)
+    console.error('Error resolving profile picture:', error)
   }
 
   const audioTrack: AudioTrack | undefined = useMemo(() => {

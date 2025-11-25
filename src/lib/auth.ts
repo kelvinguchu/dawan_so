@@ -143,6 +143,18 @@ export async function getCurrentUser(): Promise<AuthResult> {
     const headers = await getHeaders()
     const { user, permissions } = await payload.auth({ headers })
 
+    if (user) {
+      const freshUser = await payload.findByID({
+        collection: 'users',
+        id: user.id,
+        depth: 1,
+      })
+      return {
+        user: freshUser,
+        permissions,
+      }
+    }
+
     return {
       user: user as User | null,
       permissions,

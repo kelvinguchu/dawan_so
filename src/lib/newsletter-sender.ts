@@ -70,7 +70,6 @@ export class NewsletterSender {
 
     while (hasNextPage) {
       try {
-        console.log(`Fetching newsletter recipients page ${currentPage}...`)
 
         const response = await this.payload.find({
           collection: 'newsletter',
@@ -90,11 +89,6 @@ export class NewsletterSender {
 
         hasNextPage = response.hasNextPage
         currentPage++
-
-        console.log(
-          `Fetched ${pageRecipients.length} recipients from page ${currentPage - 1}. ` +
-            `Total so far: ${allRecipients.length}. Has next page: ${hasNextPage}`,
-        )
 
         if (hasNextPage) {
           await this.delay(50)

@@ -15,7 +15,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Button, buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
-interface SharePopoverProps {
+interface MediaShareProps {
   title: string
   url?: string
   description?: string
@@ -26,7 +26,7 @@ interface SharePopoverProps {
   showLabel?: boolean
 }
 
-export const SharePopover: React.FC<SharePopoverProps> = ({
+export const MediaShare: React.FC<MediaShareProps> = ({
   title,
   url,
   description = '',
@@ -50,9 +50,8 @@ export const SharePopover: React.FC<SharePopoverProps> = ({
       return
     }
 
-    const nextUrl = globalThis.location?.href ?? ''
-    if (nextUrl) {
-      setResolvedUrl(nextUrl)
+    if (typeof globalThis.window !== 'undefined') {
+      setResolvedUrl(globalThis.window.location.href)
     }
   }, [url])
 
@@ -168,13 +167,13 @@ export const SharePopover: React.FC<SharePopoverProps> = ({
         <button
           className={cn(
             buttonVariants({ variant: buttonVariant, size: buttonSize }),
-            'relative cursor-pointer',
+            'cursor-pointer',
             className,
           )}
           aria-label="La wadaag"
           type="button"
         >
-          <FaShareAlt className="h-4 w-4" />
+          <FaShareAlt className={cn('h-4 w-4', showLabel && 'mr-2')} />
           {showLabel && <span>La wadaag</span>}
         </button>
       </PopoverTrigger>
@@ -190,7 +189,7 @@ export const SharePopover: React.FC<SharePopoverProps> = ({
             {isSharing ? (
               <FaSpinner className="h-4 w-4 animate-spin" />
             ) : (
-              <FaShareAlt className="h-4 w-4" />
+              <FaShareAlt className="h-4 w-4 mr-2" />
             )}
             <span>La wadaag</span>
           </Button>
@@ -203,10 +202,11 @@ export const SharePopover: React.FC<SharePopoverProps> = ({
                 target="_blank"
                 rel="noopener noreferrer"
                 className={cn(
-                  'rounded-full p-2 transition-colors cursor-pointer',
+                  'rounded-full p-2 transition-colors cursor-pointer flex items-center justify-center',
                   !resolvedUrl && 'pointer-events-none opacity-50',
                   socialLink.color,
                 )}
+                style={{ width: '40px', height: '40px' }}
                 aria-label={`La wadaag ${socialLink.name}`}
               >
                 {socialLink.icon}
@@ -217,7 +217,7 @@ export const SharePopover: React.FC<SharePopoverProps> = ({
               onClick={handleCopyLink}
               variant="outline"
               size="icon"
-              className="rounded-full cursor-pointer"
+              className="rounded-full cursor-pointer w-[40px] h-[40px]"
               disabled={isSharing}
               aria-label="Koobiye xiriirka"
               type="button"

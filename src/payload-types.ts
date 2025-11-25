@@ -69,8 +69,9 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
-    videoAssets: VideoAsset;
-    podcastAudio: PodcastAudio;
+    headlineVideos: HeadlineVideo;
+    podcastAssets: PodcastAsset;
+    podcastBanners: PodcastBanner;
     articleAudio: ArticleAudio;
     blogPosts: BlogPost;
     blogCategories: BlogCategory;
@@ -78,7 +79,7 @@ export interface Config {
     staging: Staging;
     newsletter: Newsletter;
     newsletterCampaigns: NewsletterCampaign;
-    podcastSeries: PodcastSery;
+    podcastPlaylists: PodcastPlaylist;
     'push-subscriptions': PushSubscription;
     'mobile-push-subscriptions': MobilePushSubscription;
     'notification-logs': NotificationLog;
@@ -92,8 +93,9 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
-    videoAssets: VideoAssetsSelect<false> | VideoAssetsSelect<true>;
-    podcastAudio: PodcastAudioSelect<false> | PodcastAudioSelect<true>;
+    headlineVideos: HeadlineVideosSelect<false> | HeadlineVideosSelect<true>;
+    podcastAssets: PodcastAssetsSelect<false> | PodcastAssetsSelect<true>;
+    podcastBanners: PodcastBannersSelect<false> | PodcastBannersSelect<true>;
     articleAudio: ArticleAudioSelect<false> | ArticleAudioSelect<true>;
     blogPosts: BlogPostsSelect<false> | BlogPostsSelect<true>;
     blogCategories: BlogCategoriesSelect<false> | BlogCategoriesSelect<true>;
@@ -101,7 +103,7 @@ export interface Config {
     staging: StagingSelect<false> | StagingSelect<true>;
     newsletter: NewsletterSelect<false> | NewsletterSelect<true>;
     newsletterCampaigns: NewsletterCampaignsSelect<false> | NewsletterCampaignsSelect<true>;
-    podcastSeries: PodcastSeriesSelect<false> | PodcastSeriesSelect<true>;
+    podcastPlaylists: PodcastPlaylistsSelect<false> | PodcastPlaylistsSelect<true>;
     'push-subscriptions': PushSubscriptionsSelect<false> | PushSubscriptionsSelect<true>;
     'mobile-push-subscriptions': MobilePushSubscriptionsSelect<false> | MobilePushSubscriptionsSelect<true>;
     'notification-logs': NotificationLogsSelect<false> | NotificationLogsSelect<true>;
@@ -180,6 +182,8 @@ export interface User {
   isEmailVerified?: boolean | null;
   likedPosts?: (string | BlogPost)[] | null;
   favoritedPosts?: (string | BlogPost)[] | null;
+  likedPodcasts?: (string | Podcast)[] | null;
+  likedVideos?: (string | HeadlineVideo)[] | null;
   /**
    * Tracks the most recent verification emails sent to this user to prevent abuse.
    */
@@ -341,7 +345,7 @@ export interface BlogPost {
             /**
              * Upload a video file (MP4, WebM, etc.)
              */
-            video: string | VideoAsset;
+            video: string | HeadlineVideo;
             /**
              * Whether the video should start playing automatically (note: most browsers require videos to be muted for autoplay)
              */
@@ -463,9 +467,9 @@ export interface BlogPost {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "videoAssets".
+ * via the `definition` "headlineVideos".
  */
-export interface VideoAsset {
+export interface HeadlineVideo {
   id: string;
   /**
    * Internal label shown in the media library.
@@ -479,6 +483,8 @@ export interface VideoAsset {
    * Upload a thumbnail image for this video.
    */
   thumbnail: string | Media;
+  views?: number | null;
+  likes?: number | null;
   bunnyVideoId?: string | null;
   prefix?: string | null;
   updatedAt: string;
@@ -533,31 +539,6 @@ export interface BlogCategory {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "podcastAudio".
- */
-export interface PodcastAudio {
-  id: string;
-  /**
-   * Optional label that makes audio uploads easier to find.
-   */
-  title?: string | null;
-  description?: string | null;
-  bunnyVideoId?: string | null;
-  prefix?: string | null;
-  updatedAt: string;
-  createdAt: string;
-  url?: string | null;
-  thumbnailURL?: string | null;
-  filename?: string | null;
-  mimeType?: string | null;
-  filesize?: number | null;
-  width?: number | null;
-  height?: number | null;
-  focalX?: number | null;
-  focalY?: number | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "podcasts".
  */
 export interface Podcast {
@@ -565,10 +546,10 @@ export interface Podcast {
   title: string;
   slug: string;
   description: string;
-  audioFile: string | PodcastAudio;
-  series?: (string | null) | PodcastSery;
+  media: string | PodcastAsset;
+  mediaType?: ('audio' | 'video') | null;
+  playlist?: (string | null) | PodcastPlaylist;
   episodeNumber?: number | null;
-  duration?: number | null;
   categories?: (string | BlogCategory)[] | null;
   peopleInvolved?:
     | {
@@ -578,7 +559,7 @@ export interface Podcast {
         id?: string | null;
       }[]
     | null;
-  coverImage?: (string | null) | Media;
+  coverImage: string | Media;
   publishedAt?: string | null;
   isPublished?: boolean | null;
   playCount?: number | null;
@@ -596,15 +577,58 @@ export interface Podcast {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "podcastSeries".
+ * via the `definition` "podcastAssets".
  */
-export interface PodcastSery {
+export interface PodcastAsset {
+  id: string;
+  bunnyVideoId?: string | null;
+  prefix?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "podcastPlaylists".
+ */
+export interface PodcastPlaylist {
   id: string;
   name: string;
   slug: string;
-  description?: string | null;
+  image: string | Media;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * Upload coming soon podcast banners (strictly 1280x720 pixels).
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "podcastBanners".
+ */
+export interface PodcastBanner {
+  id: string;
+  title: string;
+  alt: string;
+  _key?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
 }
 /**
  * Review and approve blog posts submitted by content creators. Simple workflow for content approval.
@@ -897,12 +921,16 @@ export interface PayloadLockedDocument {
         value: string | Media;
       } | null)
     | ({
-        relationTo: 'videoAssets';
-        value: string | VideoAsset;
+        relationTo: 'headlineVideos';
+        value: string | HeadlineVideo;
       } | null)
     | ({
-        relationTo: 'podcastAudio';
-        value: string | PodcastAudio;
+        relationTo: 'podcastAssets';
+        value: string | PodcastAsset;
+      } | null)
+    | ({
+        relationTo: 'podcastBanners';
+        value: string | PodcastBanner;
       } | null)
     | ({
         relationTo: 'articleAudio';
@@ -933,8 +961,8 @@ export interface PayloadLockedDocument {
         value: string | NewsletterCampaign;
       } | null)
     | ({
-        relationTo: 'podcastSeries';
-        value: string | PodcastSery;
+        relationTo: 'podcastPlaylists';
+        value: string | PodcastPlaylist;
       } | null)
     | ({
         relationTo: 'push-subscriptions';
@@ -1002,6 +1030,8 @@ export interface UsersSelect<T extends boolean = true> {
   isEmailVerified?: T;
   likedPosts?: T;
   favoritedPosts?: T;
+  likedPodcasts?: T;
+  likedVideos?: T;
   verificationEmailRequests?:
     | T
     | {
@@ -1087,12 +1117,14 @@ export interface MediaSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "videoAssets_select".
+ * via the `definition` "headlineVideos_select".
  */
-export interface VideoAssetsSelect<T extends boolean = true> {
+export interface HeadlineVideosSelect<T extends boolean = true> {
   title?: T;
   description?: T;
   thumbnail?: T;
+  views?: T;
+  likes?: T;
   bunnyVideoId?: T;
   prefix?: T;
   updatedAt?: T;
@@ -1109,13 +1141,31 @@ export interface VideoAssetsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "podcastAudio_select".
+ * via the `definition` "podcastAssets_select".
  */
-export interface PodcastAudioSelect<T extends boolean = true> {
-  title?: T;
-  description?: T;
+export interface PodcastAssetsSelect<T extends boolean = true> {
   bunnyVideoId?: T;
   prefix?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "podcastBanners_select".
+ */
+export interface PodcastBannersSelect<T extends boolean = true> {
+  title?: T;
+  alt?: T;
+  _key?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -1254,10 +1304,10 @@ export interface PodcastsSelect<T extends boolean = true> {
   title?: T;
   slug?: T;
   description?: T;
-  audioFile?: T;
-  series?: T;
+  media?: T;
+  mediaType?: T;
+  playlist?: T;
   episodeNumber?: T;
-  duration?: T;
   categories?: T;
   peopleInvolved?:
     | T
@@ -1369,12 +1419,12 @@ export interface NewsletterCampaignsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "podcastSeries_select".
+ * via the `definition` "podcastPlaylists_select".
  */
-export interface PodcastSeriesSelect<T extends boolean = true> {
+export interface PodcastPlaylistsSelect<T extends boolean = true> {
   name?: T;
   slug?: T;
-  description?: T;
+  image?: T;
   updatedAt?: T;
   createdAt?: T;
 }

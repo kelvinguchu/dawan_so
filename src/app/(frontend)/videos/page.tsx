@@ -1,7 +1,7 @@
 import React from 'react'
 import type { Metadata } from 'next'
-import { VideoSearchBar } from '@/components/watch/VideoSearchBar'
-import { VideoCard } from '@/components/watch/VideoCard'
+import { VideoSearchBar } from '@/components/videos/VideoSearchBar'
+import { VideoCard } from '@/components/videos/VideoCard'
 import { getVideos } from '@/lib/video-actions'
 import siteConfig, { sharedMetadata } from '@/app/shared-metadata'
 
@@ -13,11 +13,11 @@ export const metadata: Metadata = {
     ...sharedMetadata.openGraph,
     title: 'Daawo',
     description: 'Daawo fiidiyowyada cusub ee warbixinno, wareysiyo, iyo falanqayn qoto dheer.',
-    url: new URL('/watch', siteConfig.url).toString(),
+    url: new URL('/videos', siteConfig.url).toString(),
     type: 'website',
   },
   alternates: {
-    canonical: new URL('/watch', siteConfig.url).toString(),
+    canonical: new URL('/videos', siteConfig.url).toString(),
   },
 }
 
@@ -37,7 +37,7 @@ export default async function WatchPage({ searchParams }: Readonly<WatchPageProp
 
   return (
     <main className="min-h-screen bg-gray-50 pb-16">
-      <div className="container mx-auto px-4 pt-6">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         <div className="flex flex-col items-start justify-between gap-4 border-b border-gray-200 pb-6 lg:flex-row lg:items-center">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Daawo</h1>

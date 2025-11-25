@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Podcast, PodcastSery } from '@/payload-types'
+import { Podcast, PodcastPlaylist } from '@/payload-types'
 import { ChevronDown, ChevronRight, Clock, Calendar, Headphones, Users, Music } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -11,20 +11,20 @@ import {
   formatDuration,
   getPodcastCoverImage,
   formatPeopleInvolved,
-  sortPodcastsBySeries,
+  sortPodcastsByPlaylist,
 } from '@/utils/podcastUtils'
 import { formatTimeAgo } from '@/utils/dateUtils'
 
-interface SeriesDisplayProps {
-  series: PodcastSery
+interface PlaylistsDisplayProps {
+  playlist: PodcastPlaylist
   podcasts: Podcast[]
   defaultExpanded?: boolean
   showAllEpisodes?: boolean
   maxEpisodesPreview?: number
 }
 
-export const SeriesDisplay: React.FC<SeriesDisplayProps> = ({
-  series,
+export const PlaylistsDisplay: React.FC<PlaylistsDisplayProps> = ({
+  playlist,
   podcasts,
   defaultExpanded = false,
   showAllEpisodes = false,
@@ -33,28 +33,29 @@ export const SeriesDisplay: React.FC<SeriesDisplayProps> = ({
   const [isExpanded, setIsExpanded] = useState(defaultExpanded || showAllEpisodes)
   const [showAll, setShowAll] = useState(showAllEpisodes)
 
-  // Filter and sort episodes for this series
-  const seriesEpisodes = sortPodcastsBySeries(
+  // Filter and sort episodes for this playlist
+  const playlistEpisodes = sortPodcastsByPlaylist(
     podcasts.filter(
       (podcast) =>
-        typeof podcast.series === 'object' &&
-        podcast.series?.id === series.id &&
+        typeof podcast.playlist === 'object' &&
+        podcast.playlist?.id === playlist.id &&
         podcast.isPublished,
     ),
   )
 
-  const displayedEpisodes = showAll ? seriesEpisodes : seriesEpisodes.slice(0, maxEpisodesPreview)
-  const hasMoreEpisodes = seriesEpisodes.length > maxEpisodesPreview
+  const displayedEpisodes = showAll
+    ? playlistEpisodes
+    : playlistEpisodes.slice(0, maxEpisodesPreview)
+  const hasMoreEpisodes = playlistEpisodes.length > maxEpisodesPreview
 
-  // Calculate series stats
-  const totalDuration = seriesEpisodes.reduce((sum, podcast) => sum + (podcast.duration || 0), 0)
-  const latestEpisode = seriesEpisodes[seriesEpisodes.length - 1]
-  const firstEpisode = seriesEpisodes[0]
+  // Calculate playlist stats
+  const latestEpisode = playlistEpisodes[playlistEpisodes.length - 1]
+  const firstEpisode = playlistEpisodes[0]
 
   // Get representative cover image (from latest episode or first episode)
-  const seriesCoverImage = getPodcastCoverImage(latestEpisode || firstEpisode)
+  const playlistCoverImage = getPodcastCoverImage(latestEpisode || firstEpisode)
 
-  if (seriesEpisodes.length === 0) {
+  if (playlistEpisodes.length === 0) {
     return null
   }
 
@@ -62,14 +63,14 @@ export const SeriesDisplay: React.FC<SeriesDisplayProps> = ({
     <div className="relative bg-white rounded-3xl border-0 shadow-xl shadow-slate-200/50 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-[#b01c14]/5 via-transparent to-slate-50/30" />
 
-      {/* Series Header */}
+      {/* Playlist Header */}
       <div className="relative">
         {/* Background Image */}
-        {seriesCoverImage && (
+        {playlistCoverImage && (
           <div className="absolute inset-0 h-40">
             <Image
-              src={seriesCoverImage}
-              alt={series.name}
+              src={playlistCoverImage}
+              alt={playlist.name}
               fill
               className="object-cover opacity-10 blur-sm"
               sizes="100vw"
@@ -80,13 +81,13 @@ export const SeriesDisplay: React.FC<SeriesDisplayProps> = ({
 
         <div className="relative p-8 pb-6">
           <div className="flex items-start gap-6">
-            {/* Series Cover */}
+            {/* Playlist Cover */}
             <div className="flex-shrink-0">
               <div className="relative w-24 h-24 rounded-2xl overflow-hidden shadow-2xl shadow-slate-900/20">
-                {seriesCoverImage ? (
+                {playlistCoverImage ? (
                   <Image
-                    src={seriesCoverImage}
-                    alt={series.name}
+                    src={playlistCoverImage}
+                    alt={playlist.name}
                     fill
                     className="object-cover"
                     sizes="96px"
@@ -99,30 +100,24 @@ export const SeriesDisplay: React.FC<SeriesDisplayProps> = ({
               </div>
             </div>
 
-            {/* Series Info */}
+            {/* Playlist Info */}
             <div className="flex-grow min-w-0">
               <div className="flex items-start justify-between mb-4">
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
                     <Badge className="bg-[#b01c14]/80 text-[#b01c14] border-[#b01c14]/80 font-medium">
-                      Silsilad Podkaas
+                      Liiska Podkaas
                     </Badge>
                   </div>
 
                   <h2 className="text-2xl font-bold text-slate-900 leading-tight">
                     <Link
-                      href={`/podcasts/series/${series.slug}`}
+                      href={`/podcasts/playlists/${playlist.slug}`}
                       className="hover:text-[#b01c14] transition-colors duration-300"
                     >
-                      {series.name}
+                      {playlist.name}
                     </Link>
                   </h2>
-
-                  {series.description && (
-                    <p className="text-slate-600 leading-relaxed line-clamp-2 max-w-2xl">
-                      {series.description}
-                    </p>
-                  )}
                 </div>
 
                 {/* Expand/Collapse Button */}
@@ -144,22 +139,12 @@ export const SeriesDisplay: React.FC<SeriesDisplayProps> = ({
                 </Button>
               </div>
 
-              {/* Series Stats */}
+              {/* Playlist Stats */}
               <div className="flex flex-wrap items-center gap-6 text-sm">
                 <div className="flex items-center gap-2 text-slate-600">
                   <div className="w-2 h-2 rounded-full bg-[#b01c14]" />
-                  <span className="font-medium">{seriesEpisodes.length} qaybood</span>
+                  <span className="font-medium">{playlistEpisodes.length} qaybood</span>
                 </div>
-
-                {totalDuration > 0 && (
-                  <div className="flex items-center gap-2 text-slate-600">
-                    <Clock className="w-4 h-4 text-[#b01c14]" />
-                    <span>
-                      {Math.round(totalDuration / 3600)} saac{' '}
-                      {Math.round((totalDuration % 3600) / 60)} daqiiqo guud ahaan
-                    </span>
-                  </div>
-                )}
 
                 {latestEpisode && (
                   <div className="flex items-center gap-2 text-slate-600">
@@ -198,7 +183,7 @@ export const SeriesDisplay: React.FC<SeriesDisplayProps> = ({
                       {/* Episode Number */}
                       <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#b01c14]/80 flex items-center justify-center">
                         <span className="text-sm font-bold text-[#b01c14]">
-                          {podcast.episodeNumber || seriesEpisodes.length - index}
+                          {podcast.episodeNumber || playlistEpisodes.length - index}
                         </span>
                       </div>
 
@@ -241,13 +226,6 @@ export const SeriesDisplay: React.FC<SeriesDisplayProps> = ({
                             <Users className="w-3 h-3" />
                             <span className="truncate max-w-32">{peopleInvolved}</span>
                           </div>
-
-                          {podcast.duration && (
-                            <div className="flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              <span>{formatDuration(podcast.duration)}</span>
-                            </div>
-                          )}
 
                           <div className="flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
@@ -294,7 +272,7 @@ export const SeriesDisplay: React.FC<SeriesDisplayProps> = ({
                     onClick={() => setShowAll(true)}
                     className="bg-[#b01c14] hover:bg-[#b01c14]/90 text-white h-11 px-8 rounded-full shadow-lg hover:shadow-xl hover:shadow-[#b01c14]/30 transition-all duration-300"
                   >
-                    Muuji {seriesEpisodes.length - maxEpisodesPreview} qaybood oo dheeraad ah
+                    Muuji {playlistEpisodes.length - maxEpisodesPreview} qaybood oo dheeraad ah
                   </Button>
                 </div>
               )}

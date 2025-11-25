@@ -29,8 +29,8 @@ export const PodcastList: React.FC<PodcastListProps> = ({
   const [searchTerm, setSearchTerm] = useState('')
   const [searchInput, setSearchInput] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
-  const [selectedSeries, setSelectedSeries] = useState<string>('all')
-  const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'duration' | 'popularity'>('newest')
+  const [selectedPlaylist, setSelectedPlaylist] = useState<string>('all')
+  const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'popularity'>('newest')
 
   // Filter and sort podcasts
   const filteredPodcasts = podcasts.filter((podcast) => {
@@ -53,10 +53,10 @@ export const PodcastList: React.FC<PodcastListProps> = ({
       if (!hasCategory) return false
     }
 
-    // Series filter
-    if (selectedSeries !== 'all') {
-      const podcastSeries = typeof podcast.series === 'object' ? podcast.series : null
-      if (!podcastSeries || podcastSeries.id !== selectedSeries) return false
+    // Playlist filter
+    if (selectedPlaylist !== 'all') {
+      const podcastPlaylist = typeof podcast.playlist === 'object' ? podcast.playlist : null
+      if (podcastPlaylist?.id !== selectedPlaylist) return false
     }
 
     return true
@@ -75,8 +75,6 @@ export const PodcastList: React.FC<PodcastListProps> = ({
           new Date(a.publishedAt ?? a.createdAt).getTime() -
           new Date(b.publishedAt ?? b.createdAt).getTime()
         )
-      case 'duration':
-        return (b.duration ?? 0) - (a.duration ?? 0)
       case 'popularity':
         return (b.playCount ?? 0) - (a.playCount ?? 0)
       default:
@@ -98,12 +96,12 @@ export const PodcastList: React.FC<PodcastListProps> = ({
     setSearchTerm('')
     setSearchInput('')
     setSelectedCategory('all')
-    setSelectedSeries('all')
+    setSelectedPlaylist('all')
     setSortBy('newest')
   }
 
   const hasActiveFilters = Boolean(
-    searchTerm || selectedCategory !== 'all' || selectedSeries !== 'all',
+    searchTerm || selectedCategory !== 'all' || selectedPlaylist !== 'all',
   )
 
   return (
@@ -258,7 +256,6 @@ export const PodcastList: React.FC<PodcastListProps> = ({
               key={podcast.id}
               podcast={podcast}
               variant={viewMode === 'list' ? 'compact' : 'default'}
-              showCategories={true}
             />
           ))}
         </div>
@@ -284,8 +281,8 @@ export const PodcastList: React.FC<PodcastListProps> = ({
           setSearchTerm={setSearchTerm}
           selectedCategory={selectedCategory}
           setSelectedCategory={setSelectedCategory}
-          selectedSeries={selectedSeries}
-          setSelectedSeries={setSelectedSeries}
+          selectedPlaylist={selectedPlaylist}
+          setSelectedPlaylist={setSelectedPlaylist}
           sortBy={sortBy}
           setSortBy={setSortBy}
           clearFilters={clearFilters}

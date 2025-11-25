@@ -2,10 +2,10 @@ import React, { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { PodcastList } from '@/components/podcasts/PodcastList'
 import { Skeleton } from '@/components/ui/skeleton'
-import { sharedMetadata } from '@/app/shared-metadata'
-import siteConfig from '@/app/shared-metadata'
+import siteConfig, { sharedMetadata } from '@/app/shared-metadata'
 import ErrorFallback from '@/components/ErrorFallback'
-import { getPodcasts } from '@/lib/podcast-actions'
+import { getPodcasts, getPlaylists, getPlaylistById } from '@/lib/podcast-actions'
+import { PlaylistGrid } from '@/components/podcasts/PlaylistGrid'
 
 export const metadata: Metadata = {
   ...sharedMetadata,
@@ -60,7 +60,7 @@ interface PodcastsPageProps {
     search?: string
     page?: string
     category?: string
-    series?: string
+    playlist?: string
     sort?: string
   }>
 }
@@ -98,11 +98,40 @@ const PodcastsPageSkeleton = () => {
 
 export default async function PodcastsPage({ searchParams }: Readonly<PodcastsPageProps>) {
   const resolvedSearchParams = searchParams ? await searchParams : {}
-  const page = parseInt(resolvedSearchParams.page ?? '1', 10)
+  const page = Number.parseInt(resolvedSearchParams.page ?? '1', 10)
   const searchTerm = resolvedSearchParams.search ?? ''
   const category = resolvedSearchParams.category ?? 'all'
-  const series = resolvedSearchParams.series ?? 'all'
+  const playlist = resolvedSearchParams.playlist ?? 'all'
   const sortBy = resolvedSearchParams.sort ?? 'newest'
+
+  // If we are on the root page without any filters, show the playlists grid
+  const isRootPage =
+    !resolvedSearchParams.playlist && !resolvedSearchParams.search && !resolvedSearchParams.category
+
+  if (isRootPage) {
+    try {
+      const playlists = await getPlaylists()
+      return (
+        <main className="bg-gray-50 min-h-screen">
+          <div className="container mx-auto px-4 py-8">
+            <h1 className="text-3xl font-bold text-[#b01c14] mb-8">Liisaska Podkaastyada</h1>
+            <PlaylistGrid playlists={playlists} />
+          </div>
+        </main>
+      )
+    } catch (error) {
+      console.error('Error loading playlists:', error)
+      // Fallback to podcast list if playlists fail
+    }
+  }
+
+  let pageTitle = 'Podkaastyada'
+  if (playlist && playlist !== 'all') {
+    const playlistData = await getPlaylistById(playlist)
+    if (playlistData) {
+      pageTitle = playlistData.name
+    }
+  }
 
   try {
     const podcastsData = await getPodcasts({
@@ -110,31 +139,30 @@ export default async function PodcastsPage({ searchParams }: Readonly<PodcastsPa
       limit: 20,
       searchTerm,
       category,
-      series,
+      playlist,
       sortBy,
     })
 
     return (
       <main className="bg-gray-50 min-h-screen">
-        <div className="container mx-auto px-4 py-2 md:py-4">
-          <Suspense fallback={<PodcastsPageSkeleton />}>
-            <PodcastList
-              podcasts={podcastsData.docs}
-              title="Podkaastyada"
-              showFilters={true}
-              showSearch={true}
-              className="w-full"
-            />
-          </Suspense>
+        <Suspense fallback={<PodcastsPageSkeleton />}>
+          <PodcastList
+            podcasts={podcastsData.docs}
+            title={pageTitle}
+            showFilters={true}
+            showSearch={true}
+            className="w-full"
+          />
+        </Suspense>
 
-          {podcastsData.totalPages > 1 && (
-            <div className="mt-12 flex justify-center">
-              <p className="text-sm text-gray-600">
-                Bogga {podcastsData.page} ee {podcastsData.totalPages} • {podcastsData.totalDocs} qaybood guud
-              </p>
-            </div>
-          )}
-        </div>
+        {podcastsData.totalPages > 1 && (
+          <div className="mt-12 flex justify-center">
+            <p className="text-sm text-gray-600">
+              Bogga {podcastsData.page} ee {podcastsData.totalPages} • {podcastsData.totalDocs}{' '}
+              qaybood guud
+            </p>
+          </div>
+        )}
       </main>
     )
   } catch (error) {

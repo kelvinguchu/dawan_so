@@ -14,16 +14,17 @@ import { Media } from './collections/Media'
 import { BlogPost } from './collections/BlogPosts'
 import { BlogCategories } from './collections/BlogCategories'
 import { Podcasts } from './collections/Podcasts'
-import { PodcastAudio } from './collections/PodcastAudio'
+import { PodcastAssets } from './collections/PodcastAssets'
+import { PodcastBanners } from './collections/PodcastBanners'
 import { ArticleAudio } from './collections/ArticleAudio'
 import { Staging } from './collections/Staging'
 import { Newsletter } from './collections/Newsletter'
 import { NewsletterCampaigns } from './collections/NewsletterCampaigns'
-import { PodcastSeries } from './collections/PodcastSeries'
+import { PodcastPlaylists } from './collections/PodcastPlaylists'
 import { PushSubscriptions } from './collections/PushSubscriptions'
 import { MobilePushSubscriptions } from './collections/MobilePushSubscriptions'
 import { NotificationLogs } from './collections/NotificationLogs'
-import { VideoAssets } from './collections/VideoAssets'
+import { HeadlineVideos } from './collections/HeadlineVideos'
 import { sendDailyDigestTask } from './jobs/sendDailyDigest'
 
 const filename = fileURLToPath(import.meta.url)
@@ -76,8 +77,9 @@ export default buildConfig({
   collections: [
     Users,
     Media,
-    VideoAssets,
-    PodcastAudio,
+    HeadlineVideos,
+    PodcastAssets,
+    PodcastBanners,
     ArticleAudio,
     BlogPost,
     BlogCategories,
@@ -85,7 +87,7 @@ export default buildConfig({
     Staging,
     Newsletter,
     NewsletterCampaigns,
-    PodcastSeries,
+    PodcastPlaylists,
     PushSubscriptions,
     MobilePushSubscriptions,
     NotificationLogs,
@@ -135,6 +137,7 @@ export default buildConfig({
     uploadthingStorage({
       collections: {
         media: true,
+        podcastBanners: true,
       },
       options: {
         token: process.env.UPLOADTHING_TOKEN,
@@ -149,8 +152,8 @@ export default buildConfig({
       ? [
           bunnyStorage({
             collections: {
-              podcastAudio: {
-                prefix: 'podcasts/audio',
+              podcastAssets: {
+                prefix: 'podcasts/assets',
                 disablePayloadAccessControl: true,
                 mediaPreview: true,
                 stream: false,
@@ -161,10 +164,11 @@ export default buildConfig({
                 mediaPreview: true,
                 stream: false,
               },
-              videoAssets: {
-                prefix: 'media/videos',
+              headlineVideos: {
+                prefix: 'media/headline-videos',
                 disablePayloadAccessControl: true,
                 mediaPreview: true,
+                stream: false,
               },
             },
             storage: {

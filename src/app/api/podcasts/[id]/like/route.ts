@@ -7,64 +7,55 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const { id } = await params
 
     if (!id) {
-      return NextResponse.json({ error: 'Blog post ID is required' }, { status: 400 })
+      return NextResponse.json({ error: 'Podcast ID is required' }, { status: 400 })
     }
 
     const payload = await getPayload({ config })
-
-    // Get authenticated user from the request
     const { user } = await payload.auth({ headers: request.headers })
 
     if (!user) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
-    // Get current post
-    const post = await payload.findByID({
-      collection: 'blogPosts',
+    const podcast = await payload.findByID({
+      collection: 'podcasts',
       id,
     })
 
-    if (!post) {
-      return NextResponse.json({ error: 'Blog post not found' }, { status: 404 })
+    if (!podcast) {
+      return NextResponse.json({ error: 'Podcast not found' }, { status: 404 })
     }
 
-    // Get user's current liked posts
-    const currentUser = (await payload.findByID({
+    const currentUser = await payload.findByID({
       collection: 'users',
       id: user.id,
-    })) 
+    })
 
-    const likedPosts = (currentUser.likedPosts || []).map((p) => (typeof p === 'string' ? p : p.id))
+    const likedPodcasts = (currentUser.likedPodcasts || []).map((p) =>
+      typeof p === 'string' ? p : p.id,
+    )
 
-    // Toggle like
-    const isLiked = likedPosts.includes(id)
-    const updatedLikedPosts = isLiked
-      ? likedPosts.filter((postId) => postId !== id)
-      : [...likedPosts, id]
+    const isLiked = likedPodcasts.includes(id)
+    const updatedLikedPodcasts = isLiked
+      ? likedPodcasts.filter((podcastId) => podcastId !== id)
+      : [...likedPodcasts, id]
 
-    // Update user's liked posts
     await payload.update({
       collection: 'users',
       id: user.id,
       data: {
-        likedPosts: updatedLikedPosts,
+        likedPodcasts: updatedLikedPodcasts,
       },
     })
 
-    // Update post's like count
-    const currentLikes = (post.likes as number) || 0
+    const currentLikes = (podcast.likes as number) || 0
     const newLikeCount = isLiked ? Math.max(0, currentLikes - 1) : currentLikes + 1
 
     await payload.update({
-      collection: 'blogPosts',
+      collection: 'podcasts',
       id,
       data: {
         likes: newLikeCount,
-      },
-      context: {
-        skipWorkflowSync: true,
-        internalTask: true,
       },
     })
 

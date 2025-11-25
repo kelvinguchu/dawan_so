@@ -2,7 +2,7 @@
 
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import { VideoAsset } from '@/payload-types'
+import { HeadlineVideo } from '@/payload-types'
 
 interface VideoQueryOptions {
   page?: number
@@ -11,7 +11,7 @@ interface VideoQueryOptions {
 }
 
 interface VideoResponse {
-  docs: VideoAsset[]
+  docs: HeadlineVideo[]
   totalDocs: number
   totalPages: number
   page: number
@@ -49,7 +49,7 @@ export async function getVideos({
   }
 
   const response = await payload.find({
-    collection: 'videoAssets',
+    collection: 'headlineVideos',
     page,
     limit,
     sort: '-createdAt',
@@ -57,7 +57,7 @@ export async function getVideos({
   })
 
   return {
-    docs: response.docs as VideoAsset[],
+    docs: response.docs as unknown as HeadlineVideo[],
     totalDocs: response.totalDocs ?? 0,
     totalPages: response.totalPages ?? 1,
     page: response.page ?? 1,
@@ -66,16 +66,16 @@ export async function getVideos({
   }
 }
 
-export async function getVideoById(id: string): Promise<VideoAsset | null> {
+export async function getVideoById(id: string): Promise<HeadlineVideo | null> {
   if (!id) return null
 
   try {
     const payload = await getPayload({ config })
     const video = await payload.findByID({
-      collection: 'videoAssets',
+      collection: 'headlineVideos',
       id,
     })
-    return video as VideoAsset
+    return video as unknown as HeadlineVideo
   } catch (error) {
     console.error('Error fetching video by id:', error)
     return null

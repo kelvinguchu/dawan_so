@@ -1,9 +1,7 @@
-// Push notification worker - imported by next-pwa generated service worker
-console.log('Push notification worker loaded')
+
 
 // Handle any runtime messages to prevent port closure errors
 self.addEventListener('message', (event) => {
-  console.log('Service worker received message:', event.data)
 
   // Always respond to messages to prevent "message port closed" errors
   if (event.ports && event.ports[0]) {
@@ -20,7 +18,6 @@ self.addEventListener('message', (event) => {
 
 // Push notification event handler
 self.addEventListener('push', (event) => {
-  console.log('Push event received:', event)
 
   if (!event.data) {
     console.error('Push event but no data')
@@ -49,7 +46,7 @@ self.addEventListener('push', (event) => {
       self.registration
         .showNotification(title || 'New Notification', options)
         .then(() => {
-          console.log('Notification shown successfully')
+          
         })
         .catch((error) => {
           console.error('Error showing notification:', error)
@@ -78,7 +75,6 @@ self.addEventListener('push', (event) => {
 
 // Handle notification click
 self.addEventListener('notificationclick', (event) => {
-  console.log('Notification clicked:', event.notification)
 
   event.notification.close()
 
@@ -109,8 +105,3 @@ self.addEventListener('notificationclick', (event) => {
   )
 })
 
-// Handle notification close (optional analytics)
-self.addEventListener('notificationclose', (event) => {
-  console.log('Notification closed:', event.notification)
-  // Could send analytics here if needed
-})

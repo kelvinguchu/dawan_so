@@ -1,8 +1,9 @@
 'use client'
 
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import type Hls from 'hls.js'
 import { Podcast } from '@/payload-types'
 import {
   Maximize2,
@@ -15,6 +16,7 @@ import {
   Calendar,
   Tag,
   Headphones,
+  Video,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -23,6 +25,7 @@ import {
   getPodcastDisplayTitle,
   getPodcastCoverImage,
   getPodcastAudioUrl,
+  getPodcastVideoUrl,
   getPodcastExcerpt,
   formatPeopleInvolved,
 } from '@/utils/podcastUtils'
@@ -48,6 +51,7 @@ export const PodcastPlayer: React.FC<PodcastPlayerProps> = ({
 
   const coverImageUrl = getPodcastCoverImage(podcast)
   const audioUrl = getPodcastAudioUrl(podcast)
+  const videoUrl = getPodcastVideoUrl(podcast)
   const displayTitle = getPodcastDisplayTitle(podcast)
   const excerpt = getPodcastExcerpt(podcast, 200)
   const peopleInvolved = formatPeopleInvolved(podcast.peopleInvolved)
@@ -59,10 +63,62 @@ export const PodcastPlayer: React.FC<PodcastPlayerProps> = ({
       title: displayTitle,
       artist: peopleInvolved || undefined,
       src: audioUrl,
-      duration: podcast.duration ?? undefined,
       thumbnail: coverImageUrl ?? undefined,
     }
-  }, [audioUrl, coverImageUrl, displayTitle, peopleInvolved, podcast.duration, podcast.id])
+  }, [audioUrl, coverImageUrl, displayTitle, peopleInvolved, podcast.id])
+
+  const videoRef = useRef<HTMLVideoElement | null>(null)
+  const isHlsSource = useMemo(() => (videoUrl ? /\.m3u8($|\?)/i.test(videoUrl) : false), [videoUrl])
+
+  useEffect(() => {
+    const element = videoRef.current
+    if (!element || !videoUrl) return
+
+    let hls: Hls | null = null
+    let cancelled = false
+
+    const loadNativeSource = () => {
+      if (element.src !== videoUrl) {
+        element.src = videoUrl
+        element.load()
+      }
+    }
+
+    if (isHlsSource && !element.canPlayType('application/vnd.apple.mpegurl')) {
+      ;(async () => {
+        try {
+          const { default: Hls } = await import('hls.js')
+          if (cancelled) return
+
+          if (!Hls.isSupported()) {
+            loadNativeSource()
+            return
+          }
+
+          hls = new Hls({ enableWorker: true, backBufferLength: 90 })
+          hls.attachMedia(element)
+          hls.on(Hls.Events.MEDIA_ATTACHED, () => {
+            if (!cancelled) {
+              hls?.loadSource(videoUrl)
+            }
+          })
+        } catch (error) {
+          console.error('Unable to initialize HLS.js', error)
+          loadNativeSource()
+        }
+      })()
+    } else {
+      loadNativeSource()
+    }
+
+    return () => {
+      cancelled = true
+      if (hls) {
+        hls.destroy()
+        hls = null
+      }
+    }
+  }, [videoUrl, isHlsSource])
 
   if (variant === 'compact') {
     return (
@@ -104,12 +160,6 @@ export const PodcastPlayer: React.FC<PodcastPlayerProps> = ({
                 <Users className="w-3 h-3" />
                 {peopleInvolved}
               </p>
-              {podcast.duration && (
-                <p className="text-xs text-slate-500 flex items-center gap-1">
-                  <Clock className="w-3 h-3" />
-                  {formatDuration(podcast.duration)}
-                </p>
-              )}
             </div>
 
             {/* Controls */}
@@ -165,13 +215,6 @@ export const PodcastPlayer: React.FC<PodcastPlayerProps> = ({
                   <span className="flex items-center gap-2 text-sm">
                     <Calendar className="w-4 h-4 text-[#b01c14]" />
                     {formatTimeAgo(podcast.publishedAt || podcast.createdAt)}
-                  </span>
-                )}
-
-                {podcast.duration && (
-                  <span className="flex items-center gap-2 text-sm">
-                    <Clock className="w-4 h-4 text-[#b01c14]" />
-                    {formatDuration(podcast.duration)}
                   </span>
                 )}
               </div>
@@ -232,46 +275,75 @@ export const PodcastPlayer: React.FC<PodcastPlayerProps> = ({
 
       {/* Player Section */}
       <div className="relative p-8 pt-4">
-        <div className="flex gap-8">
-          {/* Cover Image */}
-          <div className="relative w-64 h-64 rounded-2xl overflow-hidden flex-shrink-0 shadow-2xl shadow-slate-900/20">
-            {coverImageUrl ? (
-              <Image
-                src={coverImageUrl}
-                alt={displayTitle}
-                fill
-                className="object-cover"
-                sizes="256px"
-              />
-            ) : (
-              <div className="w-full h-full bg-gradient-to-br from-[#b01c14]/80 via-[#b01c14]/80 to-[#b01c14]/5 flex items-center justify-center">
-                <Headphones className="w-20 h-20 text-[#b01c14]" />
-              </div>
-            )}
-          </div>
-
-          {/* Controls & Info */}
-          <div className="flex-grow space-y-8">
-            {audioTrack ? (
-              <div className="flex items-center justify-center">
-                <AudioTrigger track={audioTrack} size="lg" className="w-full sm:w-auto" showTitle />
-              </div>
-            ) : (
-              <div className="flex items-center justify-center">
-                <p className="text-slate-500 text-sm">Ma jiro maqal diyaarsan qaybtaan.</p>
-              </div>
-            )}
-
+        {videoUrl ? (
+          <div className="mb-8">
+            <div className="relative aspect-video w-full bg-black rounded-2xl overflow-hidden shadow-2xl shadow-slate-900/20">
+              <video
+                ref={videoRef}
+                controls
+                poster={coverImageUrl ?? undefined}
+                className="h-full w-full object-contain"
+              >
+                <track kind="captions" label="Hidden captions" src="data:text/vtt,%20" default />
+                Your browser does not support the video tag.
+              </video>
+            </div>
             {podcast.playCount && podcast.playCount > 0 && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 mt-4">
                 <span className="text-sm text-slate-500 flex items-center gap-1">
-                  <Headphones className="w-4 h-4" />
-                  {podcast.playCount.toLocaleString()} jeer la dhegeystay
+                  <Video className="w-4 h-4" />
+                  {podcast.playCount.toLocaleString()} jeer la daawaday
                 </span>
               </div>
             )}
           </div>
-        </div>
+        ) : (
+          <div className="flex gap-8">
+            {/* Cover Image */}
+            <div className="relative w-64 h-64 rounded-2xl overflow-hidden flex-shrink-0 shadow-2xl shadow-slate-900/20">
+              {coverImageUrl ? (
+                <Image
+                  src={coverImageUrl}
+                  alt={displayTitle}
+                  fill
+                  className="object-cover"
+                  sizes="256px"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-[#b01c14]/80 via-[#b01c14]/80 to-[#b01c14]/5 flex items-center justify-center">
+                  <Headphones className="w-20 h-20 text-[#b01c14]" />
+                </div>
+              )}
+            </div>
+
+            {/* Controls & Info */}
+            <div className="flex-grow space-y-8">
+              {audioTrack ? (
+                <div className="flex items-center justify-center">
+                  <AudioTrigger
+                    track={audioTrack}
+                    size="lg"
+                    className="w-full sm:w-auto"
+                    showTitle
+                  />
+                </div>
+              ) : (
+                <div className="flex items-center justify-center">
+                  <p className="text-slate-500 text-sm">Ma jiro maqal diyaarsan qaybtaan.</p>
+                </div>
+              )}
+
+              {podcast.playCount && podcast.playCount > 0 && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-slate-500 flex items-center gap-1">
+                    <Headphones className="w-4 h-4" />
+                    {podcast.playCount.toLocaleString()} jeer la dhegeystay
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Description */}
         {showDetails && excerpt && (

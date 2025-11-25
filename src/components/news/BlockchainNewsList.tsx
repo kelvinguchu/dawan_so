@@ -22,7 +22,6 @@ const fetchBlockchainPosts = async (limit: number = 8) => {
     })
 
     if (!categoryResult.docs || categoryResult.docs.length === 0) {
-      console.log('No blockchain category found')
       return []
     }
 

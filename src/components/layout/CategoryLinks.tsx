@@ -142,7 +142,7 @@ const CategoryLinks: React.FC<CategoryLinksProps> = ({
         type: 'category' as const,
       })),
       { id: 'podcasts', href: '/podcasts', text: 'Podkaastyada', type: 'static' },
-      { id: 'watch', href: '/watch', text: 'Daawo', type: 'static' },
+      { id: 'videos', href: '/videos', text: 'Daawo', type: 'static' },
       { id: 'blockchain', href: '/blockchain', text: 'Blockchain', type: 'static' },
     ]
   }, [orderedDynamicCategoriesData])
@@ -252,7 +252,7 @@ const CategoryLinks: React.FC<CategoryLinksProps> = ({
         <Separator className="my-2" />
 
         {renderLink('/podcasts', 'Podkaastyada', undefined, false, 'mobile-podcasts')}
-        {renderLink('/watch', 'Daawo', undefined, false, 'mobile-watch')}
+        {renderLink('/videos', 'Daawo', undefined, false, 'mobile-videos')}
         {renderLink('/blockchain', 'Blockchain', undefined, false, 'mobile-blockchain')}
       </>
     )
@@ -264,7 +264,7 @@ const CategoryLinks: React.FC<CategoryLinksProps> = ({
 
   const homeLink = renderLink('/', 'Bogga Hore', undefined, true, 'desktop-home')
   const podcastsLink = renderLink('/podcasts', 'Podkaastyada', undefined, true, 'desktop-podcasts')
-  const watchLink = renderLink('/watch', 'Daawo', undefined, true, 'desktop-watch')
+  const watchLink = renderLink('/videos', 'Daawo', undefined, true, 'desktop-videos')
   const blockchainLink = renderLink(
     '/blockchain',
     'Blockchain',

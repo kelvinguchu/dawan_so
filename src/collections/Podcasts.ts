@@ -1,62 +1,18 @@
 import type { CollectionConfig, PayloadRequest } from 'payload'
 import slugify from 'slugify'
-import { parseFile, parseBuffer } from 'music-metadata'
-import type { PodcastAudio as PodcastAudioDoc } from '../payload-types'
+import type { PodcastAsset as PodcastAssetsDoc } from '../payload-types'
 
-const PODCAST_AUDIO_SLUG = 'podcastAudio' as const
+const PODCAST_ASSETS_SLUG = 'podcastAssets' as const
 const HTTP_LINK_REGEX = /^https?:\/\/.+/
 
 type RelationValue = string | number | { id?: string | number } | null | undefined
 
 type PodcastHookData = {
-  duration?: number | null
-  audioFile?: RelationValue
+  mediaType?: 'audio' | 'video' | null
+  media?: RelationValue
   episodeNumber?: number | null
-  series?: RelationValue
+  playlist?: RelationValue
   [key: string]: unknown
-}
-
-interface UploadedFile {
-  tempFilePath?: string
-  path?: string
-}
-
-const extractDurationFromUrl = async (url: string): Promise<number | null> => {
-  try {
-    const res = await fetch(url)
-    if (!res.ok) return null
-    const arrayBuf = await res.arrayBuffer()
-    const buffer = Buffer.from(arrayBuf)
-    const { format } = await parseBuffer(buffer)
-    return typeof format.duration === 'number' ? Math.round(format.duration) : null
-  } catch (err) {
-    console.error('Unable to fetch/parse audio metadata:', err)
-    return null
-  }
-}
-
-const extractAudioDuration = async (file: UploadedFile): Promise<number | null> => {
-  try {
-    const filePath = file.tempFilePath || file.path
-    if (!filePath) return null
-    const { format } = await parseFile(filePath, { duration: true })
-    return typeof format.duration === 'number' ? Math.round(format.duration) : null
-  } catch (err) {
-    console.error('Unable to parse audio metadata:', err)
-    return null
-  }
-}
-
-const buildAbsoluteUrl = (url: string, req: PayloadRequest): string => {
-  if (url.startsWith('http')) return url
-
-  const base =
-    process.env.SERVER_BASE_URL ||
-    (req.payload?.config as { serverURL?: string })?.serverURL ||
-    `http://localhost:${process.env.PORT ?? 3000}`
-
-  const normalizedPath = url.startsWith('/') ? url : `/${url}`
-  return `${base}${normalizedPath}`
 }
 
 const resolveRelationId = (value: RelationValue): string | null => {
@@ -79,21 +35,21 @@ const resolveRelationId = (value: RelationValue): string | null => {
   return null
 }
 
-const resolveAudioDoc = async (
+const resolveMediaDoc = async (
   req: PayloadRequest,
-  audioFile: RelationValue,
-): Promise<PodcastAudioDoc | null> => {
-  const audioId = resolveRelationId(audioFile)
-  if (!audioId) return null
+  mediaFile: RelationValue,
+): Promise<PodcastAssetsDoc | null> => {
+  const mediaId = resolveRelationId(mediaFile)
+  if (!mediaId) return null
 
   try {
     return (await req.payload.findByID({
-      collection: PODCAST_AUDIO_SLUG,
-      id: audioId,
-    })) as PodcastAudioDoc | null
+      collection: PODCAST_ASSETS_SLUG,
+      id: mediaId,
+    })) as PodcastAssetsDoc | null
   } catch (err) {
     req.payload.logger.error(
-      `Unable to resolve audio document for id ${audioId}: ${err instanceof Error ? err.message : String(err)}`,
+      `Unable to resolve media document for id ${mediaId}: ${err instanceof Error ? err.message : String(err)}`,
     )
     return null
   }
@@ -108,9 +64,9 @@ const ensureEpisodeNumber = async ({
 }) => {
   if (!data) return data
 
-  const seriesId = resolveRelationId(data.series)
+  const playlistId = resolveRelationId(data.playlist)
 
-  if (!seriesId) {
+  if (!playlistId) {
     data.episodeNumber = null
     return data
   }
@@ -120,7 +76,7 @@ const ensureEpisodeNumber = async ({
   try {
     const countResult = await req.payload.count({
       collection: 'podcasts',
-      where: { series: { equals: seriesId } },
+      where: { playlist: { equals: playlistId } },
     })
 
     data.episodeNumber = (countResult.totalDocs || 0) + 1
@@ -133,27 +89,25 @@ const ensureEpisodeNumber = async ({
   return data
 }
 
-const ensureDuration = async ({ data, req }: { data?: PodcastHookData; req: PayloadRequest }) => {
-  if (!data || data.duration) return data
+const syncMediaMetadata = async ({
+  data,
+  req,
+}: {
+  data?: PodcastHookData
+  req: PayloadRequest
+}) => {
+  if (!data || !data.media) return data
 
-  if (req.file) {
-    const duration = await extractAudioDuration(req.file)
-    if (duration) data.duration = duration
-    return data
-  }
+  const mediaDoc = await resolveMediaDoc(req, data.media)
+  if (!mediaDoc) return data
 
-  if (!data.audioFile) return data
-
-  const audioDoc = await resolveAudioDoc(req, data.audioFile)
-  if (!audioDoc?.url) return data
-
-  try {
-    const remoteDuration = await extractDurationFromUrl(buildAbsoluteUrl(audioDoc.url, req))
-    if (remoteDuration) data.duration = remoteDuration
-  } catch (err) {
-    req.payload.logger.error(
-      `Error extracting remote audio duration: ${err instanceof Error ? err.message : String(err)}`,
-    )
+  // Sync Media Type
+  if (mediaDoc.mimeType) {
+    if (mediaDoc.mimeType.startsWith('audio/')) {
+      data.mediaType = 'audio'
+    } else if (mediaDoc.mimeType.startsWith('video/')) {
+      data.mediaType = 'video'
+    }
   }
 
   return data
@@ -200,20 +154,30 @@ export const Podcasts: CollectionConfig = {
       required: true,
     },
     {
-      name: 'audioFile',
+      name: 'media',
       type: 'upload',
-      relationTo: PODCAST_AUDIO_SLUG,
-      label: 'Audio File',
+      relationTo: PODCAST_ASSETS_SLUG,
+      label: 'Media File (Audio or Video)',
       required: true,
-      filterOptions: {
-        mimeType: { contains: 'audio' },
+    },
+    {
+      name: 'mediaType',
+      type: 'select',
+      label: 'Media Type',
+      options: [
+        { label: 'Audio', value: 'audio' },
+        { label: 'Video', value: 'video' },
+      ],
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
       },
     },
     {
-      name: 'series',
+      name: 'playlist',
       type: 'relationship',
-      relationTo: 'podcastSeries',
-      label: 'Series',
+      relationTo: 'podcastPlaylists',
+      label: 'Playlist',
       admin: {
         allowCreate: true,
         position: 'sidebar',
@@ -226,22 +190,6 @@ export const Podcasts: CollectionConfig = {
       admin: {
         position: 'sidebar',
         readOnly: true,
-      },
-    },
-    {
-      name: 'duration',
-      type: 'number',
-      label: 'Duration (seconds)',
-      admin: {
-        position: 'sidebar',
-        readOnly: true,
-      },
-      validate: (val: unknown) => {
-        const value = val as number | undefined | null
-        if (value !== undefined && value !== null && value < 0) {
-          return 'Duration must be positive'
-        }
-        return true
       },
     },
     {
@@ -298,6 +246,7 @@ export const Podcasts: CollectionConfig = {
       type: 'upload',
       relationTo: 'media',
       label: 'Cover Image',
+      required: true,
       filterOptions: {
         mimeType: { contains: 'image' },
       },
@@ -419,22 +368,21 @@ export const Podcasts: CollectionConfig = {
     useAsTitle: 'title',
     defaultColumns: [
       'title',
-      'series',
+      'playlist',
       'episodeNumber',
-      'duration',
       'isPublished',
       'featured',
       'playCount',
       'createdAt',
     ],
     listSearchableFields: ['title', 'description'],
-    group: 'Audio Hub',
+    group: 'Podcast Hub',
     pagination: {
       defaultLimit: 20,
     },
   },
   hooks: {
     beforeValidate: [async (args) => ensureEpisodeNumber(args)],
-    beforeChange: [async (args) => ensureDuration(args)],
+    beforeChange: [async (args) => syncMediaMetadata(args)],
   },
 }

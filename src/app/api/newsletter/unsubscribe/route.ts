@@ -221,16 +221,9 @@ export async function GET(req: NextRequest) {
   const url = new URL(req.url)
   const token = url.searchParams.get('token')
 
-  // Debug logging to identify the issue
-  console.log('🔍 Unsubscribe GET request debug:', {
-    fullUrl: req.url,
-    token: token ? `${token.substring(0, 10)}...` : 'missing',
-    allParams: Object.fromEntries(url.searchParams.entries()),
-  })
 
   // Basic validation
   if (!token) {
-    console.log('❌ Missing required token parameter')
     return new Response(generateInvalidTokenHTML(), {
       status: 400,
       headers: { 'Content-Type': 'text/html' },
@@ -242,7 +235,6 @@ export async function GET(req: NextRequest) {
     const { isValid, email } = verifyUnsubscribeTokenAndExtractEmail(token)
 
     if (!isValid || !email) {
-      console.log('❌ Token verification failed')
       return new Response(generateInvalidTokenHTML(), {
         status: 400,
         headers: { 'Content-Type': 'text/html' },
@@ -287,8 +279,6 @@ export async function GET(req: NextRequest) {
           email: normalizedEmail,
           audienceId: process.env.RESEND_AUDIENCE_KEY,
         })
-
-        console.log(`Successfully removed ${normalizedEmail} from Resend audience`)
       } catch (resendError) {
         // Log the error but don't fail the unsubscribe process
         console.error('Failed to remove contact from Resend:', resendError)
@@ -442,7 +432,6 @@ export async function POST(req: NextRequest) {
           audienceId: process.env.RESEND_AUDIENCE_KEY,
         })
 
-        console.log(`Successfully removed ${normalizedEmail} from Resend audience`)
       } catch (resendError) {
         // Log the error but don't fail the unsubscribe process
         console.error('Failed to remove contact from Resend:', resendError)

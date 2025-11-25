@@ -7,64 +7,55 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const { id } = await params
 
     if (!id) {
-      return NextResponse.json({ error: 'Blog post ID is required' }, { status: 400 })
+      return NextResponse.json({ error: 'Video ID is required' }, { status: 400 })
     }
 
     const payload = await getPayload({ config })
-
-    // Get authenticated user from the request
     const { user } = await payload.auth({ headers: request.headers })
 
     if (!user) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
-    // Get current post
-    const post = await payload.findByID({
-      collection: 'blogPosts',
+    const video = await payload.findByID({
+      collection: 'headlineVideos',
       id,
     })
 
-    if (!post) {
-      return NextResponse.json({ error: 'Blog post not found' }, { status: 404 })
+    if (!video) {
+      return NextResponse.json({ error: 'Video not found' }, { status: 404 })
     }
 
-    // Get user's current liked posts
     const currentUser = (await payload.findByID({
       collection: 'users',
       id: user.id,
     })) 
 
-    const likedPosts = (currentUser.likedPosts || []).map((p) => (typeof p === 'string' ? p : p.id))
+    const likedVideos = (currentUser.likedVideos || []).map((v) =>
+      typeof v === 'string' ? v : v.id,
+    )
 
-    // Toggle like
-    const isLiked = likedPosts.includes(id)
-    const updatedLikedPosts = isLiked
-      ? likedPosts.filter((postId) => postId !== id)
-      : [...likedPosts, id]
+    const isLiked = likedVideos.includes(id)
+    const updatedLikedVideos = isLiked
+      ? likedVideos.filter((videoId) => videoId !== id)
+      : [...likedVideos, id]
 
-    // Update user's liked posts
     await payload.update({
       collection: 'users',
       id: user.id,
       data: {
-        likedPosts: updatedLikedPosts,
+        likedVideos: updatedLikedVideos,
       },
     })
 
-    // Update post's like count
-    const currentLikes = (post.likes as number) || 0
+    const currentLikes = (video.likes as number) || 0
     const newLikeCount = isLiked ? Math.max(0, currentLikes - 1) : currentLikes + 1
 
     await payload.update({
-      collection: 'blogPosts',
+      collection: 'headlineVideos',
       id,
       data: {
         likes: newLikeCount,
-      },
-      context: {
-        skipWorkflowSync: true,
-        internalTask: true,
       },
     })
 

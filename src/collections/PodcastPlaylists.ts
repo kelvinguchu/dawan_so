@@ -1,11 +1,11 @@
 import { CollectionConfig } from 'payload'
 import slugify from 'slugify'
 
-export const PodcastSeries: CollectionConfig = {
-  slug: 'podcastSeries',
+export const PodcastPlaylists: CollectionConfig = {
+  slug: 'podcastPlaylists',
   admin: {
     useAsTitle: 'name',
-    group: 'Audio Hub',
+    group: 'Podcast Hub',
   },
   access: {
     read: () => true,
@@ -14,7 +14,7 @@ export const PodcastSeries: CollectionConfig = {
     {
       name: 'name',
       type: 'text',
-      label: 'Series Name',
+      label: 'Playlist Name',
       required: true,
     },
     {
@@ -22,8 +22,10 @@ export const PodcastSeries: CollectionConfig = {
       type: 'text',
       label: 'Slug',
       required: true,
+      unique: true,
       admin: {
         position: 'sidebar',
+        readOnly: true,
       },
       hooks: {
         beforeValidate: [
@@ -34,9 +36,14 @@ export const PodcastSeries: CollectionConfig = {
       },
     },
     {
-      name: 'description',
-      type: 'textarea',
-      label: 'Description',
+      name: 'image',
+      type: 'upload',
+      required: true,
+      relationTo: 'media',
+      label: 'Playlist Image',
+      filterOptions: {
+        mimeType: { contains: 'image' },
+      },
     },
   ],
 }

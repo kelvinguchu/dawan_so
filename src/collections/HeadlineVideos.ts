@@ -2,8 +2,12 @@ import type { CollectionConfig } from 'payload'
 
 const MAX_VIDEO_SIZE_BYTES = 1_500_000_000
 
-export const VideoAssets: CollectionConfig = {
-  slug: 'videoAssets',
+export const HeadlineVideos: CollectionConfig = {
+  slug: 'headlineVideos',
+  labels: {
+    singular: 'Headline Video',
+    plural: 'Headline Videos',
+  },
   admin: {
     group: 'Content Management',
     useAsTitle: 'title',
@@ -38,6 +42,26 @@ export const VideoAssets: CollectionConfig = {
       label: 'Thumbnail Image',
       admin: {
         description: 'Upload a thumbnail image for this video.',
+      },
+    },
+    {
+      name: 'views',
+      type: 'number',
+      label: 'Views',
+      defaultValue: 0,
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+      },
+    },
+    {
+      name: 'likes',
+      type: 'number',
+      label: 'Likes',
+      defaultValue: 0,
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
       },
     },
   ],
