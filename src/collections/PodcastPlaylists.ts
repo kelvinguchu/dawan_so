@@ -45,5 +45,11 @@ export const PodcastPlaylists: CollectionConfig = {
         mimeType: { contains: 'image' },
       },
     },
+    {
+      name: 'podcasts',
+      type: 'join',
+      collection: 'podcasts',
+      on: 'playlist',
+    },
   ],
 }
