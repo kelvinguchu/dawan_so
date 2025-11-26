@@ -155,6 +155,7 @@ async function sendMobileNotifications(title: string, body: string, data: Record
       body,
       data,
       categoryId: 'NEW_ARTICLE_SO',
+      mutableContent: true, 
     }
 
     // Add rich media support
@@ -279,17 +280,18 @@ export async function sendNewPostNotification(postId: string) {
       return { success: false, error: 'Notification already sent for this post' }
     }
 
-    const title = '📰 New Article Published!'
+    const title = '📰 Maqaal Cusub!'
 
     // Get author name
-    let authorName = 'Staff Writer'
+    let authorName = 'Reporter'
     if (post.useManualReporter && post.manualReporter?.name) {
       authorName = post.manualReporter.name
     } else if (post.author && typeof post.author !== 'string' && post.author.name) {
       authorName = post.author.name
     }
 
-    const body = `${post.name}\nW/Q ${authorName}`
+    // Use author name as the body (Small Text)
+    const body = `W/Q ${authorName}`
     const url = `/news/${post.slug}`
 
     const coverImageUrl = getPostImageFromLayout(post.layout)
