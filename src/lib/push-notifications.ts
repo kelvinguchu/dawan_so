@@ -280,8 +280,6 @@ export async function sendNewPostNotification(postId: string) {
       return { success: false, error: 'Notification already sent for this post' }
     }
 
-    const title = '📰 Maqaal Cusub!'
-
     // Get author name
     let authorName = 'Reporter'
     if (post.useManualReporter && post.manualReporter?.name) {
@@ -290,8 +288,8 @@ export async function sendNewPostNotification(postId: string) {
       authorName = post.author.name
     }
 
-    // Use author name as the body (Small Text)
-    const body = `W/Q ${authorName}`
+    const title = post.name
+    const body = `📰 Maqaal Cusub! • by ${authorName}`
     const url = `/news/${post.slug}`
 
     const coverImageUrl = getPostImageFromLayout(post.layout)
