@@ -149,7 +149,7 @@ export function generateRSSFeed(posts: BlogPost[]): string {
   const description = escapeXml(siteConfig.description)
   const link = siteConfig.url
   const lastBuildDate = formatRSSDate(new Date())
-  const language = 'en-us'
+  const language = 'so'
 
   const items = posts.map((post) => generateRSSItem(post)).join('')
 

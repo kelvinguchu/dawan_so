@@ -5,7 +5,6 @@ import { format } from 'date-fns'
 import { CalendarDays, Clock } from 'lucide-react'
 
 import { getPostImageFromLayout } from '@/utils/postUtils'
-import { SharePopoverClient } from './SharePopoverClient'
 
 interface ArticleHeaderProps {
   post: BlogPost
@@ -70,10 +69,10 @@ export const ArticleHeader: React.FC<ArticleHeaderProps> = ({ post, currentUrl }
             </div>
           </>
         ) : (
-            <div className="w-full h-[40vh] sm:h-[50vh] md:h-[60vh] lg:h-[70vh] relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-indigo-800 to-purple-800 z-0"></div>
-              <div className="absolute inset-0 bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Cg%20fill-opacity%3D%220.05%22%3E%3Ccircle%20fill%3D%22%23fff%22%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2250%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E')] bg-[length:24px_24px] opacity-20 z-5"></div>
-            </div>
+          <div className="w-full h-[40vh] sm:h-[50vh] md:h-[60vh] lg:h-[70vh] relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-indigo-800 to-purple-800 z-0"></div>
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Cg%20fill-opacity%3D%220.05%22%3E%3Ccircle%20fill%3D%22%23fff%22%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2250%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E')] bg-[length:24px_24px] opacity-20 z-5"></div>
+          </div>
         )}
 
         <div className="absolute bottom-0 left-0 right-0 z-20 p-4 sm:p-6 md:p-8 lg:p-16 text-white">
@@ -94,16 +93,6 @@ export const ArticleHeader: React.FC<ArticleHeaderProps> = ({ post, currentUrl }
             </div>
           </div>
         </div>
-      </div>
-
-      <div className="fixed right-4 sm:right-8 top-24 sm:top-32 z-50">
-        <SharePopoverClient
-          title={post.name}
-          url={currentUrl}
-          buttonVariant="outline"
-          buttonSize="icon"
-          className="w-10 h-10 bg-white hover:bg-gray-50 shadow-lg hover:shadow-xl transition-all duration-300"
-        />
       </div>
     </header>
   )

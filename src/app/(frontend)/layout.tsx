@@ -30,7 +30,7 @@ const roboto = Roboto({
 })
 
 export const viewport: Viewport = {
-  themeColor: sharedMetadata.themeColor,
+  themeColor: siteConfig.themeColor,
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -207,8 +207,14 @@ export default function RootLayout({ children }: { readonly children: React.Reac
   }
 
   return (
-    <html lang="en" suppressHydrationWarning className={`scroll-smooth ${roboto.className}`}>
+    <html
+      lang="so"
+      translate="no"
+      suppressHydrationWarning
+      className={`scroll-smooth ${roboto.className}`}
+    >
       <head>
+        <meta name="google" content="notranslate" />
         <link rel="manifest" href="/manifest.json" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />

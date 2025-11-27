@@ -91,7 +91,7 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   return (
     <NavigationContext.Provider value={{ isLoading, startLoading, stopLoading }}>
       {children}
-      {isLoading && <Loading fullScreen message="Loading..." />}
+      {isLoading && <Loading fullScreen message="Soo raraya..." />}
     </NavigationContext.Provider>
   )
 }

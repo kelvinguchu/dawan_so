@@ -4,6 +4,17 @@ import { BlockRenderer } from './BlockRenderer'
 import { RecentNewsItem } from '@/components/home/RecentNewsItem'
 import { getPostImageFromLayout } from '@/utils/postUtils'
 import type { BlockType, RichTextBlockData, LexicalContent } from './blockrender/BlockUtils'
+import {
+  BiLogoWhatsapp,
+  BiLogoYoutube,
+  BiLogoTwitter,
+  BiLogoFacebook,
+  BiLogoTiktok,
+  BiLogoTelegram,
+  BiLogoInstagram,
+} from 'react-icons/bi'
+import { IoNewspaperOutline } from 'react-icons/io5'
+import { SharePopover } from './SharePopover'
 
 const renderEmptyContentMessage = () => (
   <div className="article-content prose prose-sm sm:prose-base lg:prose-lg max-w-none text-gray-800">
@@ -23,6 +34,51 @@ type Segment = {
   node: React.ReactNode
   units: number
 }
+
+// dawan-so specific links + fallback to dawan-africa for missing ones
+const SOCIAL_LINKS = [
+  {
+    label: 'WhatsApp Channel',
+    href: 'https://whatsapp.com/channel/0029Va7QXRTHltYIpNUtRv32', // dawan-africa (dawan-so doesn't have)
+    icon: <BiLogoWhatsapp className="h-4 w-4" />,
+    accent: true,
+  },
+  {
+    label: 'Telegram',
+    href: 'https://t.me/Dawan_Africa', // dawan-africa (dawan-so doesn't have)
+    icon: <BiLogoTelegram className="h-4 w-4" />,
+  },
+  {
+    label: 'Google News',
+    href: 'https://news.google.com/publications/CAAqJggKIiBDQklTRWdnTWFnNEtER1JoZDJGdUxtRm1jbWxqWVNnQVAB?ceid=KE:en&oc=3', // dawan-africa (dawan-so doesn't have)
+    icon: <IoNewspaperOutline className="h-4 w-4" />,
+  },
+  {
+    label: 'YouTube',
+    href: 'https://youtube.com/@dawanafrica?si=MeDNmWJDGkFWiF45', // dawan-africa (dawan-so doesn't have)
+    icon: <BiLogoYoutube className="h-4 w-4" />,
+  },
+  {
+    label: 'X (Twitter)',
+    href: 'https://x.com/Dawan_tv', // dawan-so specific
+    icon: <BiLogoTwitter className="h-4 w-4" />,
+  },
+  {
+    label: 'Facebook',
+    href: 'https://www.facebook.com/Dawantv/', // dawan-so specific
+    icon: <BiLogoFacebook className="h-4 w-4" />,
+  },
+  {
+    label: 'TikTok',
+    href: 'https://www.tiktok.com/@dawan_tv', // dawan-so specific
+    icon: <BiLogoTiktok className="h-4 w-4" />,
+  },
+  {
+    label: 'Instagram',
+    href: 'https://www.instagram.com/dawantv_/?hl=en', // dawan-so specific
+    icon: <BiLogoInstagram className="h-4 w-4" />,
+  },
+]
 
 const isRichTextBlock = (block: BlockType): block is RichTextBlockData => {
   const type = block.blockType?.toLowerCase()
@@ -384,6 +440,46 @@ const splitSegmentsIntoHalves = (
   return { firstHalfNodes, secondHalfNodes }
 }
 
+interface SocialFollowBannerProps {
+  postTitle: string
+}
+
+const SocialFollowBanner: React.FC<SocialFollowBannerProps> = ({ postTitle }) => {
+  return (
+    <div className="mb-6 border-b border-gray-200 pb-4">
+      <div className="flex flex-row flex-wrap items-center justify-between gap-3">
+        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Na raac:</p>
+        <div className="flex flex-wrap items-center gap-2 text-gray-600">
+          {SOCIAL_LINKS.map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`inline-flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
+                link.accent
+                  ? 'bg-[#b01c14]/15 text-[#b01c14] hover:bg-[#b01c14]/25'
+                  : 'bg-gray-100 hover:bg-[#b01c14]/15 hover:text-[#b01c14]'
+              }`}
+              aria-label={link.label}
+            >
+              {link.icon}
+            </a>
+          ))}
+          <div className="ml-1 border-l border-gray-200 pl-3">
+            <SharePopover
+              title={postTitle}
+              buttonVariant="ghost"
+              buttonSize="icon"
+              className="h-9 w-9 rounded-full bg-gray-100 hover:bg-[#b01c14]/15 hover:text-[#b01c14]"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export interface ArticleBodyContentProps {
   post: BlogPost
   firstBlockIsCover: boolean
@@ -420,6 +516,7 @@ export const ArticleBodyContent: React.FC<ArticleBodyContentProps> = ({
 
   return (
     <>
+      <SocialFollowBanner postTitle={post.name} />
       {firstHalfNodes.length > 0 ? <div className="article-content">{firstHalfNodes}</div> : null}
 
       {midRecommendationItems.length > 0 ? (

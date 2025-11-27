@@ -89,7 +89,11 @@ export interface Config {
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
-  collectionsJoins: {};
+  collectionsJoins: {
+    podcastPlaylists: {
+      podcasts: 'podcasts';
+    };
+  };
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
@@ -604,6 +608,11 @@ export interface PodcastPlaylist {
   name: string;
   slug: string;
   image: string | Media;
+  podcasts?: {
+    docs?: (string | Podcast)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -1425,6 +1434,7 @@ export interface PodcastPlaylistsSelect<T extends boolean = true> {
   name?: T;
   slug?: T;
   image?: T;
+  podcasts?: T;
   updatedAt?: T;
   createdAt?: T;
 }

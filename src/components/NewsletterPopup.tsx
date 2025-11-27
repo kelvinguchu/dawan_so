@@ -153,7 +153,7 @@ export const NewsletterPopup: React.FC<NewsletterPopupProps> = ({ delay = 5000 }
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-md md:max-w-lg border-0 p-0 overflow-hidden w-[calc(100vw-2rem)] max-w-[calc(100vw-2rem)] sm:w-auto">
+      <DialogContent className="sm:max-w-md z-1000 md:max-w-lg border-0 p-0 overflow-hidden w-[calc(100vw-2rem)] max-w-[calc(100vw-2rem)] sm:w-auto">
         <div className="relative bg-slate-900 p-6 sm:p-8 text-white">
           <div className="text-center pr-8">
             <div className="mb-2">

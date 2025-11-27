@@ -1,5 +1,5 @@
 {
-  "theme_color": "#2EC6FE",
+  "theme_color": "#b01c14",
   "background_color": "#FFFFFF",
   "icons": [
     {
@@ -19,10 +19,10 @@
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
   "dir": "auto",
-  "lang": "en-US",
+  "lang": "so",
   "name": "Dawan TV",
   "short_name": "Dawan TV",
-  "description": "Dawan TV",
+  "description": "Warar iyo falanqayn qoto dheer oo ku saabsan Soomaaliya iyo Geeska Afrika",
   "id": "/",
   "start_url": "/",
   "scope": "/",
