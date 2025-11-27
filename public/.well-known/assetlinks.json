@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.dawan.app",
+      "sha256_cert_fingerprints": [
+        "0E:57:2B:A0:58:E6:4A:A3:7F:DC:7F:A1:4B:E6:DF:D6:AD:3D:31:87:82:9A:12:A8:E8:47:7E:5C:83:C8:49:D1"
+      ]
+    }
+  }
+]

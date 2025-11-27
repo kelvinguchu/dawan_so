@@ -24,7 +24,7 @@ export interface PushSubscriptionData {
 }
 
 interface ExtendedExpoPushMessage extends ExpoPushMessage {
-  image?: string
+  // iOS attachments (for Notification Service Extension)
   attachments?: Array<{
     url: string
     identifier: string
@@ -155,15 +155,18 @@ async function sendMobileNotifications(title: string, body: string, data: Record
       body,
       data,
       categoryId: 'NEW_ARTICLE_SO',
-      mutableContent: true, 
+      channelId: 'new-articles-dawan-so',
+      mutableContent: true,
     }
 
     // Add rich media support
     if (data?.imageUrl && typeof data.imageUrl === 'string') {
-      // Android - displays in the notification tray
-      message.image = data.imageUrl
+      // Android - use richContent.image for BigPicture style
+      message.richContent = {
+        image: data.imageUrl,
+      }
 
-      // iOS - displays in the notification banner
+      // iOS - use attachments for Notification Service Extension
       message.attachments = [
         {
           url: data.imageUrl,
