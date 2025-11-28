@@ -174,16 +174,13 @@ export default async function Page({ params }: Props) {
     notFound()
   }
 
-  let relatedPosts: BlogPost[] = []
-  if (post.categories && post.categories.length > 0) {
-    const categoryIds = post.categories
-      .map((cat) => (typeof cat === 'string' ? cat : cat.id))
-      .filter((id): id is string => id != null)
+  // Prepare category IDs for parallel fetch
+  const categoryIds = (post.categories ?? [])
+    .map((cat) => (typeof cat === 'string' ? cat : cat.id))
+    .filter((id): id is string => id != null)
 
-    if (categoryIds.length > 0) {
-      relatedPosts = await getRelatedPosts(categoryIds, post.id)
-    }
-  }
+  // Fetch related posts in parallel with metadata processing
+  const relatedPosts = categoryIds.length > 0 ? await getRelatedPosts(categoryIds, post.id) : []
 
   const excerpt = getPostExcerpt(post)
   const coverImageUrl = getPostImageFromLayout(post.layout)

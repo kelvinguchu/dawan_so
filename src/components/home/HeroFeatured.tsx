@@ -1,12 +1,12 @@
-"use client"
+'use client'
 
-import React from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { BlogPost } from "@/payload-types"
-import { ArrowRight, Calendar } from "lucide-react"
-import { formatTimeAgo } from "@/utils/dateUtils"
-import { getPostImageFromLayout, getPostExcerpt, getPostAuthorDisplayName } from "@/utils/postUtils"
+import React from 'react'
+import Image from 'next/image'
+import { BlogPost } from '@/payload-types'
+import { ArrowRight, Calendar } from 'lucide-react'
+import { formatTimeAgo } from '@/utils/dateUtils'
+import { getPostImageFromLayout, getPostExcerpt, getPostAuthorDisplayName } from '@/utils/postUtils'
+import { ArticlePrefetchLink } from '@/components/common/ArticlePrefetchLink'
 
 interface HeroFeaturedProps {
   post: BlogPost
@@ -18,7 +18,12 @@ export const HeroFeatured: React.FC<HeroFeaturedProps> = ({ post }) => {
   const authorName = getPostAuthorDisplayName(post)
 
   return (
-    <Link href={`/news/${post.slug}`} className="block h-full" aria-label={`Akhri: ${post.name}`}>
+    <ArticlePrefetchLink
+      href={`/news/${post.slug}`}
+      slug={post.slug}
+      className="block h-full"
+      aria-label={`Akhri: ${post.name}`}
+    >
       <div className="relative w-full h-full min-h-[260px] sm:min-h-[340px] overflow-hidden">
         {imageUrl ? (
           <Image
@@ -63,9 +68,8 @@ export const HeroFeatured: React.FC<HeroFeaturedProps> = ({ post }) => {
           </div>
         </div>
       </div>
-    </Link>
+    </ArticlePrefetchLink>
   )
 }
 
 export default HeroFeatured
-

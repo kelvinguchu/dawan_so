@@ -2,9 +2,9 @@ import type { CollectionConfig } from 'payload'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { buildUnsubscribeUrl } from '@/utils/unsubscribe'
 import {
-  renderNewsletterCampaignHtml,
-  renderNewsletterCampaignText,
-} from '@/templates/newsletter-campaign'
+  generateNewsletterCampaignEmailHTML,
+  generateNewsletterCampaignEmailText,
+} from '@/templates/newsletter-campaign-email'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://dawan.so'
 
@@ -79,7 +79,6 @@ export const NewsletterCampaigns: CollectionConfig = {
   hooks: {
     afterChange: [
       async ({ doc, operation, req, previousDoc }) => {
-
         const isNewSendNow = operation === 'create' && doc.status === 'send_now'
         const isStatusChangedToSendNow =
           operation === 'update' && previousDoc?.status !== 'send_now' && doc.status === 'send_now'
@@ -148,7 +147,7 @@ export const NewsletterCampaigns: CollectionConfig = {
 
                 try {
                   const campaignTopArticles = extractTopArticles(doc.topArticles)
-                  const htmlContent = await renderNewsletterCampaignHtml({
+                  const htmlContent = await generateNewsletterCampaignEmailHTML({
                     content: doc.content,
                     subject: doc.subject,
                     subscriberEmail: normalizedEmail,
@@ -156,7 +155,7 @@ export const NewsletterCampaigns: CollectionConfig = {
                     siteUrl: SITE_URL,
                     topArticles: campaignTopArticles,
                   })
-                  const textContent = renderNewsletterCampaignText({
+                  const textContent = generateNewsletterCampaignEmailText({
                     content: doc.content,
                     subject: doc.subject,
                     subscriberEmail: normalizedEmail,

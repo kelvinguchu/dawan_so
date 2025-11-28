@@ -9,7 +9,8 @@ import { ArticleInteractions } from './ArticleInteractions'
 import { RelatedArticles } from './RelatedArticles'
 import { ArticleBodyContent } from './ArticleBodyContent'
 import { BackToTopButton } from './BackToTopButton'
-import { AdUnit } from '@/components/ads/AdUnit'
+// TEMPORARILY DISABLED - Ads removed, may be restored later
+// import { AdUnit } from '@/components/ads/AdUnit'
 import { trackPageView } from '@/lib/analytics'
 import { getRelatedPostsForView } from '@/utils/relatedPostsApi'
 import { getPostAuthorName, getPostAuthorRole, getReporterUrl } from '@/utils/postUtils'
@@ -23,17 +24,8 @@ interface ArticleProps {
   relatedPosts?: BlogPost[]
 }
 
-const resolveBrowserWindow = (): Window | undefined => {
-  if (typeof globalThis !== 'object' || !globalThis) {
-    return undefined
-  }
-
-  if ('window' in globalThis) {
-    return (globalThis as typeof globalThis & { window?: Window }).window
-  }
-
-  return undefined
-}
+// SSR-safe browser window check
+const isBrowser = typeof window !== 'undefined'
 
 const hasValidCategoryId = (value: string | undefined | null): value is string => {
   return typeof value === 'string' && value.length > 0
@@ -89,9 +81,8 @@ export const Article: React.FC<ArticleProps> = ({
   }, [post.categories])
 
   useEffect(() => {
-    const browserWindow = resolveBrowserWindow()
-    if (browserWindow) {
-      setCurrentUrl(browserWindow.location.href)
+    if (isBrowser) {
+      setCurrentUrl(window.location.href)
     }
   }, [])
 
@@ -102,7 +93,7 @@ export const Article: React.FC<ArticleProps> = ({
 
     const timeoutId = setTimeout(async () => {
       try {
-        const userAgent = resolveBrowserWindow()?.navigator.userAgent
+        const userAgent = isBrowser ? window.navigator.userAgent : undefined
         const result = await trackPageView(post.id, userAgent)
 
         if (result.success) {
@@ -212,80 +203,89 @@ export const Article: React.FC<ArticleProps> = ({
   const articleAudio = resolveArticleAudio(post.articleAudio)
 
   return (
-    <div className="container mx-auto">
-      <div className="grid grid-cols-12 gap-8">
-        <div className="col-span-2 hidden xl:block">
-          <div className="sticky top-40 w-full">
-            <AdUnit slotId="1626998043" className="min-h-[600px] w-full" />
+    <>
+      {/* Full-width header - outside container */}
+      <ArticleHeader post={post} currentUrl={currentUrl} />
+
+      <div className="container mx-auto">
+        <div className="grid grid-cols-12 gap-8">
+          {/* TEMPORARILY DISABLED - Left sidebar ad, may be restored later */}
+          {/*
+          <div className="col-span-2 hidden xl:block">
+            <div className="sticky top-40 w-full">
+              <AdUnit slotId="1626998043" className="min-h-[600px] w-full" />
+            </div>
           </div>
-        </div>
+          */}
 
-        <div className="col-span-12 xl:col-span-8">
-          <div className="bg-white min-h-screen">
-            <ArticleHeader post={post} currentUrl={currentUrl} />
+          <div className="col-span-12">
+            <div className="bg-white min-h-screen">
+              <article className="relative">
+                <div className="container mx-auto px-2 sm:px-4 md:px-6 lg:px-8 relative">
+                  <div className="max-w-3xl mx-auto bg-white rounded-t-2xl -mt-2 sm:-mt-10 pt-6 sm:pt-10 pb-8 sm:pb-16 px-4 sm:px-8 md:px-12 shadow-sm relative z-10">
+                    <AuthorMeta post={post} articleAudio={articleAudio} />
 
-            <article className="relative">
-              <div className="container mx-auto px-2 sm:px-4 md:px-6 lg:px-8 relative">
-                <div className="max-w-3xl mx-auto bg-white rounded-t-2xl -mt-2 sm:-mt-10 pt-6 sm:pt-10 pb-8 sm:pb-16 px-4 sm:px-8 md:px-12 shadow-sm relative z-10">
-                  <AuthorMeta post={post} articleAudio={articleAudio} />
-
-                  <ArticleBodyContent
-                    post={post}
-                    firstBlockIsCover={firstBlockIsCover}
-                    midRecommendations={midRecommendations}
-                    endRecommendations={endRecommendations}
-                  />
-                </div>
-              </div>
-
-              <div className="bg-gray-50 py-6 sm:py-8 md:py-12 mt-6 sm:mt-8 border-t border-gray-100">
-                <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-                  <div className="max-w-3xl mx-auto">
-                    <ArticleInteractions post={post} currentUrl={currentUrl} />
-
-                    <div className="flex flex-col sm:flex-row sm:justify-between gap-3 mb-8">
-                      <Link
-                        href="/news"
-                        className="px-6 py-3 bg-[#b01c14] hover:bg-[#b01c14]/80 transition-colors text-white font-medium rounded-lg text-center sm:text-left"
-                      >
-                        Maqaallo Dheeraad ah
-                      </Link>
-                      <BackToTopButton className="px-6 py-3 bg-white hover:bg-gray-50 transition-colors text-[#b01c14] font-medium border border-gray-200 rounded-lg text-center sm:text-left">
-                        Ku Noqo Kor
-                      </BackToTopButton>
-                    </div>
-
-                    {(() => {
-                      if (isLoadingRelated) {
-                        return (
-                          <div className="flex justify-center py-8">
-                            <Loader2 className="h-8 w-8 text-[#b01c14] animate-spin" />
-                          </div>
-                        )
-                      }
-
-                      if (relatedArticlePool.length > 0) {
-                        return (
-                          <RelatedArticles posts={relatedArticlePool} currentPostId={post.id} />
-                        )
-                      }
-
-                      return null
-                    })()}
+                    <ArticleBodyContent
+                      post={post}
+                      firstBlockIsCover={firstBlockIsCover}
+                      midRecommendations={midRecommendations}
+                      endRecommendations={endRecommendations}
+                    />
                   </div>
                 </div>
-              </div>
-            </article>
-          </div>
-        </div>
 
+                <div className="bg-gray-50 py-6 sm:py-8 md:py-12 mt-6 sm:mt-8 border-t border-gray-100">
+                  <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="max-w-3xl mx-auto">
+                      <ArticleInteractions post={post} currentUrl={currentUrl} />
+
+                      <div className="flex flex-col sm:flex-row sm:justify-between gap-3 mb-8">
+                        <Link
+                          href="/news"
+                          className="px-6 py-3 bg-[#b01c14] hover:bg-[#b01c14]/80 transition-colors text-white font-medium rounded-lg text-center sm:text-left"
+                        >
+                          Maqaallo Dheeraad ah
+                        </Link>
+                        <BackToTopButton className="px-6 py-3 bg-white hover:bg-gray-50 transition-colors text-[#b01c14] font-medium border border-gray-200 rounded-lg text-center sm:text-left">
+                          Ku Noqo Kor
+                        </BackToTopButton>
+                      </div>
+
+                      {(() => {
+                        if (isLoadingRelated) {
+                          return (
+                            <div className="flex justify-center py-8">
+                              <Loader2 className="h-8 w-8 text-[#b01c14] animate-spin" />
+                            </div>
+                          )
+                        }
+
+                        if (relatedArticlePool.length > 0) {
+                          return (
+                            <RelatedArticles posts={relatedArticlePool} currentPostId={post.id} />
+                          )
+                        }
+
+                        return null
+                      })()}
+                    </div>
+                  </div>
+                </div>
+              </article>
+            </div>
+          </div>
+
+          {/* TEMPORARILY DISABLED - Right sidebar ad, may be restored later */}
+          {/*
         <div className="col-span-2 hidden xl:block">
           <div className="sticky top-40 w-full">
             <AdUnit slotId="1626998043" className="min-h-[600px] w-full" />
           </div>
         </div>
+        */}
+        </div>
       </div>
-    </div>
+    </>
   )
 }
 

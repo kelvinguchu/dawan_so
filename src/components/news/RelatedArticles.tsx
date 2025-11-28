@@ -15,13 +15,13 @@ export const RelatedArticles: React.FC<RelatedArticlesProps> = ({ posts, current
 
     const seeded = filtered.map((post, index) => ({
       post,
-      sort: parseInt(post.id.slice(-8), 16) + index,
+      sort: Number.parseInt(post.id.slice(-8), 16) + index,
     }))
 
     seeded.sort((a, b) => a.sort - b.sort)
     const shuffled = seeded.map((item) => item.post)
 
-    return shuffled.slice(0, 6)
+    return shuffled.slice(0, 3)
   }
 
   const filteredPosts = getFilteredPosts()

@@ -23,9 +23,17 @@ export const getRelatedPostsForView = async ({
       where: {
         and: [{ id: { not_equals: currentPostId } }, { status: { equals: 'published' } }],
       },
-      limit: limit * 3 > 20 ? limit * 3 : 20,
+      limit: Math.max(limit * 2, 12), // Reduced from limit*3 or 20
       sort: '-createdAt',
       depth: 1,
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        categories: true,
+        layout: true,
+        createdAt: true,
+      },
     })
 
     if (!response.docs || response.docs.length === 0) {

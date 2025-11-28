@@ -22,7 +22,7 @@ export function formatDate(dateString: string): string {
  */
 export function truncateText(text: string, maxLength: number = 150): string {
   if (text.length <= maxLength) return text
-  return text.substr(0, maxLength) + '...'
+  return text.slice(0, maxLength) + '...'
 }
 
 /**
@@ -33,10 +33,10 @@ export function slugify(text: string): string {
     .toString()
     .toLowerCase()
     .trim()
-    .replace(/\s+/g, '-') // Replace spaces with -
-    .replace(/&/g, '-and-') // Replace & with 'and'
-    .replace(/[^\w\-]+/g, '') // Remove all non-word characters
-    .replace(/\-\-+/g, '-') // Replace multiple - with single -
+    .replaceAll(/\s+/g, '-') 
+    .replaceAll('&', '-and-') 
+    .replaceAll(/[^\w-]+/g, '')
+    .replaceAll(/--+/g, '-') 
 }
 
 /**

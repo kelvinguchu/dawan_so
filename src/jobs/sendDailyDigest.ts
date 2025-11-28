@@ -1,6 +1,6 @@
 import type { TaskConfig } from 'payload'
 import { DateTime } from 'luxon'
-import { buildDefaultDigestContent, fetchTopDigestArticles } from '@/lib/daily-newsletter'
+import { buildDefaultDigestContent, fetchTopDigestArticles } from '@/lib/newsletter/dailyDigest'
 import type { NewsletterCampaign } from '@/payload-types'
 
 const SOMALIA_TZ = 'Africa/Mogadishu'

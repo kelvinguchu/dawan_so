@@ -1,24 +1,18 @@
 'use client'
 
 import React from 'react'
-import Link from 'next/link'
 import Image from 'next/image'
 import { BlogPost as ImportedBlogPost } from '@/payload-types'
 import { ArrowUpRight, Clock, BookOpen } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { getPostImageFromLayout, getPostExcerpt } from '@/utils/postUtils'
 import { formatTimeAgo } from '@/utils/dateUtils'
+import { ArticlePrefetchLink } from '@/components/common/ArticlePrefetchLink'
+import { getReadingTime } from '@/lib/utils'
 
 interface NewsCardProps {
   post: ImportedBlogPost
   showCategories?: boolean
-}
-
-// Calculate estimated reading time
-const calculateReadingTime = (text: string): number => {
-  const wordsPerMinute = 200
-  const wordCount = text.trim().split(/\s+/).length
-  return Math.max(1, Math.ceil(wordCount / wordsPerMinute))
 }
 
 export const NewsCard: React.FC<NewsCardProps> = ({ post, showCategories = true }) => {
@@ -28,7 +22,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({ post, showCategories = true 
   const categories = post.categories
 
   // Calculate reading time from excerpt
-  const readingTime = calculateReadingTime(excerpt || post.name)
+  const readingTime = getReadingTime(excerpt || post.name)
 
   // Get primary category for display
   const primaryCategory =
@@ -41,8 +35,9 @@ export const NewsCard: React.FC<NewsCardProps> = ({ post, showCategories = true 
 
   return (
     <article className="group shadow-md relative flex flex-col h-full overflow-hidden rounded-xl bg-white transition-all duration-500 hover:translate-y-[-4px]">
-      <Link
+      <ArticlePrefetchLink
         href={`/news/${post.slug}`}
+        slug={post.slug}
         className="block h-full"
         aria-label={`Akhri maqaalka: ${post.name}`}
         data-article-id={post.id}
@@ -164,7 +159,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({ post, showCategories = true 
             </div>
           </div>
         </div>
-      </Link>
+      </ArticlePrefetchLink>
     </article>
   )
 }

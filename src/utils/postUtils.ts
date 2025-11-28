@@ -61,7 +61,7 @@ const DEFAULT_EXCERPT_OPTIONS: Required<GetPostExcerptOptions> = {
 }
 
 const truncateText = (text: string, maxLength: number): string => {
-  return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text
+  return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text
 }
 
 const findCoverSubheading = (layout: BlogPost['layout']): string | null => {

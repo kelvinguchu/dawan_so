@@ -53,7 +53,8 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, variant = 'grid' })
     e.stopPropagation()
 
     if (!currentUser) {
-      router.push('/login?redirect_to=' + encodeURIComponent(globalThis.location.pathname))
+      const currentPath = typeof window !== 'undefined' ? window.location.pathname : '/videos'
+      router.push('/login?redirect_to=' + encodeURIComponent(currentPath))
       return
     }
     if (isUpdatingLike) return

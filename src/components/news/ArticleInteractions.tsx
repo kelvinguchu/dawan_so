@@ -47,7 +47,8 @@ export const ArticleInteractions: React.FC<ArticleInteractionsProps> = ({ post, 
 
   const handleToggleFavorite = async () => {
     if (!currentUser) {
-      router.push('/login?redirect_to=' + encodeURIComponent(window.location.pathname))
+      const currentPath = typeof window !== 'undefined' ? window.location.pathname : '/news'
+      router.push('/login?redirect_to=' + encodeURIComponent(currentPath))
       return
     }
     if (isUpdatingFavorite) return
@@ -98,7 +99,8 @@ export const ArticleInteractions: React.FC<ArticleInteractionsProps> = ({ post, 
 
   const handleToggleLike = async () => {
     if (!currentUser) {
-      router.push('/login?redirect_to=' + encodeURIComponent(window.location.pathname))
+      const currentPath = typeof window !== 'undefined' ? window.location.pathname : '/news'
+      router.push('/login?redirect_to=' + encodeURIComponent(currentPath))
       return
     }
     if (isUpdatingLike) return

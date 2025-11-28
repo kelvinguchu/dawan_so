@@ -51,7 +51,11 @@ export const updateUserAndPostEngagement = async ({
     const post = (await payload.findByID({
       collection: 'blogPosts',
       id: postId,
-    })) as BlogPost
+      select: {
+        likes: true,
+        favoritesCount: true,
+      },
+    })) as Pick<BlogPost, 'likes' | 'favoritesCount'>
 
     const currentCount = post[postCountField] || 0
     const newCount = Math.max(0, currentCount + delta)

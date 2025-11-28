@@ -22,6 +22,41 @@ interface Coin {
   }
 }
 
+// Result types for consistent API responses
+export interface MarketDataResult<T> {
+  data: T | null
+  error?: string
+}
+
+export interface CryptoListingsResult {
+  data: CryptoListing[]
+  totalCount: number
+  error?: string
+}
+
+export interface CryptoListing {
+  id: number
+  name: string
+  symbol: string
+  price: number
+  marketCap: number
+  volume24h: number
+  circulatingSupply: number
+  percentChange24h: number
+  percentChange7d: number
+  rank: number
+  logoUrl: string
+}
+
+export interface TrendingCoin {
+  id: number
+  name: string
+  symbol: string
+  price: number
+  percentChange24h: number
+  logoUrl: string
+}
+
 function getValidatedApiKey(): string {
   const apiKey = process.env.COIN_MARKET_CAP_API_KEY
   if (!apiKey) {
@@ -68,7 +103,7 @@ export async function getCryptoListings(params: {
   start: number
   sortBy: string
   searchTerm?: string
-}) {
+}): Promise<CryptoListingsResult> {
   try {
     const { limit, start, sortBy, searchTerm } = params
 
@@ -138,7 +173,7 @@ export async function getCryptoListings(params: {
   }
 }
 
-export async function getTrendingCoins() {
+export async function getTrendingCoins(): Promise<TrendingCoin[]> {
   try {
     const response = await fetch(
       `${CMC_API_URL}/cryptocurrency/listings/latest?limit=10&sort=percent_change_24h&sort_dir=desc&convert=USD`,

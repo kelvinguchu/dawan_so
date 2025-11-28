@@ -15,7 +15,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
         },
       },
       limit: 1,
-      depth: 5,
+      depth: 2,
     })
     return response.docs[0] || null
   } catch (error) {

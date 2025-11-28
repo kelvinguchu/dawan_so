@@ -7,13 +7,11 @@ import NewsletterPopup from '@/components/NewsletterPopup'
 import { Roboto } from 'next/font/google'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { QueryProvider } from '@/components/providers/QueryProvider'
-import { NavigationProvider } from '@/providers/NavigationProvider'
 import { Toaster } from 'sonner'
 import { cn } from '@/lib/utils'
 import { Loading } from '@/components/global/Loading'
 import type { Metadata, Viewport } from 'next'
-import { sharedMetadata } from '@/app/shared-metadata'
-import siteConfig from '@/app/shared-metadata'
+import siteConfig, { sharedMetadata } from '@/app/shared-metadata'
 import { GoogleAnalytics } from '@next/third-parties/google'
 import { WebVitals } from '@/hooks/useWebVitals'
 import { RSSDiscovery } from '@/components/rss'
@@ -237,25 +235,25 @@ export default function RootLayout({ children }: { readonly children: React.Reac
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(structuredData).replace(/</g, '\u003c'),
+            __html: JSON.stringify(structuredData).replaceAll('<', '\u003c'),
           }}
         />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(websiteStructuredData).replace(/</g, '\u003c'),
+            __html: JSON.stringify(websiteStructuredData).replaceAll('<', '\u003c'),
           }}
         />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(navigationStructuredData).replace(/</g, '\u003c'),
+            __html: JSON.stringify(navigationStructuredData).replaceAll('<', '\u003c'),
           }}
         />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(breadcrumbStructuredData).replace(/</g, '\u003c'),
+            __html: JSON.stringify(breadcrumbStructuredData).replaceAll('<', '\u003c'),
           }}
         />
       </head>
@@ -265,21 +263,20 @@ export default function RootLayout({ children }: { readonly children: React.Reac
           <PageViewTracker />
           <AuthProvider>
             <QueryProvider>
-              <NavigationProvider>
-                <AudioPlayerProvider>
-                  <Toaster richColors position="top-right" />
-                  <HeaderServer />
-                  <main className="flex-grow">{children}</main>
-                  <Footer />
-                  <FloatingAudioPlayer />
-                  <NewsletterPopup delay={5000} />
-                </AudioPlayerProvider>
-              </NavigationProvider>
+              <AudioPlayerProvider>
+                <Toaster richColors position="top-right" />
+                <HeaderServer />
+                <main className="flex-grow">{children}</main>
+                <Footer />
+                <FloatingAudioPlayer />
+                <NewsletterPopup delay={5000} />
+              </AudioPlayerProvider>
             </QueryProvider>
           </AuthProvider>
         </Suspense>
 
-        {/* AdSense */}
+        {/* TEMPORARILY DISABLED - AdSense removed, may be restored later */}
+        {/*
         <Script
           async
           data-no-optimize="true"
@@ -288,6 +285,7 @@ export default function RootLayout({ children }: { readonly children: React.Reac
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5247780644977108"
           crossOrigin="anonymous"
         />
+        */}
 
         {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
           <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />

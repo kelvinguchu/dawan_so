@@ -32,6 +32,9 @@ interface ExtendedExpoPushMessage extends ExpoPushMessage {
   }>
 }
 
+// Batch size for processing subscriptions to avoid memory issues
+const SUBSCRIPTION_BATCH_SIZE = 500
+
 export async function subscribeUser(subscription: PushSubscriptionData) {
   if (!process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
     return { success: false, error: 'Push notifications are not configured on the server' }
@@ -136,50 +139,60 @@ async function sendMobileNotifications(title: string, body: string, data: Record
   const expo = new Expo()
   const payload = await getPayload({ config: configPromise })
 
-  const subscriptions = await payload.find({
-    collection: 'mobile-push-subscriptions',
-    limit: 10000,
-  })
+  let page = 1
+  let hasMore = true
+  const allMessages: ExtendedExpoPushMessage[] = []
 
-  const messages: ExtendedExpoPushMessage[] = []
-  for (const sub of subscriptions.docs) {
-    if (!Expo.isExpoPushToken(sub.token)) {
-      console.error(`Push token ${sub.token} is not a valid Expo push token`)
-      continue
-    }
+  // Paginate through subscriptions in batches
+  while (hasMore) {
+    const subscriptions = await payload.find({
+      collection: 'mobile-push-subscriptions',
+      limit: SUBSCRIPTION_BATCH_SIZE,
+      page,
+    })
 
-    const message: ExtendedExpoPushMessage = {
-      to: sub.token,
-      sound: 'default',
-      title,
-      body,
-      data,
-      categoryId: 'NEW_ARTICLE_SO',
-      channelId: 'new-articles-dawan-so',
-      mutableContent: true,
-    }
-
-    // Add rich media support
-    if (data?.imageUrl && typeof data.imageUrl === 'string') {
-      // Android - use richContent.image for BigPicture style
-      message.richContent = {
-        image: data.imageUrl,
+    for (const sub of subscriptions.docs) {
+      if (!Expo.isExpoPushToken(sub.token)) {
+        console.error(`Push token ${sub.token} is not a valid Expo push token`)
+        continue
       }
 
-      // iOS - use attachments for Notification Service Extension
-      message.attachments = [
-        {
-          url: data.imageUrl,
-          identifier: 'image',
-          typeHint: 'image',
-        },
-      ]
+      const message: ExtendedExpoPushMessage = {
+        to: sub.token,
+        sound: 'default',
+        title,
+        body,
+        data,
+        categoryId: 'NEW_ARTICLE_SO',
+        channelId: 'new-articles-dawan-so',
+        mutableContent: true,
+      }
+
+      // Add rich media support
+      if (data?.imageUrl && typeof data.imageUrl === 'string') {
+        // Android - use richContent.image for BigPicture style
+        message.richContent = {
+          image: data.imageUrl,
+        }
+
+        // iOS - use attachments for Notification Service Extension
+        message.attachments = [
+          {
+            url: data.imageUrl,
+            identifier: 'image',
+            typeHint: 'image',
+          },
+        ]
+      }
+
+      allMessages.push(message)
     }
 
-    messages.push(message)
+    hasMore = subscriptions.hasNextPage ?? false
+    page++
   }
 
-  const chunks = expo.chunkPushNotifications(messages as ExpoPushMessage[])
+  const chunks = expo.chunkPushNotifications(allMessages as ExpoPushMessage[])
 
   for (const chunk of chunks) {
     try {
@@ -215,40 +228,54 @@ export async function sendNotificationToAll(
       requireInteraction: false,
     })
 
-    const allSubscriptions = await payload.find({
-      collection: 'push-subscriptions',
-      limit: 10000,
-    })
+    let webPage = 1
+    let webHasMore = true
+    let successful = 0
+    let failed = 0
 
-    const promises = allSubscriptions.docs.map(async (sub) => {
-      const subscription = {
-        endpoint: sub.endpoint,
-        keys: sub.keys as { p256dh: string; auth: string },
-      }
-      try {
-        await webpush.sendNotification(subscription, notificationPayload)
-        return { success: true, endpoint: subscription.endpoint }
-      } catch (error: unknown) {
-        const webPushError = error as { statusCode?: number; message?: string }
-        if (webPushError.statusCode === 404 || webPushError.statusCode === 410) {
-          await payload.delete({
-            collection: 'push-subscriptions',
-            id: sub.id,
-          })
-        }
-        return {
-          success: false,
+    // Paginate through web subscriptions in batches
+    while (webHasMore) {
+      const subscriptionsPage = await payload.find({
+        collection: 'push-subscriptions',
+        limit: SUBSCRIPTION_BATCH_SIZE,
+        page: webPage,
+      })
+
+      const batchPromises = subscriptionsPage.docs.map(async (sub) => {
+        const subscription = {
           endpoint: sub.endpoint,
-          error: webPushError.message || 'Unknown error',
+          keys: sub.keys as { p256dh: string; auth: string },
         }
-      }
-    })
+        try {
+          await webpush.sendNotification(subscription, notificationPayload)
+          return { success: true, endpoint: subscription.endpoint }
+        } catch (error: unknown) {
+          const webPushError = error as { statusCode?: number; message?: string }
+          if (webPushError.statusCode === 404 || webPushError.statusCode === 410) {
+            await payload.delete({
+              collection: 'push-subscriptions',
+              id: sub.id,
+            })
+          }
+          return {
+            success: false,
+            endpoint: sub.endpoint,
+            error: webPushError.message || 'Unknown error',
+          }
+        }
+      })
 
-    const results = await Promise.allSettled(promises)
-    const successful = results.filter(
-      (result) => result.status === 'fulfilled' && result.value.success,
-    ).length
-    const failed = results.length - successful
+      const results = await Promise.allSettled(batchPromises)
+      successful += results.filter(
+        (result) => result.status === 'fulfilled' && result.value.success,
+      ).length
+      failed +=
+        results.length -
+        results.filter((result) => result.status === 'fulfilled' && result.value.success).length
+
+      webHasMore = subscriptionsPage.hasNextPage ?? false
+      webPage++
+    }
 
     return { success: true, sent: successful, failed }
   } catch {

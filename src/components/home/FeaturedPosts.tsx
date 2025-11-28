@@ -43,10 +43,8 @@ export const FeaturedPosts: React.FC<FeaturedPostsProps> = ({
   const mainFeaturedPostData = tabbedPosts.length > 3 ? tabbedPosts[3] : null
   const gridPostsData = tabbedPosts.slice(4, 6)
 
-  const heroPostIds = heroPosts.slice(0, 6).map((post) => post.id)
-  const filteredRecentNews = recentNewsItems.filter(
-    (post) => !heroPostIds.includes(post.id),
-  )
+  const heroPostIds = new Set(heroPosts.slice(0, 6).map((post) => post.id))
+  const filteredRecentNews = recentNewsItems.filter((post) => !heroPostIds.has(post.id))
 
   return (
     <section className="pt-0 pb-8 sm:pb-12 bg-gradient-to-b from-white to-gray-50">
@@ -59,11 +57,7 @@ export const FeaturedPosts: React.FC<FeaturedPostsProps> = ({
                 Sheekooyin Kale
               </h2>
             </div>
-            <Tabs
-              value={activeTab}
-              onValueChange={setActiveTab}
-              className="w-full sm:w-auto"
-            >
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full sm:w-auto">
               <TabsList className="bg-gray-100/80 w-full rounded-full h-9 relative z-10">
                 <TabsTrigger
                   value="trending"
@@ -82,30 +76,28 @@ export const FeaturedPosts: React.FC<FeaturedPostsProps> = ({
           </div>
         </div>
 
-        <> 
-          {tabbedPosts.length > 0 ? (
-            <>
-              <TopPosts posts={topPostsData} />
+        {tabbedPosts.length > 0 ? (
+          <div>
+            <TopPosts posts={topPostsData} />
 
-              <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-12 mb-8 sm:mb-12 max-w-full">
-                <div className="lg:col-span-5">
-                  {mainFeaturedPostData && <HeroFeatured post={mainFeaturedPostData} />}
-                </div>
-                <GridPosts posts={gridPostsData} />
+            <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-12 mb-8 sm:mb-12 max-w-full">
+              <div className="lg:col-span-5">
+                {mainFeaturedPostData && <HeroFeatured post={mainFeaturedPostData} />}
               </div>
-            </>
-          ) : (
-            <div className="mb-8 sm:mb-12">
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <p className="text-gray-500">Waqtigan xaadirka ah qoraallo ma jiraan.</p>
-                </CardContent>
-              </Card>
+              <GridPosts posts={gridPostsData} />
             </div>
-          )}
+          </div>
+        ) : (
+          <div className="mb-8 sm:mb-12">
+            <Card>
+              <CardContent className="p-6 text-center">
+                <p className="text-gray-500">Waqtigan xaadirka ah qoraallo ma jiraan.</p>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
-          <ArticleList posts={filteredRecentNews} />
-        </>
+        <ArticleList posts={filteredRecentNews} />
       </div>
     </section>
   )

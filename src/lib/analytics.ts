@@ -18,7 +18,10 @@ export async function incrementPostViewCount(postId: string): Promise<ViewTracki
     const post = (await payload.findByID({
       collection: 'blogPosts',
       id: postId,
-    })) as BlogPost
+      select: {
+        views: true,
+      },
+    })) as Pick<BlogPost, 'views'>
 
     if (!post) {
       return {

@@ -447,33 +447,30 @@ interface SocialFollowBannerProps {
 const SocialFollowBanner: React.FC<SocialFollowBannerProps> = ({ postTitle }) => {
   return (
     <div className="mb-6 border-b border-gray-200 pb-4">
-      <div className="flex flex-row flex-wrap items-center justify-between gap-3">
-        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Na raac:</p>
-        <div className="flex flex-wrap items-center gap-2 text-gray-600">
-          {SOCIAL_LINKS.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`inline-flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
-                link.accent
-                  ? 'bg-[#b01c14]/15 text-[#b01c14] hover:bg-[#b01c14]/25'
-                  : 'bg-gray-100 hover:bg-[#b01c14]/15 hover:text-[#b01c14]'
-              }`}
-              aria-label={link.label}
-            >
-              {link.icon}
-            </a>
-          ))}
-          <div className="ml-1 border-l border-gray-200 pl-3">
-            <SharePopover
-              title={postTitle}
-              buttonVariant="ghost"
-              buttonSize="icon"
-              className="h-9 w-9 rounded-full bg-gray-100 hover:bg-[#b01c14]/15 hover:text-[#b01c14]"
-            />
-          </div>
+      <div className="flex flex-wrap items-center justify-start gap-2">
+        {SOCIAL_LINKS.map((link) => (
+          <a
+            key={link.href}
+            href={link.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`inline-flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full transition-colors ${
+              link.accent
+                ? 'bg-[#b01c14]/15 text-[#b01c14] hover:bg-[#b01c14]/25'
+                : 'bg-gray-100 hover:bg-[#b01c14]/15 hover:text-[#b01c14]'
+            }`}
+            aria-label={link.label}
+          >
+            {link.icon}
+          </a>
+        ))}
+        <div className="ml-1 border-l border-gray-200 pl-2 sm:pl-3">
+          <SharePopover
+            title={postTitle}
+            buttonVariant="ghost"
+            buttonSize="icon"
+            className="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-gray-100 hover:bg-[#b01c14]/15 hover:text-[#b01c14]"
+          />
         </div>
       </div>
     </div>
@@ -546,23 +543,24 @@ export const ArticleBodyContent: React.FC<ArticleBodyContentProps> = ({
       ) : null}
 
       {endRecommendationItems.length > 0 ? (
-        <div className="mt-10 flex flex-col gap-3">
-          <div className="px-1 sm:px-2">
-            <p className="text-sm sm:text-base font-semibold text-gray-700">
+        <div className="mx-auto my-6 max-w-3xl rounded-lg border border-gray-100 bg-white shadow-sm">
+          <div className="border-b border-gray-100 px-4 py-2 sm:px-5">
+            <p className="text-xs sm:text-sm font-semibold uppercase tracking-wide text-gray-500">
               Maqaallo kale oo aan kuu doorannay
             </p>
           </div>
-          {endRecommendationItems.map((recommendation) => {
-            const imageUrl = getPostImageFromLayout(recommendation.layout)
-            return (
-              <div
-                key={`end-rec-${recommendation.id}`}
-                className="rounded-lg border border-gray-100 bg-white shadow-sm"
-              >
-                <RecentNewsItem post={recommendation} imageUrl={imageUrl} />
-              </div>
-            )
-          })}
+          <div className="divide-y divide-gray-100">
+            {endRecommendationItems.map((recommendation) => {
+              const imageUrl = getPostImageFromLayout(recommendation.layout)
+              return (
+                <RecentNewsItem
+                  key={`end-rec-${recommendation.id}`}
+                  post={recommendation}
+                  imageUrl={imageUrl}
+                />
+              )
+            })}
+          </div>
         </div>
       ) : null}
     </>

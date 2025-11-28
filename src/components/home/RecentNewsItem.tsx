@@ -1,11 +1,11 @@
 'use client'
 
 import React from 'react'
-import Link from 'next/link'
 import { BlogPost } from '@/payload-types'
 import { Clock } from 'lucide-react'
 import { formatTimeAgo } from '@/utils/dateUtils'
 import Image from 'next/image'
+import { ArticlePrefetchLink } from '@/components/common/ArticlePrefetchLink'
 
 interface RecentNewsItemProps {
   post: BlogPost
@@ -14,8 +14,9 @@ interface RecentNewsItemProps {
 
 export const RecentNewsItem: React.FC<RecentNewsItemProps> = ({ post, imageUrl }) => {
   return (
-    <Link
+    <ArticlePrefetchLink
       href={`/news/${post.slug}`}
+      slug={post.slug}
       className="group block px-2 sm:px-3 py-2 sm:py-2.5 first:pt-0 last:pb-0 transition-colors hover:bg-gray-50"
       aria-label={`Akhri maqaalka: ${post.name}`}
     >
@@ -51,6 +52,6 @@ export const RecentNewsItem: React.FC<RecentNewsItemProps> = ({ post, imageUrl }
           )}
         </div>
       </div>
-    </Link>
+    </ArticlePrefetchLink>
   )
 }

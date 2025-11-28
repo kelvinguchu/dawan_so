@@ -56,12 +56,12 @@ export const ArticleHeader: React.FC<ArticleHeaderProps> = ({ post, currentUrl }
         {coverImageUrl ? (
           <>
             <div className="absolute inset-0 bg-gradient-to-t from-gray-900/90 via-gray-900/60 to-transparent z-10" />
-            <div className="w-full h-[40vh] sm:h-[50vh] md:h-[60vh] lg:h-[70vh] relative">
+            <div className="w-full h-[40vh] sm:h-[50vh] md:h-[60vh] lg:h-[70vh] relative bg-gray-900">
               <Image
                 src={coverImageUrl}
                 alt={post.name}
                 fill
-                className="object-cover"
+                className="object-contain"
                 priority
                 quality={85}
                 sizes="100vw"

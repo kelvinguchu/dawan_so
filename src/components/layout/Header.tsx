@@ -90,7 +90,7 @@ const Header: React.FC<HeaderProps> = ({ initialCategories = [] }) => {
     }
   }, [searchParams, setSearchTerm, setSearchField])
 
-  const [categories] = useState<BlogCategory[]>(initialCategories)
+  const categories = initialCategories
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
 
@@ -111,7 +111,10 @@ const Header: React.FC<HeaderProps> = ({ initialCategories = [] }) => {
   const formattedDate = formatDateInSomali(today)
 
   useEffect(() => {
-    if (globalThis.matchMedia('(display-mode: standalone)').matches) {
+    // SSR guard - matchMedia not available during server rendering
+    if (typeof window === 'undefined') return
+
+    if (window.matchMedia('(display-mode: standalone)').matches) {
       setIsInstallable(false)
       return
     }
@@ -127,12 +130,12 @@ const Header: React.FC<HeaderProps> = ({ initialCategories = [] }) => {
       setIsInstallable(false)
     }
 
-    globalThis.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
-    globalThis.addEventListener('appinstalled', handleAppInstalled)
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+    window.addEventListener('appinstalled', handleAppInstalled)
 
     return () => {
-      globalThis.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
-      globalThis.removeEventListener('appinstalled', handleAppInstalled)
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+      window.removeEventListener('appinstalled', handleAppInstalled)
     }
   }, [])
 

@@ -1,13 +1,16 @@
 import crypto from 'crypto'
 
 const BASE_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'https://dawan.so'
-const SECRET = process.env.UNSUBSCRIBE_TOKEN_SECRET
 
-if (!SECRET) {
-  throw new Error(
-    'UNSUBSCRIBE_TOKEN_SECRET environment variable is required. ' +
-      "Generate one with: node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\"",
-  )
+function getSecret(): string {
+  const secret = process.env.UNSUBSCRIBE_TOKEN_SECRET
+  if (!secret) {
+    throw new Error(
+      'UNSUBSCRIBE_TOKEN_SECRET environment variable is required. ' +
+        "Generate one with: node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\"",
+    )
+  }
+  return secret
 }
 
 function normalizeEmail(email: string): string {
@@ -18,7 +21,7 @@ function generateSecureToken(email: string): string {
   const normalizedEmail = normalizeEmail(email)
   const timestamp = Date.now().toString()
   const payload = `${normalizedEmail}:${timestamp}`
-  const hmac = crypto.createHmac('sha256', SECRET!)
+  const hmac = crypto.createHmac('sha256', getSecret())
   hmac.update(payload)
   const signature = hmac.digest('hex')
 

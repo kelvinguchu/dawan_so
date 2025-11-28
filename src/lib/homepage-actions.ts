@@ -40,7 +40,9 @@ export async function getHomePageData(): Promise<HomePageData> {
     const latestPost: BlogPost | null = heroPosts.length > 0 ? heroPosts[0] : null
     const heroPostIds = heroPosts.map((post) => post.id)
 
-    const oneWeekAgo = subDays(new Date(), 7).toISOString()
+    // Trending: highest views from the last 14 days
+    const twoWeeksAgo = subDays(new Date(), 14).toISOString()
+
     const trendingPostsResponse = await payload.find({
       collection: 'blogPosts',
       limit: 6,
@@ -56,7 +58,7 @@ export async function getHomePageData(): Promise<HomePageData> {
           },
           {
             createdAt: {
-              greater_than: oneWeekAgo,
+              greater_than: twoWeeksAgo,
             },
           },
           {
@@ -152,29 +154,24 @@ async function getCategoriesWithLatestPosts(): Promise<
   try {
     const payload = await getPayload({ config })
 
-    const categoriesResponse = await payload.find({
-      collection: 'blogCategories',
-      limit: 100,
-    })
+    // Run both queries in parallel
+    const [categoriesResponse, postsWithCategoriesResponse] = await Promise.all([
+      payload.find({
+        collection: 'blogCategories',
+        limit: 50,
+      }),
+      payload.find({
+        collection: 'blogPosts',
+        limit: 50, // Reduced from 100 - we only need 6 categories with posts
+        sort: '-createdAt',
+        depth: 1, // Reduced from 2
+        where: {
+          and: [{ status: { equals: 'published' } }, { featuredinhomepage: { equals: true } }],
+        },
+      }),
+    ])
 
     const categories = categoriesResponse.docs
-
-    const postsWithCategoriesResponse = await payload.find({
-      collection: 'blogPosts',
-      limit: 100,
-      sort: '-createdAt',
-      depth: 2,
-      where: {
-        and: [
-          {
-            status: { equals: 'published' },
-          },
-          {
-            featuredinhomepage: { equals: true },
-          },
-        ],
-      },
-    })
 
     const postsWithCategories = postsWithCategoriesResponse.docs.filter(
       (post) => post.categories && Array.isArray(post.categories) && post.categories.length > 0,
@@ -182,9 +179,9 @@ async function getCategoriesWithLatestPosts(): Promise<
 
     const categoryPostMap = new Map<string, { category: BlogCategory; latestPost: BlogPost }>()
 
-    postsWithCategories.forEach((post) => {
+    for (const post of postsWithCategories) {
       if (post.categories && Array.isArray(post.categories)) {
-        post.categories.forEach((cat) => {
+        for (const cat of post.categories) {
           let categoryId: string | null = null
           let categorySlug: string | null = null
 
@@ -211,9 +208,9 @@ async function getCategoriesWithLatestPosts(): Promise<
               })
             }
           }
-        })
+        }
       }
-    })
+    }
 
     return Array.from(categoryPostMap.values())
       .slice(0, 6)

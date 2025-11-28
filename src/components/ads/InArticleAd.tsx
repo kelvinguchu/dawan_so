@@ -1,9 +1,13 @@
 'use client'
 
 import React from 'react'
-import { AdUnit } from '@/components/ads/AdUnit'
+// TEMPORARILY DISABLED - Ads removed, may be restored later
+// import { AdUnit } from '@/components/ads/AdUnit'
 
 export function InArticleAd() {
+  // TEMPORARILY DISABLED - Ads removed, may be restored later
+  return null
+  /*
   return (
     <div className="my-8 w-full">
       <AdUnit
@@ -15,4 +19,5 @@ export function InArticleAd() {
       />
     </div>
   )
+  */
 }
