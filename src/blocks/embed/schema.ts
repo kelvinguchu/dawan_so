@@ -58,14 +58,5 @@ export const Embed: Block = {
         placeholder: 'e.g., Amazing Video Title',
       },
     },
-    {
-      name: 'caption',
-      type: 'textarea',
-      label: 'Caption',
-      admin: {
-        description: 'Optional caption or description for the embedded content',
-        rows: 3,
-      },
-    },
   ],
 }

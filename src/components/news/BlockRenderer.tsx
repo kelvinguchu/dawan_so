@@ -1,3 +1,5 @@
+"use client"
+
 import React from 'react'
 import { RichTextRenderer } from './blockrender/RichTextRenderer'
 import { ImageBlock, CoverBlock, VideoBlock } from './blockrender/MediaBlocks'
@@ -27,7 +29,6 @@ import {
 } from './blockrender/LayoutBlocks'
 import {
   BlockRendererProps,
-  BlockType,
   RichTextBlockData,
   ImageBlockData,
   VideoBlockData,
@@ -65,7 +66,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({ block, hideTextOve
   }, [])
 
   // Ensure block conforms to BlockType interface structure
-  const typedBlock = block as BlockType
+  const typedBlock = block
 
   switch (typedBlock.blockType?.toLowerCase()) {
     case 'richtext':

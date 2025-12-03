@@ -83,6 +83,7 @@ export interface Config {
     'push-subscriptions': PushSubscription;
     'mobile-push-subscriptions': MobilePushSubscription;
     'notification-logs': NotificationLog;
+    dawanpediaEntries: DawanpediaEntry;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
@@ -111,6 +112,7 @@ export interface Config {
     'push-subscriptions': PushSubscriptionsSelect<false> | PushSubscriptionsSelect<true>;
     'mobile-push-subscriptions': MobilePushSubscriptionsSelect<false> | MobilePushSubscriptionsSelect<true>;
     'notification-logs': NotificationLogsSelect<false> | NotificationLogsSelect<true>;
+    dawanpediaEntries: DawanpediaEntriesSelect<false> | DawanpediaEntriesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -400,10 +402,6 @@ export interface BlogPost {
              * Optional title for the embedded content
              */
             title?: string | null;
-            /**
-             * Optional caption or description for the embedded content
-             */
-            caption?: string | null;
             id?: string | null;
             blockName?: string | null;
             blockType: 'embed';
@@ -797,6 +795,142 @@ export interface NotificationLog {
   createdAt: string;
 }
 /**
+ * Structured people and business profiles for the Dawanpedia knowledge hub.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "dawanpediaEntries".
+ */
+export interface DawanpediaEntry {
+  id: string;
+  name: string;
+  /**
+   * Auto-generated from the title.
+   */
+  slug: string;
+  status?: ('draft' | 'review' | 'published') | null;
+  /**
+   * Required when the entry status is set to Published.
+   */
+  publishedDate?: string | null;
+  entryType: 'person' | 'business';
+  /**
+   * Optional profile image shown alongside the header.
+   */
+  primaryImage?: (string | null) | Media;
+  /**
+   * Quick facts displayed under the profile header.
+   */
+  profileFacts?:
+    | {
+        label: string;
+        value: {
+          root: {
+            type: string;
+            children: {
+              type: any;
+              version: number;
+              [k: string]: unknown;
+            }[];
+            direction: ('ltr' | 'rtl') | null;
+            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+            indent: number;
+            version: number;
+          };
+          [k: string]: unknown;
+        };
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Stack of narrative sections for this entry.
+   */
+  sections: {
+    heading: string;
+    content: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    };
+    id?: string | null;
+  }[];
+  /**
+   * Canonical references for this entry.
+   */
+  references?:
+    | {
+        title: string;
+        publication?: string | null;
+        url: string;
+        accessedDate?: string | null;
+        citationText?: string | null;
+        type?: ('article' | 'official-document' | 'press-release' | 'interview' | 'report' | 'other') | null;
+        /**
+         * Link to another Dawanpedia entry if this source refers to an internal profile.
+         */
+        relatedEntry?: (string | null) | DawanpediaEntry;
+        verification?: {
+          status?: ('unchecked' | 'valid' | 'broken') | null;
+          checkedAt?: string | null;
+          notes?: string | null;
+        };
+        id?: string | null;
+      }[]
+    | null;
+  externalResources?:
+    | {
+        label: string;
+        url: string;
+        description?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  relatedContent?: {
+    blogPosts?: (string | BlogPost)[] | null;
+    /**
+     * Optional cross-links to other relevant Dawanpedia entries.
+     */
+    relatedEntries?: (string | DawanpediaEntry)[] | null;
+  };
+  /**
+   * Internal notes for editors and reviewers.
+   */
+  editorialNotes?: string | null;
+  changelog?:
+    | {
+        label: string;
+        description?: string | null;
+        updatedAt?: string | null;
+        updatedBy?: (string | null) | User;
+        id?: string | null;
+      }[]
+    | null;
+  workflow?: {
+    /**
+     * Primary editor responsible for this entry.
+     */
+    maintainer?: (string | null) | User;
+    lastReviewedBy?: (string | null) | User;
+    lastReviewedAt?: string | null;
+    potentialDuplicateOf?: (string | null) | DawanpediaEntry;
+    /**
+     * Optional 0-1 confidence score for duplicate detection.
+     */
+    duplicateConfidence?: number | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -984,6 +1118,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'notification-logs';
         value: string | NotificationLog;
+      } | null)
+    | ({
+        relationTo: 'dawanpediaEntries';
+        value: string | DawanpediaEntry;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1269,7 +1407,6 @@ export interface BlogPostsSelect<T extends boolean = true> {
           | {
               content?: T;
               title?: T;
-              caption?: T;
               id?: T;
               blockName?: T;
             };
@@ -1475,6 +1612,86 @@ export interface NotificationLogsSelect<T extends boolean = true> {
   sentAt?: T;
   timeBlock?: T;
   articleSlug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "dawanpediaEntries_select".
+ */
+export interface DawanpediaEntriesSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  status?: T;
+  publishedDate?: T;
+  entryType?: T;
+  primaryImage?: T;
+  profileFacts?:
+    | T
+    | {
+        label?: T;
+        value?: T;
+        id?: T;
+      };
+  sections?:
+    | T
+    | {
+        heading?: T;
+        content?: T;
+        id?: T;
+      };
+  references?:
+    | T
+    | {
+        title?: T;
+        publication?: T;
+        url?: T;
+        accessedDate?: T;
+        citationText?: T;
+        type?: T;
+        relatedEntry?: T;
+        verification?:
+          | T
+          | {
+              status?: T;
+              checkedAt?: T;
+              notes?: T;
+            };
+        id?: T;
+      };
+  externalResources?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        description?: T;
+        id?: T;
+      };
+  relatedContent?:
+    | T
+    | {
+        blogPosts?: T;
+        relatedEntries?: T;
+      };
+  editorialNotes?: T;
+  changelog?:
+    | T
+    | {
+        label?: T;
+        description?: T;
+        updatedAt?: T;
+        updatedBy?: T;
+        id?: T;
+      };
+  workflow?:
+    | T
+    | {
+        maintainer?: T;
+        lastReviewedBy?: T;
+        lastReviewedAt?: T;
+        potentialDuplicateOf?: T;
+        duplicateConfidence?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }

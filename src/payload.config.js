@@ -25,6 +25,7 @@ import { PushSubscriptions } from './collections/PushSubscriptions'
 import { MobilePushSubscriptions } from './collections/MobilePushSubscriptions'
 import { NotificationLogs } from './collections/NotificationLogs'
 import { HeadlineVideos } from './collections/HeadlineVideos'
+import { DawanpediaEntries } from './collections/DawanpediaEntries'
 import { sendDailyDigestTask } from './jobs/sendDailyDigest'
 
 const filename = fileURLToPath(import.meta.url)
@@ -91,6 +92,7 @@ export default buildConfig({
     PushSubscriptions,
     MobilePushSubscriptions,
     NotificationLogs,
+    DawanpediaEntries,
   ],
   editor: lexicalEditor(),
 

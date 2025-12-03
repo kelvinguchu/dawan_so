@@ -1,64 +1,197 @@
+﻿'use client'
+
 import React from 'react'
 import { ExternalLink, FileText, Download } from 'lucide-react'
 import { Media } from '../../../payload-types'
 
-// Twitter Embed Block Component
-const TwitterEmbedBlock: React.FC<{
-  content: string
-  title?: string
-  caption?: string
-}> = ({ content, title, caption }) => {
-  const containerRef = React.useRef<HTMLDivElement>(null)
-  const [isLoaded, setIsLoaded] = React.useState(false)
+// ============================================
+// TYPES & CONFIG
+// ============================================
 
-  React.useEffect(() => {
-    const loadTwitterWidgets = async () => {
-      // Check if Twitter widgets script is already loaded
-      if (!(window as any).twttr) {
-        // Load the script
-        const script = document.createElement('script')
-        script.src = 'https://platform.twitter.com/widgets.js'
-        script.async = true
-        script.charset = 'utf-8'
+type SocialPlatform = 'twitter' | 'instagram' | 'tiktok' | 'facebook' | 'youtube' | 'unknown'
 
-        script.onload = () => {
-          setIsLoaded(true)
-          // Process widgets after script loads
-          if ((window as any).twttr?.widgets && containerRef.current) {
-            ;(window as any).twttr.widgets.load(containerRef.current)
-          }
-        }
+interface WindowWithSocial {
+  twttr?: {
+    widgets?: { load: (el?: HTMLElement) => void }
+    ready?: (fn: () => void) => void
+  }
+  instgrm?: { Embeds?: { process: () => void } }
+  FB?: { XFBML?: { parse: () => void } }
+}
 
-        document.head.appendChild(script)
-      } else {
-        // Script already loaded, just process widgets
-        setIsLoaded(true)
-        if ((window as any).twttr?.widgets && containerRef.current) {
-          ;(window as any).twttr.widgets.load(containerRef.current)
-        }
+const getWindow = (): WindowWithSocial => globalThis as unknown as WindowWithSocial
+
+// ============================================
+// PLATFORM DETECTION
+// ============================================
+
+const detectPlatform = (content: string): SocialPlatform => {
+  const lower = content.toLowerCase()
+
+  if (lower.includes('youtube.com') || lower.includes('youtu.be')) return 'youtube'
+  if (lower.includes('twitter-tweet') || lower.includes('twitter.com') || lower.includes('x.com'))
+    return 'twitter'
+  if (lower.includes('instagram.com') || lower.includes('instagram-media')) return 'instagram'
+  if (lower.includes('tiktok.com') || lower.includes('tiktok-embed')) return 'tiktok'
+  if (lower.includes('facebook.com') || lower.includes('fb-post') || lower.includes('fb-video'))
+    return 'facebook'
+
+  return 'unknown'
+}
+
+// ============================================
+// YOUTUBE EMBED COMPONENT
+// ============================================
+
+const YouTubeEmbed: React.FC<{ url: string; title?: string; caption?: string }> = ({
+  url,
+  title,
+  caption,
+}) => {
+  const getVideoId = (urlStr: string): string | null => {
+    try {
+      const urlObj = new URL(urlStr)
+      if (urlObj.hostname.includes('youtu.be')) {
+        return urlObj.pathname.slice(1)
       }
+      return urlObj.searchParams.get('v')
+    } catch {
+      return null
     }
+  }
 
-    if (content.includes('twitter-tweet')) {
-      loadTwitterWidgets()
-    }
-  }, [content])
-
-  // Extract blockquote only (remove script tags to avoid duplication)
-  const blockquoteContent = content.replace(/<script[^>]*>.*?<\/script>/gi, '')
+  const videoId = getVideoId(url)
+  if (!videoId) {
+    return (
+      <div className="my-8 p-4 bg-red-50 text-red-600 rounded-lg text-center">
+        URL-ka YouTube waa khalad
+      </div>
+    )
+  }
 
   return (
     <figure className="my-8">
       {title && <h3 className="text-lg font-semibold mb-4">{title}</h3>}
+      <div className="rounded-lg overflow-hidden shadow-lg">
+        <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+          <iframe
+            src={`https://www.youtube.com/embed/${videoId}`}
+            className="absolute inset-0 w-full h-full border-0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            loading="lazy"
+            title={title || 'Fiidiyowga YouTube'}
+          />
+        </div>
+      </div>
+      {caption && (
+        <figcaption className="text-center text-gray-600 mt-3 text-sm">{caption}</figcaption>
+      )}
+    </figure>
+  )
+}
+
+// ============================================
+// SOCIAL EMBED COMPONENT
+// ============================================
+
+const SCRIPT_CONFIG: Record<string, { src: string; init: (container: HTMLElement) => void }> = {
+  twitter: {
+    src: 'https://platform.twitter.com/widgets.js',
+    init: (container) => {
+      const win = getWindow()
+      if (win.twttr?.widgets?.load) {
+        win.twttr.widgets.load(container)
+      } else if (win.twttr?.ready) {
+        win.twttr.ready(() => win.twttr?.widgets?.load(container))
+      }
+    },
+  },
+  instagram: {
+    src: 'https://www.instagram.com/embed.js',
+    init: () => getWindow().instgrm?.Embeds?.process(),
+  },
+  tiktok: {
+    src: 'https://www.tiktok.com/embed.js',
+    init: () => {
+      /* TikTok auto-initializes */
+    },
+  },
+  facebook: {
+    src: 'https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v18.0',
+    init: () => getWindow().FB?.XFBML?.parse(),
+  },
+}
+
+const SocialEmbed: React.FC<{
+  html: string
+  platform: Exclude<SocialPlatform, 'youtube' | 'unknown'>
+  title?: string
+  caption?: string
+}> = ({ html, platform, title, caption }) => {
+  const containerRef = React.useRef<HTMLDivElement>(null)
+  const [status, setStatus] = React.useState<'loading' | 'ready' | 'error'>('loading')
+
+  const cleanHtml = React.useMemo(
+    () => html.replaceAll(/<script[^>]*>[\s\S]*?<\/script>/gi, ''),
+    [html],
+  )
+
+  React.useEffect(() => {
+    const container = containerRef.current
+    if (!container) return
+
+    container.innerHTML = cleanHtml
+
+    const config = SCRIPT_CONFIG[platform]
+    if (!config) {
+      setStatus('ready')
+      return
+    }
+
+    const initEmbed = () => {
+      config.init(container)
+      setTimeout(() => setStatus('ready'), platform === 'twitter' ? 1500 : 500)
+    }
+
+    const scriptHost = new URL(config.src).hostname
+    const existingScript = document.querySelector(`script[src*="${scriptHost}"]`)
+
+    if (existingScript) {
+      setTimeout(initEmbed, 100)
+    } else {
+      const script = document.createElement('script')
+      script.src = config.src
+      script.async = true
+      script.onload = () => setTimeout(initEmbed, 300)
+      script.onerror = () => setStatus('error')
+      document.body.appendChild(script)
+    }
+  }, [cleanHtml, platform])
+
+  const platformNames: Record<string, string> = {
+    twitter: 'Twitter',
+    instagram: 'Instagram',
+    tiktok: 'TikTok',
+    facebook: 'Facebook',
+  }
+
+  return (
+    <figure className="my-8">
+      {title && <h3 className="text-lg font-semibold mb-4 text-center">{title}</h3>}
       <div className="flex justify-center">
         <div
           ref={containerRef}
-          className="twitter-embed-container w-full max-w-lg mx-auto"
-          dangerouslySetInnerHTML={{ __html: blockquoteContent }}
+          className="w-full max-w-[550px] [&_.twitter-tweet]:mx-auto [&_.instagram-media]:mx-auto [&_iframe]:mx-auto"
         />
       </div>
-      {!isLoaded && (
-        <div className="text-center text-sm text-gray-500 mt-2">Waxyaabaha Twitter waa la rarayaa...</div>
+      {status === 'loading' && (
+        <div className="text-center text-sm text-gray-500 mt-3">
+          Waa la soo rareyaa {platformNames[platform]}...
+        </div>
+      )}
+      {status === 'error' && (
+        <div className="text-center text-sm text-red-500 mt-3">Soo dejintu waa guul darreysatay</div>
       )}
       {caption && (
         <figcaption className="text-center text-gray-600 mt-3 text-sm">{caption}</figcaption>
@@ -67,137 +200,51 @@ const TwitterEmbedBlock: React.FC<{
   )
 }
 
-// Helper function to detect platform from URL
-const detectPlatform = (url: string): string => {
-  try {
-    const urlObj = new URL(url)
-    const hostname = urlObj.hostname.toLowerCase()
+// ============================================
+// MAIN EMBED BLOCK COMPONENT
+// ============================================
 
-    if (hostname.includes('youtube.com') || hostname.includes('youtu.be')) return 'youtube'
-    if (hostname.includes('vimeo.com')) return 'vimeo'
-    if (hostname.includes('spotify.com')) return 'spotify'
-    if (hostname.includes('soundcloud.com')) return 'soundcloud'
-    if (hostname.includes('twitch.tv')) return 'twitch'
-    if (hostname.includes('dailymotion.com')) return 'dailymotion'
-    if (hostname.includes('facebook.com')) return 'facebook'
-    if (hostname.includes('instagram.com')) return 'instagram'
-    if (hostname.includes('twitter.com') || hostname.includes('x.com')) return 'twitter'
-    if (hostname.includes('tiktok.com')) return 'tiktok'
-    if (hostname.includes('codepen.io')) return 'codepen'
-    if (hostname.includes('codesandbox.io')) return 'codesandbox'
-    if (hostname.includes('github.com') || hostname.includes('gist.github.com')) return 'github'
-
-    return 'generic'
-  } catch {
-    return 'generic'
-  }
-}
-
-// Helper function to convert URL to embed URL
-const getEmbedUrl = (url: string, detectedPlatform: string): string => {
-  try {
-    const urlObj = new URL(url)
-
-    switch (detectedPlatform) {
-      case 'youtube': {
-        let videoId = ''
-        if (urlObj.hostname.includes('youtu.be')) {
-          videoId = urlObj.pathname.slice(1)
-        } else {
-          videoId = urlObj.searchParams.get('v') || ''
-        }
-
-        return `https://www.youtube.com/embed/${videoId}`
-      }
-
-      case 'vimeo': {
-        const videoId = urlObj.pathname.split('/')[1]
-        return `https://player.vimeo.com/video/${videoId}`
-      }
-
-      case 'spotify': {
-        // Convert Spotify URL to embed format
-        if (url.includes('/embed/')) {
-          return url
-        }
-
-        // Handle different Spotify URL formats
-        if (url.includes('/track/')) {
-          return url.replace('/track/', '/embed/track/')
-        } else if (url.includes('/album/')) {
-          return url.replace('/album/', '/embed/album/')
-        } else if (url.includes('/playlist/')) {
-          return url.replace('/playlist/', '/embed/playlist/')
-        } else if (url.includes('/artist/')) {
-          return url.replace('/artist/', '/embed/artist/')
-        }
-
-        return url
-      }
-
-      case 'soundcloud': {
-        return `https://w.soundcloud.com/player/?url=${encodeURIComponent(url)}`
-      }
-
-      case 'twitch': {
-        const channel = urlObj.pathname.slice(1)
-        const hostname = typeof window !== 'undefined' ? window.location.hostname : 'localhost'
-        return `https://player.twitch.tv/?channel=${channel}&parent=${hostname}`
-      }
-
-      case 'codepen': {
-        const penId = urlObj.pathname.split('/pen/')[1]?.split('/')[0]
-        return `https://codepen.io/embed/${penId}?default-tab=result`
-      }
-
-      case 'codesandbox': {
-        const sandboxId = urlObj.pathname.split('/s/')[1]?.split('/')[0]
-        return `https://codesandbox.io/embed/${sandboxId}`
-      }
-
-      default:
-        return url
-    }
-  } catch {
-    return url
-  }
-}
-
-// Embed Block Component
 const EmbedBlock: React.FC<{
   content?: string
   title?: string
   caption?: string
 }> = ({ content, title, caption }) => {
-  if (!content) {
+  if (!content?.trim()) {
     return (
       <div className="my-8 p-6 bg-slate-50 border border-slate-200 rounded-lg text-center">
-        <p className="text-slate-600">Embed content not provided</p>
+        <p className="text-slate-600">Nuxurka embed lama bixin</p>
       </div>
     )
   }
 
   const trimmedContent = content.trim()
+  const platform = detectPlatform(trimmedContent)
+  const isHtml = trimmedContent.startsWith('<')
 
-  // Check if content is HTML embed code
-  if (trimmedContent.startsWith('<') && trimmedContent.endsWith('>')) {
-    // Special handling for Twitter embeds
-    if (
-      trimmedContent.includes('twitter-tweet') ||
-      trimmedContent.includes('platform.twitter.com')
-    ) {
-      return <TwitterEmbedBlock content={trimmedContent} title={title} caption={caption} />
-    }
+  if (platform === 'youtube' && !isHtml) {
+    return <YouTubeEmbed url={trimmedContent} title={title} caption={caption} />
+  }
 
-    // For other HTML embeds
+  if (isHtml && platform !== 'unknown' && platform !== 'youtube') {
+    return <SocialEmbed html={trimmedContent} platform={platform} title={title} caption={caption} />
+  }
+
+  if (platform === 'twitter' && !isHtml) {
     return (
       <figure className="my-8">
-        {title && <h3 className="text-lg font-semibold mb-4">{title}</h3>}
-        <div className="rounded-lg overflow-hidden shadow-lg">
-          <div
-            className="embed-html-content [&_iframe]:w-full [&_iframe]:aspect-video [&_iframe]:border-0"
-            dangerouslySetInnerHTML={{ __html: trimmedContent }}
-          />
+        {title && <h3 className="text-lg font-semibold mb-4 text-center">{title}</h3>}
+        <div className="flex justify-center">
+          <a
+            href={trimmedContent}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-black hover:bg-gray-800 rounded-full transition-colors text-white font-medium"
+          >
+            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+            </svg>
+            <span>Ka eeg X</span>
+          </a>
         </div>
         {caption && (
           <figcaption className="text-center text-gray-600 mt-3 text-sm">{caption}</figcaption>
@@ -206,78 +253,19 @@ const EmbedBlock: React.FC<{
     )
   }
 
-  // If not HTML, treat as URL and process as before
-  const url = trimmedContent
-  const detectedPlatform = detectPlatform(url)
-  const embedUrl = getEmbedUrl(url, detectedPlatform)
-
-  // Special handling for Spotify (different layout)
-  if (detectedPlatform === 'spotify') {
-    return (
-      <figure className="my-8">
-        <div className="rounded-lg overflow-hidden shadow-lg bg-black">
-          <iframe
-            src={embedUrl}
-            width="100%"
-            height="352"
-            frameBorder="0"
-            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-            loading="lazy"
-            title={title || 'Spotify Embed'}
-            className="w-full"
-          />
-        </div>
-        {title && <h3 className="text-lg font-semibold mt-4 mb-2">{title}</h3>}
-        {caption && (
-          <figcaption className="text-center text-gray-600 text-sm">{caption}</figcaption>
-        )}
-      </figure>
-    )
-  }
-
-  // Special handling for Twitter/X embeds
-  if (detectedPlatform === 'twitter') {
-    return (
-      <figure className="my-8">
-        <div className="max-w-md mx-auto">
-          <blockquote className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-            <p className="text-gray-800 mb-3">Twitter/X embed content</p>
-            <cite className="text-sm text-gray-600">
-              <a
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 hover:text-blue-800"
-              >
-                View on X/Twitter <ExternalLink className="inline h-3 w-3 ml-1" />
-              </a>
-            </cite>
-          </blockquote>
-        </div>
-        {title && <h3 className="text-lg font-semibold mt-4 mb-2">{title}</h3>}
-        {caption && (
-          <figcaption className="text-center text-gray-600 text-sm">{caption}</figcaption>
-        )}
-      </figure>
-    )
-  }
-
-  // For other platforms, use iframe
   return (
     <figure className="my-8">
-      {title && <h3 className="text-lg font-semibold mb-4">{title}</h3>}
-      <div className="rounded-lg overflow-hidden shadow-lg">
-        <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
-          <iframe
-            src={embedUrl}
-            className="absolute inset-0 w-full h-full border-0"
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            title={title || 'Embed content'}
-            loading="lazy"
-          />
-        </div>
+      {title && <h3 className="text-lg font-semibold mb-4 text-center">{title}</h3>}
+      <div className="flex justify-center">
+        <a
+          href={trimmedContent}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors text-gray-700 font-medium"
+        >
+          <ExternalLink className="h-5 w-5" />
+          <span>Eeg Nuxurka</span>
+        </a>
       </div>
       {caption && (
         <figcaption className="text-center text-gray-600 mt-3 text-sm">{caption}</figcaption>
@@ -286,7 +274,10 @@ const EmbedBlock: React.FC<{
   )
 }
 
-// PDF Block Component
+// ============================================
+// PDF BLOCK COMPONENT
+// ============================================
+
 const PDFBlock: React.FC<{
   pdf?: Media | string | null
   showDownloadButton?: boolean
@@ -296,38 +287,35 @@ const PDFBlock: React.FC<{
   const [isMobile, setIsMobile] = React.useState(false)
 
   React.useEffect(() => {
-    // Detect mobile devices
     const checkMobile = () => {
-      const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera
+      const userAgent = navigator.userAgent
       const mobileRegex = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i
-      return mobileRegex.test(userAgent) || window.innerWidth <= 768
+      return mobileRegex.test(userAgent) || globalThis.window.innerWidth <= 768
     }
 
     setIsMobile(checkMobile())
 
-    // Listen for resize to handle orientation changes
     const handleResize = () => setIsMobile(checkMobile())
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
+    globalThis.window.addEventListener('resize', handleResize)
+    return () => globalThis.window.removeEventListener('resize', handleResize)
   }, [])
 
   const pdfUrl = typeof pdf === 'string' ? pdf : pdf?.url
   const pdfObj = typeof pdf === 'string' ? null : pdf
-  const fileName = pdfObj?.filename || 'Document'
+  const fileName = pdfObj?.filename || 'Dukumenti'
   const caption = pdfObj?.caption
   const fileSize = pdfObj?.filesize ? `${Math.round(pdfObj.filesize / 1024)} KB` : null
 
   if (!pdfUrl) {
     return (
       <div className="my-8 p-6 bg-slate-50 border border-slate-200 rounded-lg text-center">
-        <p className="text-slate-600">PDF document not available</p>
+        <p className="text-slate-600">Dukumentiga PDF ma jiro</p>
       </div>
     )
   }
 
   return (
     <div className="my-8 border border-slate-200 rounded-lg overflow-hidden shadow-md">
-      {/* Header */}
       <div className="bg-slate-50 px-4 py-3 border-b border-slate-200">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
@@ -340,49 +328,44 @@ const PDFBlock: React.FC<{
           </div>
 
           <div className="flex gap-2">
-            {/* View button - always available */}
             <a
               href={pdfUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center px-3 py-2 border border-slate-300 shadow-sm text-sm leading-4 font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors"
+              className="inline-flex items-center px-3 py-2 border border-slate-300 shadow-sm text-sm leading-4 font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50 transition-colors"
             >
               <ExternalLink className="h-4 w-4 mr-2" />
-              Daawo
+              Eeg
             </a>
 
-            {/* Download button - only if explicitly allowed */}
             {showDownloadButton && (
               <a
                 href={pdfUrl}
                 download
-                className="inline-flex items-center px-3 py-2 border border-slate-300 shadow-sm text-sm leading-4 font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors"
+                className="inline-flex items-center px-3 py-2 border border-slate-300 shadow-sm text-sm leading-4 font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50 transition-colors"
               >
                 <Download className="h-4 w-4 mr-2" />
-                Soo deji
+                Soo dejiso
               </a>
             )}
           </div>
         </div>
       </div>
 
-      {/* PDF Preview */}
       {showPreview && (
         <div className="bg-white">
           {isMobile ? (
-            // Mobile-friendly PDF viewer
             <div className="p-8 text-center bg-slate-50">
               <div className="max-w-sm mx-auto">
                 <div className="w-20 h-20 mx-auto mb-4 bg-white rounded-full flex items-center justify-center shadow-sm border border-slate-200">
                   <FileText className="h-10 w-10 text-red-600" />
                 </div>
-                <h4 className="text-lg font-semibold text-slate-900 mb-2">Dukumenti PDF</h4>
+                <h4 className="text-lg font-semibold text-slate-900 mb-2">Dukumentiga PDF</h4>
                 <p className="text-sm text-slate-600 mb-6">
-                  Hordhacyada PDF laguma taageero aaladaha mobilada.
-                  {fileSize && ` (Cabbirka faylka: ${fileSize})`}
+                  Dukumentiyada PDF looma taageero moobilka.
+                  {fileSize && ` (Cabbirka: ${fileSize})`}
                 </p>
 
-                {/* Only show buttons if download is allowed */}
                 {showDownloadButton && (
                   <div className="space-y-3">
                     <a
@@ -392,7 +375,7 @@ const PDFBlock: React.FC<{
                       className="block w-full px-4 py-3 bg-slate-700 text-white font-medium rounded-lg hover:bg-slate-800 transition-colors shadow-sm"
                     >
                       <ExternalLink className="h-4 w-4 inline mr-2" />
-                      Ku fur Brawserka
+                      Ku fur Browser-ka
                     </a>
                     <a
                       href={pdfUrl}
@@ -400,25 +383,13 @@ const PDFBlock: React.FC<{
                       className="block w-full px-4 py-3 bg-slate-600 text-white font-medium rounded-lg hover:bg-slate-700 transition-colors shadow-sm"
                     >
                       <Download className="h-4 w-4 inline mr-2" />
-                      Soo deji PDF
+                      Soo dejiso PDF
                     </a>
                   </div>
-                )}
-
-                {showDownloadButton && (
-                  <p className="text-xs text-slate-500 mt-4">
-                    Talo: Isticmaal “Ku fur Brawserka” si aad ugu aragto daawadeyaasha PDF-ga ee aaladdaada
-                  </p>
-                )}
-
-                {/* If download not allowed, show message */}
-                {!showDownloadButton && (
-                  <p className="text-sm text-slate-500 italic">Dukumentigan keliya waa daawis</p>
                 )}
               </div>
             </div>
           ) : (
-            // Desktop iframe preview
             <div className="relative">
               <iframe
                 src={`${pdfUrl}#toolbar=1&navpanes=1&scrollbar=1`}
@@ -428,34 +399,6 @@ const PDFBlock: React.FC<{
                 title={fileName}
                 loading="lazy"
               />
-              {/* Fallback content shown if iframe fails - moved outside iframe */}
-              <div className="hidden pdf-fallback absolute inset-0 p-8 text-center bg-white">
-                <FileText className="h-12 w-12 mx-auto mb-4 text-slate-400" />
-                <p className="text-slate-600 mb-4">Brawser-kaagu ma taageero hordhacyada PDF.</p>
-
-                {/* Only show fallback buttons if download is allowed */}
-                {showDownloadButton && (
-                  <div className="space-y-2">
-                    <a
-                      href={pdfUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center px-4 py-2 bg-slate-700 text-white rounded-md hover:bg-slate-800 mr-2 transition-colors"
-                    >
-                      <ExternalLink className="h-4 w-4 mr-2" />
-                      Fur PDF
-                    </a>
-                    <a
-                      href={pdfUrl}
-                      download
-                      className="inline-flex items-center px-4 py-2 bg-slate-600 text-white rounded-md hover:bg-slate-700 transition-colors"
-                    >
-                      <Download className="h-4 w-4 mr-2" />
-                      Soo deji
-                    </a>
-                  </div>
-                )}
-              </div>
             </div>
           )}
         </div>
@@ -464,4 +407,4 @@ const PDFBlock: React.FC<{
   )
 }
 
-export { TwitterEmbedBlock, EmbedBlock, PDFBlock }
+export { EmbedBlock, PDFBlock }
