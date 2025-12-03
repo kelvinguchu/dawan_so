@@ -226,6 +226,27 @@ export const BlogPost: CollectionConfig = {
       required: true,
     },
     {
+      name: 'articleUrl',
+      type: 'text',
+      label: 'Article URL',
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        description: 'Copy this link to share the article.',
+        condition: (data) => Boolean(data?.slug),
+      },
+      hooks: {
+        beforeChange: [
+          ({ data }) => {
+            if (data?.slug) {
+              return `https://www.dawan.so/news/${encodeURIComponent(data.slug)}`
+            }
+            return undefined
+          },
+        ],
+      },
+    },
+    {
       name: 'statusDisplay',
       type: 'text',
       label: 'Status',
