@@ -1,7 +1,7 @@
 'use client'
 
-import type { DawanpediaEntry } from '@/lib/dawanpedia'
-import { resolveEntryAnchor } from '@/lib/dawanpedia'
+import type { DawanpediaEntry } from '@/lib/dawanpedia-types'
+import { resolveEntryAnchor } from '@/lib/dawanpedia-types'
 import { TimelineSection } from '@/components/dawanpedia/timeline/TimelineSection'
 import { ReferenceList } from '@/components/dawanpedia/references/ReferenceList'
 import { RichTextRenderer } from '@/components/news/blockrender/RichTextRenderer'

@@ -10,13 +10,10 @@ import { SectionRenderer } from '@/components/dawanpedia/sections/SectionRendere
 import { RelatedContent } from '@/components/dawanpedia/related/RelatedContent'
 import { ReferenceList } from '@/components/dawanpedia/references/ReferenceList'
 import type { BlogPost } from '@/payload-types'
-import type { DawanpediaEntry } from '@/lib/dawanpedia'
+import type { DawanpediaEntry } from '@/lib/dawanpedia-types'
+import { resolveEntryAnchor } from '@/lib/dawanpedia-types'
 import { buildDawanpediaMetadata, buildStructuredData } from '@/lib/dawanpedia-metadata'
-import {
-  getDawanpediaEntry,
-  getDawanpediaEntryMetadata,
-  resolveEntryAnchor,
-} from '@/lib/dawanpedia'
+import { getDawanpediaEntry, getDawanpediaEntryMetadata } from '@/lib/dawanpedia'
 import { sharedMetadata } from '@/app/shared-metadata'
 
 interface PageProps {

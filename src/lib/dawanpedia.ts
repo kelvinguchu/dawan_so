@@ -2,55 +2,25 @@ import { unstable_cache } from 'next/cache'
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
-import type { BlogPost, Media } from '@/payload-types'
 
-// Temporary type until payload-types.ts is regenerated
-export interface DawanpediaEntry {
-  id: string
-  name: string
-  slug: string
-  status?: 'draft' | 'review' | 'published'
-  entryType: 'person' | 'business'
-  primaryImage?: Media | string | null
-  publishedDate?: string | null
-  profileFacts?: Array<{
-    label?: string | null
-    value?: unknown
-  }> | null
-  sections?: Array<{
-    id?: string | null
-    heading: string
-    content?: unknown
-  }> | null
-  references?: Array<{
-    title?: string | null
-    publication?: string | null
-    url?: string | null
-    accessedDate?: string | null
-  }> | null
-  relatedContent?: {
-    blogPosts?: (BlogPost | string)[] | null
-    relatedEntries?: (DawanpediaEntry | string)[] | null
-  } | null
-  createdAt?: string
-  updatedAt?: string
-}
+// Re-export types and client-safe utilities from types file
+export type {
+  DawanpediaEntry,
+  DawanpediaEntryWithRelations,
+  DawanpediaEntryMetadata,
+  EntryFetchOptions,
+} from './dawanpedia-types'
+export { resolveEntryAnchor, buildEntryUrl } from './dawanpedia-types'
+
+import type {
+  DawanpediaEntry,
+  DawanpediaEntryWithRelations,
+  DawanpediaEntryMetadata,
+  EntryFetchOptions,
+} from './dawanpedia-types'
 
 const COLLECTION = 'dawanpediaEntries' as const
 const CACHE_TTL_SECONDS = 300
-
-export interface EntryFetchOptions {
-  draft?: boolean
-  depth?: number
-}
-
-export interface DawanpediaEntryWithRelations extends DawanpediaEntry {
-  primaryImage?: Media | string | null
-  relatedContent?: {
-    blogPosts?: (BlogPost | string)[] | null
-    relatedEntries?: (DawanpediaEntry | string)[] | null
-  }
-}
 
 const fetchEntryBySlug = async (
   slug: string,
@@ -81,11 +51,6 @@ const fetchEntryBySlug = async (
 
   return entry as DawanpediaEntryWithRelations
 }
-
-export type DawanpediaEntryMetadata = Pick<
-  DawanpediaEntry,
-  'id' | 'name' | 'entryType' | 'slug' | 'primaryImage' | 'publishedDate' | 'profileFacts'
->
 
 const fetchEntryMetadataBySlug = async (slug: string): Promise<DawanpediaEntryMetadata> => {
   const payload = await getPayload({ config })
@@ -169,22 +134,4 @@ export const getDawanpediaEntryMetadata = async (
     console.error('Failed to fetch Dawanpedia metadata:', error)
     return null
   }
-}
-
-export const buildEntryPreviewUrl = (
-  entry: Pick<DawanpediaEntry, 'slug'>,
-  anchor?: string,
-): string => {
-  const base = `/dp/${entry.slug}`
-  return anchor ? `${base}#${anchor}` : base
-}
-
-export const resolveEntryAnchor = (heading: string, fallback: string): string => {
-  const normalised = heading
-    .toLowerCase()
-    .trim()
-    .replaceAll(/[^a-z0-9\s-]/g, '')
-    .replaceAll(/\s+/g, '-')
-
-  return normalised || fallback
 }

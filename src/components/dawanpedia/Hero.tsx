@@ -1,15 +1,15 @@
 import Image from 'next/image'
 import { User, Building2, Calendar } from 'lucide-react'
 
-import type { DawanpediaEntry } from '@/lib/dawanpedia'
-import { getMediaUrl, getMediaAlt } from '@/utils/media'
+import type { DawanpediaEntry } from '@/lib/dawanpedia-types'
+import { getMediaUrl, getMediaAlt, type MediaLike } from '@/utils/media'
 
 interface HeroProps {
   entry: DawanpediaEntry
 }
 
 export function Hero({ entry }: Readonly<HeroProps>) {
-  const imageUrl = getMediaUrl(entry.primaryImage)
+  const imageUrl = getMediaUrl(entry.primaryImage as MediaLike)
   const isPerson = entry.entryType === 'person'
 
   return (
@@ -20,7 +20,7 @@ export function Hero({ entry }: Readonly<HeroProps>) {
           <div className="relative w-full h-64 sm:h-80 lg:w-1/2 lg:h-full">
             <Image
               src={imageUrl}
-              alt={getMediaAlt(entry.primaryImage, entry.name)}
+              alt={getMediaAlt(entry.primaryImage as MediaLike, entry.name)}
               fill
               sizes="(max-width: 1024px) 100vw, 50vw"
               className="object-cover"

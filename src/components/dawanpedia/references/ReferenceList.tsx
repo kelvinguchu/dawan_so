@@ -1,4 +1,4 @@
-import type { DawanpediaEntry } from '@/lib/dawanpedia'
+import type { DawanpediaEntry } from '@/lib/dawanpedia-types'
 
 const formatDate = (value?: string | null) => {
   if (!value) {

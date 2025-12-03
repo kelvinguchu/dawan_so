@@ -1,6 +1,6 @@
 import { Info } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import type { DawanpediaEntry } from '@/lib/dawanpedia'
+import type { DawanpediaEntry } from '@/lib/dawanpedia-types'
 import { lexicalToPlainText } from '@/utils/lexical'
 
 export interface EntryQuickFactsProps {

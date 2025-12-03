@@ -1,7 +1,7 @@
 import Link from 'next/link'
 
 import type { BlogPost } from '@/payload-types'
-import type { DawanpediaEntry } from '@/lib/dawanpedia'
+import type { DawanpediaEntry } from '@/lib/dawanpedia-types'
 
 interface RelatedContentProps {
   blogPosts?: BlogPost[]
