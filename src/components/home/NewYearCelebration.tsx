@@ -107,7 +107,7 @@ export function NewYearCelebration() {
       transition: { staggerChildren: 0.3, delayChildren: 0.2 },
     },
     exit: { opacity: 0, scale: 0.9, transition: { duration: 0.3 } },
-  }
+  } as const
 
   const wordVariants = {
     hidden: { opacity: 0, y: 50, rotateX: -90 },
@@ -116,7 +116,7 @@ export function NewYearCelebration() {
       y: 0,
       rotateX: 0,
       transition: {
-        type: 'spring',
+        type: 'spring' as const,
         stiffness: 100,
         damping: 12,
       },
@@ -130,7 +130,7 @@ export function NewYearCelebration() {
       scale: 1,
       rotate: 0,
       transition: {
-        type: 'spring',
+        type: 'spring' as const,
         stiffness: 200,
         damping: 15,
         delay: 0.6,
@@ -144,7 +144,7 @@ export function NewYearCelebration() {
       transition: {
         duration: 2,
         repeat: Infinity,
-        ease: 'easeInOut',
+        ease: 'easeInOut' as const,
       },
     },
   }
@@ -155,7 +155,7 @@ export function NewYearCelebration() {
       transition: {
         duration: 3,
         repeat: Infinity,
-        ease: 'easeInOut',
+        ease: 'easeInOut' as const,
       },
     },
   }
