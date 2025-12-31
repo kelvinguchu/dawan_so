@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useSearchParams, useRouter } from 'next/navigation'
+import confetti from 'canvas-confetti'
 
 import { BiCalendar, BiSearch, BiMenu, BiX, BiDownload } from 'react-icons/bi'
 
@@ -109,6 +110,63 @@ const Header: React.FC<HeaderProps> = ({ initialCategories = [] }) => {
 
   const today = new Date()
   const formattedDate = formatDateInSomali(today)
+
+  // One-time confetti from logo on subsequent visits (after seeing celebration)
+  useEffect(() => {
+    const CELEBRATION_SEEN_KEY = 'dawan_newyear_2026_seen'
+    const HEADER_CONFETTI_KEY = 'dawan_newyear_2026_header_confetti'
+
+    const hasSeenCelebration = localStorage.getItem(CELEBRATION_SEEN_KEY)
+    const hasShownHeaderConfetti = localStorage.getItem(HEADER_CONFETTI_KEY)
+
+    if (hasSeenCelebration && !hasShownHeaderConfetti) {
+      setTimeout(() => {
+        const logoImages = document.querySelectorAll<HTMLElement>('header img[alt="Dawan TV"]')
+        let visibleLogo: HTMLElement | null = null
+
+        logoImages.forEach((img) => {
+          const rect = img.getBoundingClientRect()
+          if (rect.width > 0 && rect.height > 0) {
+            visibleLogo = img
+          }
+        })
+
+        if (!visibleLogo) return
+
+        const rect = (visibleLogo as HTMLElement).getBoundingClientRect()
+        const x = (rect.left + rect.width / 2) / window.innerWidth
+        const y = (rect.top + rect.height / 2) / window.innerHeight
+
+        const canvas = document.createElement('canvas')
+        canvas.style.cssText =
+          'position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:9999'
+        document.body.appendChild(canvas)
+
+        try {
+          const myConfetti = confetti.create(canvas, { resize: true, useWorker: false })
+          myConfetti({
+            particleCount: 80,
+            spread: 100,
+            origin: { x, y },
+            colors: ['#FFD700', '#b01c14', '#FF6B6B', '#4ECDC4', '#F472B6', '#22C55E'],
+            startVelocity: 30,
+            gravity: 1,
+            ticks: 200,
+          })
+
+          setTimeout(() => {
+            myConfetti.reset()
+            canvas.remove()
+          }, 3000)
+
+          localStorage.setItem(HEADER_CONFETTI_KEY, 'true')
+        } catch (error) {
+          console.error('Header confetti error:', error)
+          canvas.remove()
+        }
+      }, 800)
+    }
+  }, [])
 
   useEffect(() => {
     // SSR guard - matchMedia not available during server rendering

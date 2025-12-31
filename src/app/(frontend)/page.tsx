@@ -2,6 +2,7 @@ import React from 'react'
 import { HeroSection } from '@/components/home/HeroSection'
 import { FeaturedPosts } from '@/components/home/FeaturedPosts'
 import { CategorySection } from '@/components/home/CategorySection'
+import { NewYearCelebration } from '@/components/home/NewYearCelebration'
 // TEMPORARILY DISABLED - Ads removed, may be restored later
 // import { HomePageAdSection, HomePageBottomAdSection } from '@/components/home/HomePageAds'
 import { Metadata } from 'next'
@@ -47,6 +48,7 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen">
+      <NewYearCelebration />
       <HeroSection latestPost={latestPost} recentPosts={heroPosts} flashNews={flashNews} />
 
       <FeaturedPosts

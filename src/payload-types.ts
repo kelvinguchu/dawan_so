@@ -290,6 +290,10 @@ export interface BlogPost {
    */
   slug: string;
   /**
+   * Copy this link to share the article.
+   */
+  articleUrl?: string | null;
+  /**
    * Current status of your post. Contact an admin to change this.
    */
   statusDisplay?: string | null;
@@ -1353,6 +1357,7 @@ export interface ArticleAudioSelect<T extends boolean = true> {
 export interface BlogPostsSelect<T extends boolean = true> {
   name?: T;
   slug?: T;
+  articleUrl?: T;
   statusDisplay?: T;
   status?: T;
   layout?:
